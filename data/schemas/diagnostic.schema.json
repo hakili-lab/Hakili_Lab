@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "required": ["student_copy_id", "strengths", "weaknesses", "remediation_plan"],
+  "properties": {
+    "student_copy_id": {"type": "string"},
+    "strengths": {"type": "array", "items": {"type": "string"}},
+    "weaknesses": {"type": "array", "items": {"type": "string"}},
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "level": {"type": "string", "enum": ["mastered", "partial", "weak", "unknown"]},
+          "evidence": {"type": "string"}
+        }
+      }
+    },
+    "remediation_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "priority": {"type": "integer"},
+          "topic": {"type": "string"},
+          "action": {"type": "string"},
+          "resources": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

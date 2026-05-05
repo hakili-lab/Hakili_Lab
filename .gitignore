@@ -1,0 +1,44 @@
+# Environnement Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Configuration sensible
+.env
+
+# Données de production (jamais dans le repo)
+runs/
+data/copies/
+data/outputs/
+*.pdf
+!docs/*.pdf
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# Claude Code (local uniquement)
+.claude/settings.local.json

@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "required": ["student_copy_id", "pages", "global_quality"],
+  "properties": {
+    "student_copy_id": {"type": "string"},
+    "global_quality": {"type": "string", "enum": ["good", "medium", "poor"]},
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["page_number", "content", "quality", "uncertainties"],
+        "properties": {
+          "page_number": {"type": "integer"},
+          "quality": {"type": "string"},
+          "content": {"type": "string"},
+          "formulas": {"type": "array", "items": {"type": "string"}},
+          "diagrams": {"type": "array", "items": {"type": "string"}},
+          "uncertainties": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

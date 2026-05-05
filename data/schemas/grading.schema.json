@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "required": ["student_copy_id", "total_score", "max_score", "questions"],
+  "properties": {
+    "student_copy_id": {"type": "string"},
+    "total_score": {"type": "number"},
+    "max_score": {"type": "number"},
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["question_id", "score", "max_score", "comment", "requires_teacher_review"],
+        "properties": {
+          "question_id": {"type": "string"},
+          "score": {"type": "number"},
+          "max_score": {"type": "number"},
+          "observed_answer": {"type": "string"},
+          "expected_answer": {"type": "string"},
+          "comment": {"type": "string"},
+          "confidence": {"type": "number"},
+          "requires_teacher_review": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}
