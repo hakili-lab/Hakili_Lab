@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "required": ["copy_id", "total_pages", "pages", "output_dir"],
+  "properties": {
+    "copy_id": {"type": "string"},
+    "total_pages": {"type": "integer", "minimum": 1},
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string"}
+    },
+    "output_dir": {"type": "string"}
+  }
+}

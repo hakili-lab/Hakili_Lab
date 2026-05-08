@@ -1,21 +1,22 @@
 {
   "type": "object",
-  "required": ["student_copy_id", "pages", "global_quality"],
+  "required": ["copy_id", "global_quality", "pages"],
   "properties": {
-    "student_copy_id": {"type": "string"},
+    "copy_id": {"type": "string"},
     "global_quality": {"type": "string", "enum": ["good", "medium", "poor"]},
     "pages": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["page_number", "content", "quality", "uncertainties"],
+        "required": ["page_number", "content", "confidence"],
         "properties": {
-          "page_number": {"type": "integer"},
-          "quality": {"type": "string"},
+          "page_number": {"type": "integer", "minimum": 1},
           "content": {"type": "string"},
           "formulas": {"type": "array", "items": {"type": "string"}},
           "diagrams": {"type": "array", "items": {"type": "string"}},
-          "uncertainties": {"type": "array", "items": {"type": "string"}}
+          "uncertainties": {"type": "array", "items": {"type": "string"}},
+          "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0}
         }
       }
     }

@@ -1,24 +1,23 @@
 {
   "type": "object",
-  "required": ["student_copy_id", "total_score", "max_score", "questions"],
+  "required": ["copy_id", "total_score", "total_possible", "questions", "expert_instructions_used"],
   "properties": {
-    "student_copy_id": {"type": "string"},
-    "total_score": {"type": "number"},
-    "max_score": {"type": "number"},
+    "copy_id": {"type": "string"},
+    "total_score": {"type": "integer", "minimum": 0},
+    "total_possible": {"type": "integer", "minimum": 1},
+    "expert_instructions_used": {"type": "boolean"},
     "questions": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["question_id", "score", "max_score", "comment", "requires_teacher_review"],
+        "required": ["rubric_item_id", "score", "confidence", "comment", "observed_answer", "requires_review"],
         "properties": {
-          "question_id": {"type": "string"},
-          "score": {"type": "number"},
-          "max_score": {"type": "number"},
-          "observed_answer": {"type": "string"},
-          "expected_answer": {"type": "string"},
+          "rubric_item_id": {"type": "string"},
+          "score": {"type": "integer", "enum": [0, 1]},
+          "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
           "comment": {"type": "string"},
-          "confidence": {"type": "number"},
-          "requires_teacher_review": {"type": "boolean"}
+          "observed_answer": {"type": "string"},
+          "requires_review": {"type": "boolean"}
         }
       }
     }

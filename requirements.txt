@@ -2,7 +2,9 @@
 # Mettre à jour avec : pip-compile requirements.in
 
 # --- Core ---
-pydantic==2.7.4
+pydantic>=2.9.0
+pydantic-settings>=2.5.0
+jsonschema==4.23.0
 python-dotenv==1.0.1
 
 # --- Traitement image & PDF ---
@@ -17,10 +19,8 @@ jinja2==3.1.4
 # --- Interface ---
 streamlit==1.36.0
 
-# --- Fournisseurs IA ---
-anthropic==0.34.2
-openai==1.40.0
-google-genai==1.3.0
+# --- Fournisseur IA ---
+anthropic>=0.40.0
 
 # --- Réseau & Robustesse ---
 httpx==0.27.0

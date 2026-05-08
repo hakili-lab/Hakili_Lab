@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "required": ["success", "confidence", "raw_response"],
+  "properties": {
+    "success": {"type": "boolean"},
+    "data": {"type": ["object", "null"]},
+    "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "raw_response": {"type": "string"},
+    "error": {"type": ["string", "null"]}
+  }
+}

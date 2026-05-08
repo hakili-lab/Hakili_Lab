@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "required": ["subject", "total_points", "items"],
+  "properties": {
+    "subject": {"type": "string", "enum": ["mathematics"]},
+    "total_points": {"type": "integer", "minimum": 1},
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "max_score"],
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string"},
+          "max_score": {"type": "integer", "enum": [1]},
+          "parent_id": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

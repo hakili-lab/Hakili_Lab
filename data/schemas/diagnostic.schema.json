@@ -1,14 +1,15 @@
 {
   "type": "object",
-  "required": ["student_copy_id", "strengths", "weaknesses", "remediation_plan"],
+  "required": ["copy_id", "strengths", "weaknesses", "skills", "remediation_plan"],
   "properties": {
-    "student_copy_id": {"type": "string"},
+    "copy_id": {"type": "string"},
     "strengths": {"type": "array", "items": {"type": "string"}},
     "weaknesses": {"type": "array", "items": {"type": "string"}},
     "skills": {
       "type": "array",
       "items": {
         "type": "object",
+        "required": ["name", "level", "evidence"],
         "properties": {
           "name": {"type": "string"},
           "level": {"type": "string", "enum": ["mastered", "partial", "weak", "unknown"]},
@@ -20,11 +21,11 @@
       "type": "array",
       "items": {
         "type": "object",
+        "required": ["priority", "topic", "action"],
         "properties": {
-          "priority": {"type": "integer"},
+          "priority": {"type": "integer", "minimum": 1},
           "topic": {"type": "string"},
-          "action": {"type": "string"},
-          "resources": {"type": "array", "items": {"type": "string"}}
+          "action": {"type": "string"}
         }
       }
     }

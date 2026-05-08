@@ -1,12 +1,26 @@
-from pydantic import BaseModel
-from dotenv import load_dotenv
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-load_dotenv()
 
-class Settings(BaseModel):
-    app_env: str = os.getenv("APP_ENV", "development")
-    data_dir: str = os.getenv("DATA_DIR", "./runs")
-    ai_provider: str = os.getenv("AI_PROVIDER", "anthropic")
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+    )
+
+    # Anthropic Claude
+    anthropic_api_key: str
+    claude_model_heavy: str = "claude-opus-4-7"
+    claude_model_light: str = "claude-haiku-4-5-20251001"
+
+    # Seuils pipeline
+    confidence_review_threshold: float = 0.75
+    image_min_resolution: int = 1000
+    image_blur_threshold: float = 100.0
+
+    # Stockage
+    runs_dir: str = "./runs"
+    subject: str = "mathematics"
+
 
 settings = Settings()
