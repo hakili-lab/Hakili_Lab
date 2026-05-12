@@ -13,6 +13,7 @@ class Anonymizer:
         self.session_dir.mkdir(parents=True, exist_ok=True)
         self._mapping: dict[str, str] = {}  # nom → copy_id
         self._correspondence_path = session_dir / "correspondence.csv"
+        self._load()
 
     def register(self, name: str) -> str:
         """Enregistre un élève et retourne son identifiant anonyme."""
@@ -40,6 +41,14 @@ class Anonymizer:
     @property
     def mapping(self) -> dict[str, str]:
         return dict(self._mapping)
+
+    def _load(self) -> None:
+        if not self._correspondence_path.exists():
+            return
+        with open(self._correspondence_path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                self._mapping[row["nom"]] = row["id_anonyme"]
 
     def _save(self) -> None:
         with open(self._correspondence_path, "w", newline="", encoding="utf-8") as f:

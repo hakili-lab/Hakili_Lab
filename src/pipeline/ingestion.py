@@ -1,7 +1,32 @@
+import shutil
+
 import fitz  # PyMuPDF
 from pathlib import Path
 
 from src.models.domain import IngestionResult
+
+
+def ingest_images(image_paths: list[Path], copy_id: str, output_dir: Path) -> IngestionResult:
+    """
+    Copie des images JPG/PNG dans le dossier de session et les renomme page_01, page_02…
+    Accepte une liste d'images dans l'ordre (une par page).
+    """
+    dest_dir = output_dir / copy_id / "pages"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    pages: list[Path] = []
+    for i, src in enumerate(image_paths):
+        suffix = src.suffix.lower() if src.suffix.lower() in {".jpg", ".jpeg", ".png"} else ".jpg"
+        dest = dest_dir / f"page_{i + 1:02d}{suffix}"
+        shutil.copy2(src, dest)
+        pages.append(dest)
+
+    return IngestionResult(
+        copy_id=copy_id,
+        total_pages=len(pages),
+        pages=pages,
+        output_dir=dest_dir,
+    )
 
 
 def ingest_pdf(pdf_path: Path, copy_id: str, output_dir: Path) -> IngestionResult:

@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -14,10 +15,18 @@ from src.models.domain import (
     TranscriptionResult,
 )
 
+_MEDIA_TYPES: dict[str, str] = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+}
+
+_JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]*?)```", re.IGNORECASE)
+
 
 class ClaudeClient:
-    """Client Anthropic pour les tâches de transcription, correction et diagnostic."""
-
     def __init__(self) -> None:
         self.client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
         self._transcription_prompt = self._load_prompt("transcription_prompt.md")
@@ -25,98 +34,129 @@ class ClaudeClient:
         self._diagnostic_prompt = self._load_prompt("diagnostic_prompt.md")
 
     def _load_prompt(self, filename: str) -> str:
-        """Charge un prompt depuis le dossier prompts/."""
         prompt_path = Path(__file__).parent.parent.parent / "prompts" / filename
         return prompt_path.read_text(encoding="utf-8")
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        reraise=True,
-    )
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), reraise=True)
     def transcribe(self, copy_id: str, image_paths: list[Path]) -> ClaudeResponse:
-        """Transcrit les images en utilisant Claude Vision."""
-        messages = [
+        """Transcrit les images en utilisant Claude Vision avec prompt caching."""
+        content: list[dict[str, Any]] = [
             {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": self._transcription_prompt},
-                    *[
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/jpeg",
-                                "data": self._encode_image(path),
-                            },
-                        }
-                        for path in image_paths
-                    ],
-                ],
-            }
+                "type": "text",
+                "text": self._transcription_prompt,
+                "cache_control": {"type": "ephemeral"},  # prompt statique → cache
+            },
+            *[
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": self._media_type(path),
+                        "data": self._encode_image(path),
+                    },
+                }
+                for path in image_paths
+            ],
         ]
 
         response = self.client.messages.create(
             model=settings.claude_model_heavy,
             max_tokens=4096,
-            messages=messages,
+            messages=[{"role": "user", "content": content}],
         )
 
         return self._parse_response(response.content[0].text, TranscriptionResult)
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        reraise=True,
-    )
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), reraise=True)
     def grade(
-        self, transcription: TranscriptionResult, rubric: Rubric
+        self,
+        transcription: TranscriptionResult,
+        rubric: Rubric,
+        subject_text: str,
+        expert_instructions: str = "",
     ) -> ClaudeResponse:
-        """Corrige la copie selon le barème."""
-        prompt = f"{self._grading_prompt}\n\nÉNONCÉ:\n{transcription}\n\nBARÈME:\n{rubric}"
+        """Corrige la copie selon le barème. Injecte l'énoncé et les instructions expert."""
+        expert_block = f"\n\nINSTRUCTIONS EXPERT:\n{expert_instructions}" if expert_instructions.strip() else ""
 
-        response = self.client.messages.create(
-            model=settings.claude_model_light,
-            max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}],
+        prompt = (
+            f"{self._grading_prompt}{expert_block}"
+            f"\n\nÉNONCÉ:\n{subject_text}"
+            f"\n\nBARÈME:\n{rubric.model_dump_json(indent=2)}"
+            f"\n\nTRANSCRIPTION:\n{transcription.model_dump_json(indent=2)}"
         )
 
-        return self._parse_response(response.content[0].text, CopyGrade)
+        response = self.client.messages.create(
+            model=settings.claude_model_heavy,
+            max_tokens=2048,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prompt,
+                            "cache_control": {"type": "ephemeral"},
+                        }
+                    ],
+                }
+            ],
+        )
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        reraise=True,
-    )
+        result = self._parse_response(response.content[0].text, CopyGrade)
+        if result.success and result.data is not None and expert_instructions.strip():
+            result.data.expert_instructions_used = True
+        return result
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), reraise=True)
     def diagnose(self, grades: CopyGrade) -> ClaudeResponse:
         """Produit le diagnostic pédagogique."""
-        prompt = f"{self._diagnostic_prompt}\n\nRÉSULTATS DE CORRECTION:\n{grades}"
+        prompt = (
+            f"{self._diagnostic_prompt}"
+            f"\n\nRÉSULTATS DE CORRECTION:\n{grades.model_dump_json(indent=2)}"
+        )
 
         response = self.client.messages.create(
             model=settings.claude_model_light,
             max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prompt,
+                            "cache_control": {"type": "ephemeral"},
+                        }
+                    ],
+                }
+            ],
         )
 
         return self._parse_response(response.content[0].text, DiagnosticResult)
 
-    def _encode_image(self, path: Path) -> str:
-        """Encode une image en base64."""
-        import base64
+    # ── Helpers ────────────────────────────────────────────────────────────────
 
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8")
+    def _media_type(self, path: Path) -> str:
+        return _MEDIA_TYPES.get(path.suffix.lower(), "image/jpeg")
+
+    def _encode_image(self, path: Path) -> str:
+        import base64
+        return base64.b64encode(path.read_bytes()).decode("utf-8")
 
     def _parse_response(self, raw_text: str, model_cls: type) -> ClaudeResponse:
-        """Parse la réponse JSON et valide avec Pydantic."""
+        """Parse la réponse JSON — gère les blocs markdown ```json ... ```."""
+        text = raw_text.strip()
+        match = _JSON_FENCE.search(text)
+        if match:
+            text = match.group(1).strip()
+
         try:
-            data = json.loads(raw_text)
+            data = json.loads(text)
             validated = model_cls(**data)
-            confidence = self._estimate_confidence(validated)
             return ClaudeResponse(
                 success=True,
                 data=validated,
-                confidence=confidence,
+                confidence=self._estimate_confidence(validated),
                 raw_response=raw_text,
                 error=None,
             )
@@ -130,13 +170,9 @@ class ClaudeClient:
             )
 
     def _estimate_confidence(self, result: Any) -> float:
-        """Estime la confiance basée sur les données du résultat."""
         if hasattr(result, "global_quality"):
-            quality_map = {"good": 0.9, "medium": 0.7, "poor": 0.5}
-            return quality_map.get(result.global_quality, 0.5)
-
+            return {"good": 0.9, "medium": 0.7, "poor": 0.5}.get(result.global_quality, 0.5)
         if hasattr(result, "questions"):
             confidences = [q.confidence for q in result.questions if hasattr(q, "confidence")]
             return sum(confidences) / len(confidences) if confidences else 0.5
-
-        return 0.8  # Default high confidence
+        return 0.8
