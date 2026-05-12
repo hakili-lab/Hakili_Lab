@@ -20,8 +20,6 @@
 ### D-CEO-01 — Périmètre matières du MVP
 **Décision :** Mathématiques uniquement.
 
-**Justification :** Focalisation pour délivrer plus vite. Extension Physique-Chimie reportée à une version ultérieure.
-
 ---
 
 ### D-CEO-02 — Format du barème
