@@ -94,6 +94,18 @@ class RemediationItem(BaseModel):
     action: str
 
 
+class CompetencyGap(BaseModel):
+    """Lacune de compétence ancrée sur le programme officiel (résultat du RAG)."""
+    chunk_id: str                          # ex: "5e_NUM_Ch3_L1"
+    classe: str                            # "5e"
+    domaine: str                           # "numerique" | "geometrique"
+    chapitre: str
+    lecon: str
+    description: str                       # texte court de synthèse
+    savoir_faire: list[str] = Field(default_factory=list)
+    erreurs_frequentes: list[str] = Field(default_factory=list)
+
+
 class DiagnosticResult(BaseModel):
     copy_id: str
     strengths: list[str]
@@ -101,6 +113,7 @@ class DiagnosticResult(BaseModel):
     root_causes: list[RootCauseError] = Field(default_factory=list)
     skills: list[SkillAssessment]
     remediation_plan: list[RemediationItem]
+    competency_gaps: list[CompetencyGap] = Field(default_factory=list)
 
 
 # ── Sujet de remédiation ───────────────────────────────────────────────────────

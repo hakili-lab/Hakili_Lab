@@ -1,92 +1,145 @@
 # Hakili Lab — Correction IA de copies manuscrites
 
 > Outil d'évaluation et de remédiation assistée par IA pour copies manuscrites de **mathématiques**,
-> conçu pour le programme du secondaire au **Burkina Faso (6e à Terminale)**.
+> conçu pour les **tests de recrutement Hakili Lab** et le programme du secondaire au **Burkina Faso (6e à 3e)**.
 
 ---
 
 ## Vue d'ensemble
 
-Hakili Lab automatise la correction de copies manuscrites numérisées. L'enseignant charge une copie scannée (PDF multi-pages), fournit l'énoncé et le barème, et obtient un **rapport PDF structuré** avec note, commentaires question par question, diagnostic des causes profondes d'erreurs et sujet de remédiation personnalisé.
+Hakili Lab automatise la correction de copies manuscrites numérisées pour les **tests standards de recrutement Hakili**. L'enseignant sélectionne le test cible (entrée en 3e ou en 6e), charge la copie de l'élève, et obtient en quelques minutes :
 
-Le système repose sur une **architecture multi-provider** : chaque tâche est confiée au modèle offrant le meilleur rapport qualité/coût pour cette tâche spécifique. Il applique un **barème binaire strict 0/1** — décision pédagogique volontaire pour des résultats non ambigus et auditables.
+- Un **rapport PDF structuré** avec note, commentaires question par question, diagnostic profond des lacunes
+- Un **sujet de remédiation personnalisé** ancré sur les compétences du programme officiel burkinabè
+- Un **diagnostic RAG** qui identifie les leçons non maîtrisées par référence au programme du Ministère
 
-**Coût en production : ~$0.02/copie — ~$12/an pour une école standard (540 copies).**
+Le système repose sur une **architecture multi-provider** : chaque tâche est confiée au modèle offrant le meilleur rapport qualité/coût. Il applique un **barème binaire strict 0/1** et intègre un **système RAG** sur les curricula officiels 6e–3e.
+
+**Coût en production : ~$0.02/copie.**
 
 ---
 
 ## Fonctionnalités
 
+### Correction et évaluation
 - **Ingestion flexible** — PDF multi-pages, JPG, PNG
-- **Contrôle qualité image** — détection du flou (variance du Laplacien), luminosité, résolution minimale
-- **Transcription multimodale** — texte, formules mathématiques, schémas ; zones `[ILLISIBLE]` avec score de confiance par page
-- **Extraction automatique du barème** — upload d'un PDF barème, extraction structurée sans saisie manuelle
-- **Correction selon barème** — évaluation binaire 0/1 par question et sous-question avec commentaire pédagogique
-- **Instructions expert optionnelles** — critères d'interprétation injectés dans le prompt pour affiner la correction
-- **Diagnostic des causes cachées** — identification des lacunes conceptuelles profondes derrière les erreurs visibles
-- **Sujet de remédiation personnalisé** — 5 exercices progressifs par lacune identifiée, en français académique
-- **Rapport PDF** — note, détail question par question, confiance IA, diagnostic, sujet de remédiation, logo Hakili Lab
-- **Export JSON** — données structurées complètes pour archivage ou traitement ultérieur
-- **Validation humaine** — l'enseignant valide sur le rapport PDF exporté, hors plateforme
+- **Contrôle qualité image** — détection du flou, luminosité, résolution minimale
+- **Transcription multimodale** — texte, formules mathématiques, schémas ; zones `[ILLISIBLE]` avec score de confiance
+- **Ensemble voting** — 3 runs de correction, fusion par vote majoritaire, désaccord → `requires_review=True`
+- **Correction binaire 0/1** — évaluation stricte par question et sous-question
+
+### Tests Hakili (mode auto-chargé)
+- **Test d'entrée en 3e** — évalue les compétences 6e → 4e (33 questions NUM + GEO)
+- **Test d'entrée en 6e** — évalue les compétences primaires CE1 → CM2 (33 questions NUM + GEO)
+- **Énoncé + barème pré-chargés** — l'enseignant ne charge que la copie de l'élève
+
+### Diagnostic RAG ancré sur le programme officiel
+- **Base de connaissance** — 121 leçons du programme officiel du Burkina Faso (6e, 5e, 4e, 3e)
+- **Mapping question → compétence** — chaque question du test est liée aux leçons concernées
+- **Récupération contextuelle** — les chunks des questions échouées sont injectés dans le prompt diagnostic
+- **Lacunes précises** — ex. `[4e_NUM_Ch4_L3] Identités remarquables` au lieu de "lacune en algèbre"
+
+### Interface et expérience
+- **Écran d'analyse animé** — logo Hakili pulsant, 7 étapes en temps réel, barre de progression
+- **Mode batch** — session multi-élèves avec synthèse de classe et téléchargement individuel
+- **Instructions expert** — critères contextuels optionnels injectés dans le prompt de correction
+- **Export PDF + JSON** — rapport enseignant + sujet remédiation élève + données brutes
 
 ---
 
 ## Architecture et pipeline
 
 ```
-[Copie PDF multi-pages — scanner 150 DPI]
+[Copie PDF/images — scanner 150 DPI ou photos smartphone]
                │
                ▼
-    ┌──────────────────┐
-    │    Ingestion     │  PDF → images 150 DPI · nommage page_01, page_02…
-    └────────┬─────────┘
-             │
-             ▼
-    ┌──────────────────┐
-    │  Qualité image   │  Flou · luminosité · résolution
-    └────────┬─────────┘  ⚠ Avertissement si insuffisant
-             │
-             ▼
-    ┌────────────────────────────────────────────────┐
-    │  Transcription  (Gemini 2.0 Flash)             │
-    │  texte + formules + schémas + [ILLISIBLE]      │
-    │  3 pages/appel · tier gratuit 1M tokens/jour   │
-    └────────┬───────────────────────────────────────┘
-             │
-             ▼
-    ┌────────────────────────────────────────────────┐
-    │  Correction  (DeepSeek V3)                     │
-    │  score 0/1 · commentaire · requires_review     │
-    │  MATH-500 ~90% · meilleur raisonnement math    │
-    └────────┬───────────────────────────────────────┘
-             │
-             ▼
-    ┌────────────────────────────────────────────────┐
-    │  Diagnostic  (DeepSeek R1)                     │
-    │  causes cachées · compétences · remédiation    │
-    │  modèle de raisonnement chain-of-thought       │
-    └────────┬───────────────────────────────────────┘
-             │
-             ▼
-    ┌────────────────────────────────────────────────┐
-    │  Remédiation  (Mistral Small 3.1)              │
-    │  5 exercices/lacune · français académique      │
-    └────────┬───────────────────────────────────────┘
-             │
-             ▼
-    ┌─────────────────────┐
-    │   PDF + JSON + UI   │  Rapport · Export · Téléchargement
-    └─────────────────────┘
+    ┌──────────────────────────────────────────────┐
+    │  1. Ingestion & contrôle qualité image       │  PDF → images · flou · luminosité
+    └────────────────────┬─────────────────────────┘
+                         │
+                         ▼
+    ┌──────────────────────────────────────────────┐
+    │  2. Transcription  (Gemini Flash / Claude)   │  texte + formules + schémas + [ILLISIBLE]
+    └────────────────────┬─────────────────────────┘
+                         │
+                         ▼
+    ┌──────────────────────────────────────────────┐
+    │  3. Correction — ensemble voting × 3         │  DeepSeek V3 / Claude
+    │     vote majoritaire · requires_review       │  MATH-500 ~90%
+    └────────────────────┬─────────────────────────┘
+                         │
+                         ▼
+    ┌──────────────────────────────────────────────┐
+    │  4. RAG — récupération contexte programme    │  CurriculumRetriever
+    │     121 chunks · 6e → 3e programme officiel  │  questions échouées → chunks
+    └────────────────────┬─────────────────────────┘
+                         │
+                         ▼
+    ┌──────────────────────────────────────────────┐
+    │  5. Diagnostic  (DeepSeek R1 / Mistral)      │  causes cachées + CompetencyGaps
+    │     contexte programme injecté dans prompt   │  leçons officielles citées
+    └────────────────────┬─────────────────────────┘
+                         │
+                         ▼
+    ┌──────────────────────────────────────────────┐
+    │  6. Remédiation  (Mistral Small 3.1)         │  5 exercices/lacune · français académique
+    └────────────────────┬─────────────────────────┘
+                         │
+                         ▼
+    ┌──────────────────────────────────────────────┐
+    │  7. Export PDF + JSON                        │  rapport enseignant · sujet élève
+    └──────────────────────────────────────────────┘
 ```
 
-**Routing automatique :** si une clé API est absente ou si le provider échoue (quota épuisé, solde insuffisant, erreur réseau), le pipeline bascule sur Claude — aucune interruption.
+**Routing automatique :** si une clé API est absente ou si le provider échoue, le pipeline bascule sur Claude. Aucune interruption.
 
-| Tâche | Fallback | Modèle Claude |
-|---|---|---|
-| Transcription | Claude | Sonnet 4.6 |
-| Correction | Claude | Sonnet 4.6 |
-| Diagnostic | Claude | Haiku 4.5 |
-| Remédiation | Claude | Sonnet 4.6 |
+| Tâche | Provider principal | Fallback | Contrôle |
+|---|---|---|---|
+| Transcription | Gemini Flash | Claude Sonnet | `VISION_PROVIDER` |
+| Correction | DeepSeek V3 | Claude Sonnet | `GRADING_PROVIDER` |
+| Diagnostic | DeepSeek R1 | Claude Haiku | `DIAGNOSTIC_PROVIDER` |
+| Remédiation | Mistral Small | Claude Sonnet | `REMEDIATION_PROVIDER` |
+| Extraction barème/énoncé | Claude Sonnet | — | toujours Claude |
+
+---
+
+## Système RAG — base de connaissance curriculum
+
+### Structure des fichiers
+```
+data/knowledge/
+├── curriculum_6e.yaml    # 45 leçons : numériques + géométriques (6e)
+├── curriculum_5e.yaml    # 33 leçons : multiples, fractions, triangles…
+├── curriculum_4e.yaml    # 23 leçons : puissances, polynômes, Thalès, vecteurs…
+├── curriculum_3e.yaml    # 20 leçons : Pythagore, trigonométrie, systèmes…
+├── bareme_test_3e.yaml   # Barème enrichi test 3e : 33 questions → chunk_ids
+└── bareme_test_6e.yaml   # Barème enrichi test 6e : 33 questions → chunk_ids
+```
+
+### Format d'un chunk curriculum
+```yaml
+- id: 4e_NUM_Ch4_L3
+  classe: 4e
+  domaine: numerique
+  chapitre: "Monômes et polynômes"
+  lecon: "Identités remarquables"
+  savoir: "Les trois identités : (a+b)² = a²+2ab+b² ; (a-b)² = a²-2ab+b² ; (a+b)(a-b) = a²-b²"
+  savoir_faire:
+    - Développer (a+b)² en utilisant l'identité
+    - Factoriser une expression en reconnaissant une identité
+  prerequis_ids: [4e_NUM_Ch4_L2]
+  mots_cles: [identités remarquables, (a+b)², factorisation]
+  erreurs_frequentes:
+    - Écrire (a+b)² = a² + b² (oubli du terme 2ab)
+```
+
+### Flux RAG
+1. L'enseignant sélectionne "Test d'entrée en 3e" → `bareme_id = "hakili_3e_v1"`
+2. Après correction, les IDs des questions à 0 sont collectés
+3. `CurriculumRetriever` récupère les chunks associés via le barème YAML
+4. Le texte des leçons officielles est injecté dans `{{CURRICULUM_CONTEXT}}` du prompt diagnostic
+5. Le LLM produit un diagnostic précis : "L'élève ne maîtrise pas `[4e_NUM_Ch4_L3]`…"
+6. `CompetencyGap` objects stockés dans `DiagnosticResult.competency_gaps`
 
 ---
 
@@ -109,7 +162,8 @@ Le système repose sur une **architecture multi-provider** : chaque tâche est c
 
 | Couche | Technologie |
 |---|---|
-| Interface | Streamlit |
+| Interface | Streamlit 1.36 |
+| Base de connaissance | YAML + pyyaml |
 | IA — Vision | Google Gemini 2.0 Flash |
 | IA — Raisonnement math | DeepSeek V3 + R1 (API compatible OpenAI) |
 | IA — Génération French | Mistral Small 3.1 |
@@ -127,7 +181,7 @@ Le système repose sur une **architecture multi-provider** : chaque tâche est c
 ## Prérequis
 
 - **Python 3.11 ou supérieur**
-- **Clé API Anthropic** (obligatoire — fallback) — [console.anthropic.com](https://console.anthropic.com)
+- **Clé API Anthropic** (obligatoire — fallback + extraction) — [console.anthropic.com](https://console.anthropic.com)
 - **Clé API Google AI Studio** (recommandé — tier gratuit) — [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
 - **Clé API DeepSeek** (recommandé) — [platform.deepseek.com](https://platform.deepseek.com/api_keys)
 - **Clé API Mistral** (recommandé) — [console.mistral.ai](https://console.mistral.ai/api-keys)
@@ -199,17 +253,17 @@ ANTHROPIC_API_KEY=sk-ant-...
 CLAUDE_MODEL_HEAVY=claude-sonnet-4-6
 
 # ── Google Gemini — transcription vision (GRATUIT jusqu'à 1M tokens/jour) ────
-# Clé gratuite : https://aistudio.google.com/apikey
 GOOGLE_API_KEY=AIza...
 VISION_PROVIDER=gemini          # "gemini" | "claude"
 
 # ── DeepSeek — correction (V3) + diagnostic (R1) ─────────────────────────────
-# Clé : https://platform.deepseek.com/api_keys
 DEEPSEEK_API_KEY=sk-...
+GRADING_PROVIDER=deepseek       # "deepseek" | "claude"
+DIAGNOSTIC_PROVIDER=deepseek    # "deepseek" | "mistral" | "claude"
 
 # ── Mistral — remédiation français académique ─────────────────────────────────
-# Clé : https://console.mistral.ai/api-keys
 MISTRAL_API_KEY=...
+REMEDIATION_PROVIDER=mistral    # "mistral" | "deepseek" | "claude"
 
 # ── Seuils qualité image ──────────────────────────────────────────────────────
 CONFIDENCE_REVIEW_THRESHOLD=0.75
@@ -220,22 +274,30 @@ IMAGE_BLUR_THRESHOLD=100.0
 RUNS_DIR=./runs
 ```
 
+Tous les choix de providers se font **uniquement dans `.env`** — aucune modification de code requise.
+
 ---
 
 ## Utilisation
 
-### Mode Copie unique
+### Mode Test Hakili (recommandé)
 
 1. Aller sur l'onglet **Traitement unique**
-2. Charger la copie (PDF scanner recommandé, 150 DPI, niveaux de gris)
-3. Charger l'énoncé (optionnel — PDF ou image)
-4. Charger le barème (PDF) ou saisir ligne par ligne (`Q1 : libellé`)
-5. Renseigner le nom de l'élève et la classe
-6. Ajouter des instructions expert si nécessaire
-7. Cliquer **Lancer l'analyse**
-8. Télécharger le rapport PDF
+2. Sélectionner **"Test Hakili : Test d'entrée en 3e"** (ou en 6e)
+3. Un bandeau confirme : ✓ Énoncé pré-chargé · ✓ Barème 33 questions · ✓ RAG activé
+4. Charger **uniquement la copie de l'élève** (PDF ou photos)
+5. Ajouter des instructions expert si nécessaire (optionnel)
+6. Cliquer **Lancer l'analyse**
+7. Suivre les 7 étapes sur l'écran d'analyse animé
+8. Télécharger le rapport PDF et le sujet de remédiation
 
-### Format du barème (saisie textuelle)
+### Mode Libre (devoirs personnalisés)
+
+1. Sélectionner **"Mode libre"**
+2. Charger la copie, l'énoncé (optionnel), et le barème (PDF ou texte)
+3. Le reste est identique
+
+### Format barème (mode libre, saisie texte)
 
 ```
 Q1 : Résoudre le système d'équations
@@ -244,17 +306,13 @@ Q2b : Étudier la dérivabilité de f en 0
 Q3 : Tracer la courbe représentative
 ```
 
-Si le champ barème est laissé vide, le système détecte automatiquement les questions.
-
-### Recommandation matériel de scan
+### Recommandation scan
 
 | Contexte | Recommandation | Réglages |
 |---|---|---|
 | Usage régulier | Scanner ADF (ex. Epson ES-65W ~$130) | 150 DPI · niveaux de gris · PDF |
 | Usage occasionnel | Multifonction école | 150 DPI · niveaux de gris · PDF |
 | Terrain / urgence | Smartphone + Microsoft Lens | Mode Document → PDF |
-
-> Analyse détaillée : [docs/input_pipeline_analysis.md](docs/input_pipeline_analysis.md)
 
 ---
 
@@ -265,39 +323,56 @@ hakili_ai_correction/
 │
 ├── src/
 │   ├── api/
-│   │   ├── claude_client.py      # Claude : extraction barème/énoncé · fallback
-│   │   ├── gemini_client.py      # Gemini 2.0 Flash : transcription vision
-│   │   ├── deepseek_client.py    # DeepSeek V3 : correction · R1 : diagnostic
-│   │   └── mistral_client.py     # Mistral Small : remédiation français
+│   │   ├── claude_client.py          # Claude : extraction barème/énoncé · fallback tout pipeline
+│   │   ├── gemini_client.py          # Gemini 2.0 Flash : transcription vision
+│   │   ├── deepseek_client.py        # DeepSeek V3 : correction · R1 : diagnostic
+│   │   └── mistral_client.py         # Mistral Small : remédiation + diagnostic (alt)
 │   ├── core/
-│   │   ├── config.py             # Pydantic Settings (.env) — tous providers
-│   │   └── anonymizer.py         # Génération slug copy_id
+│   │   ├── config.py                 # Pydantic Settings (.env) — tous providers
+│   │   └── anonymizer.py             # Génération slug copy_id
+│   ├── knowledge/
+│   │   ├── curriculum_retriever.py   # RAG : chargement YAML + retrieval par chunk_id
+│   │   └── test_registry.py          # Tests Hakili pré-chargés (énoncé + barème auto)
 │   ├── models/
-│   │   └── domain.py             # Modèles Pydantic : Rubric, CopyGrade, DiagnosticResult…
+│   │   └── domain.py                 # Modèles Pydantic : Rubric, CopyGrade, DiagnosticResult, CompetencyGap…
 │   ├── pipeline/
-│   │   ├── ingestion.py          # PDF → images 150 DPI · multi-images
-│   │   ├── image_quality.py      # Contrôle qualité (OpenCV + PIL)
-│   │   ├── pipeline.py           # Orchestrateur multi-provider avec routing automatique
-│   │   └── pdf_report.py         # Génération rapport PDF (ReportLab)
+│   │   ├── ingestion.py              # PDF → images 150 DPI · multi-images
+│   │   ├── image_quality.py          # Contrôle qualité (OpenCV + PIL)
+│   │   ├── orchestrator.py           # Validation inter-étapes
+│   │   ├── pipeline.py               # Pipeline 11 étapes · on_progress callback
+│   │   └── pdf_report.py             # Génération rapports PDF (ReportLab)
 │   └── ui/
-│       └── app.py                # Interface Streamlit
+│       ├── app.py                    # Interface Streamlit — mode Hakili + mode libre
+│       └── progress.py               # Écran d'analyse animé (7 étapes + barre temps réel)
 │
 ├── prompts/
-│   ├── transcription_prompt.md   # Instructions transcription multimodale
-│   ├── grading_prompt.md         # Instructions correction selon barème
-│   ├── diagnostic_prompt.md      # Instructions diagnostic causes cachées
-│   └── remediation_subject_prompt.md  # Instructions génération exercices
+│   ├── transcription_prompt.md       # Instructions transcription multimodale
+│   ├── grading_prompt.md             # Instructions correction selon barème
+│   ├── diagnostic_prompt.md          # Instructions diagnostic + slot {{CURRICULUM_CONTEXT}}
+│   └── remediation_subject_prompt.md # Instructions génération exercices
+│
+├── data/
+│   ├── Documents/
+│   │   ├── Hakilisso test de niveau 3e.docx    # Énoncé test 3e (source)
+│   │   ├── TEST DE NIVEAU,6eme,GROUPE 1.docx   # Énoncé test 6e (source)
+│   │   └── Curricula maths post-primaire.docx  # Programme officiel source
+│   └── knowledge/
+│       ├── curriculum_6e.yaml    # 45 leçons programme officiel 6e
+│       ├── curriculum_5e.yaml    # 33 leçons programme officiel 5e
+│       ├── curriculum_4e.yaml    # 23 leçons programme officiel 4e
+│       ├── curriculum_3e.yaml    # 20 leçons programme officiel 3e
+│       ├── bareme_test_3e.yaml   # 33 questions test 3e → chunk_ids curriculum
+│       └── bareme_test_6e.yaml   # 33 questions test 6e → lacune_type
 │
 ├── docs/
-│   ├── decision_register.md      # Registre des décisions structurantes
-│   ├── ai_providers_analysis.md  # Analyse comparative LLM par tâche
-│   └── input_pipeline_analysis.md # Analyse OCR vs LLM + format d'entrée optimal
+│   ├── decision_register.md          # Registre des décisions structurantes
+│   ├── ai_providers_analysis.md      # Analyse comparative LLM par tâche
+│   └── input_pipeline_analysis.md    # Analyse OCR vs LLM + format d'entrée optimal
 │
 ├── tests/
 │   └── test_models.py
 │
-├── runs/                         # Sorties pipeline (local · non versionné)
-│
+├── runs/                             # Sorties pipeline (local · non versionné)
 ├── .env.example
 ├── .env
 ├── requirements.txt
@@ -332,12 +407,15 @@ hakili_ai_correction/
 |---|---|---|
 | D-CEO-01 | Matières et niveaux | Mathématiques, **6e à la Terminale** |
 | D-CEO-02 | Format barème | Binaire 0/1 par question et sous-question |
-| D-CEO-03 | Stratégie IA | **Multi-provider** avec routing automatique |
+| D-CEO-03 | Stratégie IA | **Multi-provider** avec routing automatique + choix `.env` |
 | D-CEO-04 | Instructions expert | Couche optionnelle d'instructions contextuelles |
 | D-CEO-05 | Validation humaine | Hors plateforme (enseignant sur PDF exporté) |
 | D-CEO-07 | Identification | Nom réel de l'élève (slug technique pour fichiers) |
 | D-CEO-10 | Format entrée optimal | **PDF scanner 150 DPI** niveaux de gris |
 | D-CEO-11 | Coût cible | ~$0.02/copie · ~$12/an pour 540 copies |
+| D-CEO-12 | Diagnostic RAG | Ancré sur programme officiel MEN Burkina Faso (6e–3e) |
+| D-CEO-13 | Tests Hakili pré-chargés | Énoncé + barème auto · enseignant charge uniquement la copie |
+| D-CEO-14 | UI premium | Écran animé Hakili · 7 étapes en temps réel · instrument marketing |
 
 Registre complet : [docs/decision_register.md](docs/decision_register.md)
 
@@ -348,8 +426,9 @@ Registre complet : [docs/decision_register.md](docs/decision_register.md)
 - Copie très dégradée (photo floue, faible éclairage) → confiance IA réduite
 - Formules très complexes (intégrales multiples, matrices) → transcription approximative possible
 - Écriture cursive très dense → zones `[ILLISIBLE]` possibles
+- La base RAG couvre 6e–3e ; les tests évaluant le primaire (test 6e) n'ont pas de chunks KB
 - Français uniquement
-- Stockage local uniquement (pas de déploiement cloud dans l'état)
+- Stockage local uniquement (prototype)
 
 ---
 
@@ -361,6 +440,17 @@ Registre complet : [docs/decision_register.md](docs/decision_register.md)
 | Taux de révision humaine requise | < 15% des questions |
 | Temps de traitement par copie | < 120 secondes |
 | Volume cible de validation | 100 copies réelles avec enseignant référent |
+
+---
+
+## Usage marketing et facturation
+
+Le système est conçu comme **outil interne Hakili Lab** pour les enseignants :
+
+- Le **rapport PDF** constitue un document professionnel livrable à l'enseignant
+- Le **diagnostic RAG** ancré sur le programme officiel permet d'identifier précisément les lacunes
+- Le **sujet de remédiation personnalisé** est un plan d'action concret et actionnable
+- L'**interface animée** renforce l'image de marque Hakili pendant toute la durée de l'analyse
 
 ---
 

@@ -23,7 +23,7 @@ from src.models.domain import (
 )
 
 _MAX_PAGES_PER_BATCH = 3   # 3 pages par appel → 3× moins d'appels facturés
-_TOKENS_PER_BATCH = 2048  # suffisant pour transcrire 3 pages ; était 4096
+_TOKENS_PER_BATCH = 4096  # 4096 nécessaire pour 3 pages de copie math sans troncature
 
 _MEDIA_TYPES: dict[str, str] = {
     ".jpg": "image/jpeg",
@@ -327,6 +327,7 @@ class ClaudeClient:
         rubric: Rubric,
         subject_text: str,
         expert_instructions: str = "",
+        official_answers: str = "",
         temperature: float = 0,
     ) -> ClaudeResponse:
         logger.info("[%s] Claude correction — modèle : %s",
@@ -334,6 +335,10 @@ class ClaudeClient:
         expert_block = (
             f"\n\nINSTRUCTIONS EXPERT:\n{expert_instructions}"
             if expert_instructions.strip() else ""
+        )
+        official_block = (
+            f"\n\n{official_answers}"
+            if official_answers.strip() else ""
         )
         auto_block = (
             "\n\nINSTRUCTION SPÉCIALE : Aucun barème ni corrigé fourni. "
@@ -355,7 +360,7 @@ class ClaudeClient:
         )
 
         prompt = (
-            f"{self._grading_prompt}{auto_block}{expert_block}"
+            f"{self._grading_prompt}{auto_block}{official_block}{expert_block}"
             f"\n\nÉNONCÉ:\n{subject_text}"
             f"\n\nBARÈME:\n{rubric.model_dump_json(indent=2)}"
             f"\n\nTRANSCRIPTION:\n{transcription.model_dump_json(indent=2)}"
@@ -389,11 +394,14 @@ class ClaudeClient:
     # ── Diagnostic ────────────────────────────────────────────────────────────
 
     @_retry
-    def diagnose(self, grades: CopyGrade) -> ClaudeResponse:
+    def diagnose(self, grades: CopyGrade, curriculum_context: str = "") -> ClaudeResponse:
         logger.info("[%s] Claude diagnostic — modèle : %s",
                     grades.copy_id, settings.claude_model_light)
+        base_prompt = self._diagnostic_prompt.replace(
+            "{{CURRICULUM_CONTEXT}}", curriculum_context or ""
+        )
         prompt = (
-            f"{self._diagnostic_prompt}"
+            f"{base_prompt}"
             f"\n\nRÉSULTATS DE CORRECTION:\n{grades.model_dump_json(indent=2)}"
         )
 

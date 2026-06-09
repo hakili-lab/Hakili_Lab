@@ -1,0 +1,398 @@
+# ============================================================================
+# PROGRAMME DE MATHÉMATIQUES — CLASSE DE 4ème
+# Source : Ministère de l'Éducation Nationale du Burkina Faso, Juillet 2022
+# ============================================================================
+
+# ─── ACTIVITÉS NUMÉRIQUES ────────────────────────────────────────────────────
+
+- id: 4e_NUM_Ch1_L1
+  classe: 4e
+  domaine: numerique
+  chapitre: "Nombres décimaux relatifs"
+  lecon: "Opérations dans ⅅ — révision et approfondissement"
+  savoir: "Maîtriser les quatre opérations sur les nombres décimaux relatifs"
+  savoir_faire:
+    - Effectuer les quatre opérations sur les décimaux relatifs
+    - Appliquer les règles des signes à la multiplication et à la division
+    - Calculer une expression numérique avec des décimaux relatifs et des parenthèses
+    - Résoudre des problèmes concrets faisant intervenir des décimaux relatifs
+  prerequis_ids: [5e_NUM_Ch4_L3, 6e_NUM_Ch6_L1]
+  mots_cles: [décimaux relatifs, opérations, signes, parenthèses, calcul]
+  erreurs_frequentes:
+    - Confondre les règles des signes pour l'addition et pour la multiplication
+
+- id: 4e_NUM_Ch2_L1
+  classe: 4e
+  domaine: numerique
+  chapitre: "Nombres rationnels"
+  lecon: "Ensemble ℚ — fractions et opérations"
+  savoir: "ℚ est l'ensemble des nombres de la forme p/q avec p∈ℤ et q∈ℤ* ; ℤ ⊂ ℚ ⊂ ℝ"
+  savoir_faire:
+    - Reconnaître un nombre rationnel
+    - Placer un rationnel sur la droite graduée
+    - Effectuer les quatre opérations sur les rationnels (fractions de signes quelconques)
+    - Simplifier une fraction rationnelle à sa forme irréductible
+  prerequis_ids: [5e_NUM_Ch3_L5, 5e_NUM_Ch3_L3, 5e_NUM_Ch2_L1]
+  mots_cles: [rationnel, ℚ, fraction, p/q, opérations, irréductible, signes]
+  erreurs_frequentes:
+    - Oublier les règles des signes lors des opérations sur les fractions négatives
+
+- id: 4e_NUM_Ch2_L2
+  classe: 4e
+  domaine: numerique
+  chapitre: "Nombres rationnels"
+  lecon: "Inverse d'un nombre rationnel — division de fractions"
+  savoir: "L'inverse de a/b est b/a ; diviser par a/b revient à multiplier par b/a"
+  savoir_faire:
+    - Calculer l'inverse d'un rationnel non nul
+    - Diviser deux fractions (multiplier par l'inverse)
+    - Simplifier une expression fractionnaire complexe
+  prerequis_ids: [4e_NUM_Ch2_L1]
+  mots_cles: [inverse, division, fractions, multiplier par l'inverse, b/a]
+  erreurs_frequentes:
+    - Inverser seulement le numérateur ou seulement le dénominateur
+    - Confondre inverse et opposé
+
+- id: 4e_NUM_Ch3_L1
+  classe: 4e
+  domaine: numerique
+  chapitre: "Puissances d'un nombre entier"
+  lecon: "Définition et calcul des puissances"
+  savoir: "aⁿ = a×a×…×a (n fois) pour n∈ℕ ; a⁰ = 1 pour a ≠ 0 ; a¹ = a"
+  savoir_faire:
+    - Calculer aⁿ pour des valeurs simples de a et n
+    - Appliquer a⁰ = 1 et a¹ = a
+    - Calculer des puissances de 10 (10² = 100, 10³ = 1000, 10⁻¹ = 0,1…)
+    - Distinguer (−2)² = 4 et −2² = −4
+  prerequis_ids: [5e_NUM_Ch1_L5]
+  mots_cles: [puissance, exposant, base, aⁿ, a⁰, puissance de 10, exposant entier]
+  erreurs_frequentes:
+    - Multiplier la base par l'exposant au lieu d'effectuer la puissance : 3² = 6 (faux)
+    - Confondre (−2)² = 4 et −2² = −4
+
+- id: 4e_NUM_Ch3_L2
+  classe: 4e
+  domaine: numerique
+  chapitre: "Puissances d'un nombre entier"
+  lecon: "Règles de calcul sur les puissances"
+  savoir: "aⁿ × aᵐ = aⁿ⁺ᵐ ; aⁿ ÷ aᵐ = aⁿ⁻ᵐ ; (aⁿ)ᵐ = aⁿˣᵐ ; (ab)ⁿ = aⁿbⁿ"
+  savoir_faire:
+    - Calculer un produit de puissances de même base : aⁿ × aᵐ = aⁿ⁺ᵐ
+    - Calculer un quotient de puissances de même base : aⁿ ÷ aᵐ = aⁿ⁻ᵐ
+    - Calculer une puissance de puissance : (aⁿ)ᵐ = aⁿˣᵐ
+    - Calculer la puissance d'un produit : (ab)ⁿ = aⁿbⁿ
+    - Simplifier des expressions avec des puissances
+  prerequis_ids: [4e_NUM_Ch3_L1]
+  mots_cles: [règles des puissances, produit, quotient, puissance de puissance, même base]
+  erreurs_frequentes:
+    - Additionner les bases au lieu d'additionner les exposants : a²×a³ = a⁶ (faux, c'est a⁵)
+    - Appliquer (a+b)ⁿ = aⁿ + bⁿ (erreur classique, c'est faux en général)
+
+- id: 4e_NUM_Ch3_L3
+  classe: 4e
+  domaine: numerique
+  chapitre: "Puissances d'un nombre entier"
+  lecon: "Écriture scientifique d'un nombre"
+  savoir: "Un nombre en écriture scientifique s'écrit a × 10ⁿ avec 1 ≤ a < 10 et n∈ℤ"
+  savoir_faire:
+    - Écrire un grand nombre en notation scientifique
+    - Écrire un petit nombre décimal en notation scientifique
+    - Convertir de la notation scientifique vers la notation décimale usuelle
+    - Comparer deux nombres en notation scientifique
+  prerequis_ids: [4e_NUM_Ch3_L2, 6e_NUM_Ch1_L1]
+  mots_cles: [écriture scientifique, notation scientifique, puissance de 10, a×10ⁿ, ordre de grandeur]
+  erreurs_frequentes:
+    - Écrire 45 × 10² au lieu de 4,5 × 10³ (a doit être entre 1 et 10)
+    - Mal positionner la virgule lors de la conversion
+
+- id: 4e_NUM_Ch4_L1
+  classe: 4e
+  domaine: numerique
+  chapitre: "Monômes et polynômes — calcul algébrique avancé"
+  lecon: "Monômes : addition, soustraction, multiplication"
+  savoir: "Un monôme est un produit d'un coefficient numérique et de puissances de variables"
+  savoir_faire:
+    - Additionner et soustraire des monômes de même degré et même variable
+    - Multiplier deux monômes (multiplier les coefficients, additionner les exposants)
+    - Calculer la valeur numérique d'un monôme
+  prerequis_ids: [5e_NUM_Ch5_L1, 4e_NUM_Ch3_L2]
+  mots_cles: [monôme, coefficient, degré, variable, addition, multiplication]
+  erreurs_frequentes:
+    - Additionner des monômes de variables différentes (3x² + 2x ≠ 5x³)
+
+- id: 4e_NUM_Ch4_L2
+  classe: 4e
+  domaine: numerique
+  chapitre: "Monômes et polynômes"
+  lecon: "Polynômes — développement, réduction, ordonnancement"
+  savoir: "Un polynôme est une somme de monômes ; le réduire consiste à regrouper les termes semblables"
+  savoir_faire:
+    - Développer et réduire un polynôme
+    - Ordonner un polynôme selon les puissances décroissantes
+    - Additionner et soustraire deux polynômes
+    - Multiplier un monôme par un polynôme
+    - Multiplier deux polynômes (produit (ax+b)(cx+d))
+  prerequis_ids: [5e_NUM_Ch5_L3, 4e_NUM_Ch4_L1]
+  mots_cles: [polynôme, développement, réduction, ordonnancement, termes semblables, produit]
+  erreurs_frequentes:
+    - Oublier les termes croisés lors du produit de deux polynômes
+    - Mal gérer les signes lors de la soustraction de polynômes
+
+- id: 4e_NUM_Ch4_L3
+  classe: 4e
+  domaine: numerique
+  chapitre: "Monômes et polynômes"
+  lecon: "Identités remarquables"
+  savoir: "Les trois identités remarquables : (a+b)² = a²+2ab+b² ; (a-b)² = a²-2ab+b² ; (a+b)(a-b) = a²-b²"
+  savoir_faire:
+    - Développer (a+b)² en utilisant l'identité
+    - Développer (a−b)² en utilisant l'identité
+    - Développer (a+b)(a−b) = a²−b²
+    - Factoriser une expression en reconnaissant une identité remarquable
+    - Appliquer les identités pour calculer rapidement (ex : 99² = (100−1)²)
+  prerequis_ids: [4e_NUM_Ch4_L2]
+  mots_cles: [identités remarquables, (a+b)², (a-b)², (a+b)(a-b), factorisation, développement]
+  erreurs_frequentes:
+    - Écrire (a+b)² = a² + b² (oubli du terme 2ab)
+    - Confondre (a+b)² et (a+b)(a-b)
+    - Mal signer le terme 2ab dans (a−b)²
+
+- id: 4e_NUM_Ch4_L4
+  classe: 4e
+  domaine: numerique
+  chapitre: "Monômes et polynômes"
+  lecon: "Factorisation — facteur commun et identités remarquables"
+  savoir: "Factoriser c'est écrire une expression sous forme d'un produit ; on utilise le facteur commun ou les identités"
+  savoir_faire:
+    - Factoriser en mettant en évidence un facteur commun (littéral et/ou numérique)
+    - Reconnaître et factoriser une différence de carrés : a²−b² = (a+b)(a−b)
+    - Reconnaître et factoriser un carré d'une somme ou d'une différence
+    - Vérifier une factorisation par développement
+  prerequis_ids: [5e_NUM_Ch5_L4, 4e_NUM_Ch4_L3]
+  mots_cles: [factorisation, facteur commun, différence de carrés, a²-b², identités, vérification]
+  erreurs_frequentes:
+    - Ne pas reconnaître a²−b² comme une différence de carrés
+    - Factoriser partiellement (ne pas sortir tout le facteur commun)
+
+- id: 4e_NUM_Ch5_L1
+  classe: 4e
+  domaine: numerique
+  chapitre: "Équations et inéquations du premier degré"
+  lecon: "Équations du premier degré — révision et cas complexes"
+  savoir: "Maîtriser la résolution d'équations du 1er degré, y compris avec développement préalable"
+  savoir_faire:
+    - Résoudre une équation du type ax + b = cx + d après développement
+    - Résoudre une équation avec parenthèses en développant d'abord
+    - Résoudre une équation fractionnaire (mettre au même dénominateur)
+    - Vérifier la solution et l'interpréter dans le contexte du problème
+  prerequis_ids: [5e_NUM_Ch6_L2, 4e_NUM_Ch4_L2]
+  mots_cles: [équation, premier degré, résolution, développement, transposition, vérification]
+  erreurs_frequentes:
+    - Diviser des deux côtés par le coefficient avant d'avoir isolé l'inconnue
+    - Oublier de vérifier la solution dans l'équation originale
+
+- id: 4e_NUM_Ch5_L2
+  classe: 4e
+  domaine: numerique
+  chapitre: "Équations et inéquations du premier degré"
+  lecon: "Inéquations du premier degré"
+  savoir: "Une inéquation est une inégalité contenant une inconnue ; multiplier par un négatif inverse le sens de l'inégalité"
+  savoir_faire:
+    - Distinguer l'inéquation de l'équation et l'ensemble solution de la solution unique
+    - Résoudre une inéquation du type ax + b < cx + d
+    - Appliquer la règle d'inversion du sens lors de la multiplication/division par un négatif
+    - Représenter l'ensemble solution sur une droite graduée
+    - "Utiliser la notation d'intervalle : [a ; b], ]a ; b[, [a ; +inf["
+  prerequis_ids: [5e_NUM_Ch6_L2, 6e_NUM_Ch3_L1]
+  mots_cles: [inéquation, inégalité, ensemble solution, intervalle, inversion, droite graduée]
+  erreurs_frequentes:
+    - Oublier d'inverser le sens de l'inégalité quand on multiplie par un négatif
+    - Confondre l'ensemble solution d'une inéquation avec une valeur unique
+
+- id: 4e_NUM_Ch5_L3
+  classe: 4e
+  domaine: numerique
+  chapitre: "Équations et inéquations du premier degré"
+  lecon: "Applications polynômes — fonction polynôme du 1er degré, image et antécédent"
+  savoir: "Une application polynôme f : x ↦ ax + b est une fonction affine ; f(x) est l'image de x par f"
+  savoir_faire:
+    - Calculer l'image d'une valeur par une fonction polynôme f(x) = ax + b
+    - Déterminer l'antécédent d'une valeur y (résoudre ax + b = y)
+    - Reconnaître une fonction linéaire (b = 0) et une fonction affine
+    - Construire le tableau de valeurs d'une fonction polynôme
+  prerequis_ids: [4e_NUM_Ch5_L1, 6e_NUM_Ch7_L1]
+  mots_cles: [fonction affine, polynôme, image, antécédent, ax+b, f(x), tableau de valeurs]
+  erreurs_frequentes:
+    - Confondre image (calculer f(x)) et antécédent (résoudre f(x) = y)
+    - Confondre les notations f(x) et f×x
+
+- id: 4e_NUM_Ch6_L1
+  classe: 4e
+  domaine: numerique
+  chapitre: "Nombres réels — racine carrée"
+  lecon: "Racine carrée d'un nombre positif"
+  savoir: "√a est le réel positif dont le carré vaut a (pour a ≥ 0) ; √a² = |a|"
+  savoir_faire:
+    - Calculer la racine carrée d'un carré parfait (√25 = 5, √144 = 12…)
+    - Simplifier √(a²×b) = a√b pour a ≥ 0
+    - Appliquer √(a×b) = √a × √b et √(a/b) = √a / √b
+    - Reconnaître qu'un nombre irrationnel comme √2 ne s'écrit pas comme fraction
+  prerequis_ids: [4e_NUM_Ch3_L1]
+  mots_cles: [racine carrée, √, carré parfait, irrationnel, √2, simplification]
+  erreurs_frequentes:
+    - Écrire √(a+b) = √a + √b (faux)
+    - Confondre √a² = a (vrai seulement si a ≥ 0 ; en général √a² = |a|)
+
+- id: 4e_NUM_Ch7_L1
+  classe: 4e
+  domaine: numerique
+  chapitre: "Statistiques — paramètres de position et de dispersion"
+  lecon: "Moyenne pondérée, médiane, mode, étendue, quartiles"
+  savoir: "Les paramètres de position (moyenne, médiane, mode) et de dispersion (étendue, intervalle interquartile)"
+  savoir_faire:
+    - Calculer la moyenne pondérée d'une série statistique
+    - Trouver la médiane et les quartiles Q1 et Q3
+    - Identifier le mode d'une distribution
+    - Calculer l'étendue et l'intervalle interquartile Q3 − Q1
+    - Interpréter ces paramètres dans un contexte concret (notes de classe)
+  prerequis_ids: [5e_NUM_Ch7_L2, 5e_NUM_Ch7_L3]
+  mots_cles: [moyenne, médiane, mode, étendue, quartile, Q1, Q3, statistique]
+  erreurs_frequentes:
+    - Calculer la médiane sans trier les données
+    - Confondre moyenne et médiane dans l'interprétation
+
+# ─── ACTIVITÉS GÉOMÉTRIQUES ───────────────────────────────────────────────────
+
+- id: 4e_GEO_Ch1_L1
+  classe: 4e
+  domaine: geometrique
+  chapitre: "Droites du plan — positions relatives approfondies"
+  lecon: "Droites perpendiculaires et parallèles — propriétés et démonstrations"
+  savoir: "Deux droites parallèles coupées par une sécante forment des angles alternes-internes égaux"
+  savoir_faire:
+    - Identifier les angles alternes-internes, correspondants et co-internes
+    - Utiliser les propriétés des angles pour démontrer le parallélisme de deux droites
+    - Calculer des angles à partir de la connaissance d'angles formés par des parallèles
+  prerequis_ids: [6e_GEO_Ch2_L2, 6e_GEO_Ch1_L3]
+  mots_cles: [alternes-internes, correspondants, sécante, parallèles, angles, démonstration]
+  erreurs_frequentes:
+    - Confondre angles alternes-internes et angles correspondants
+
+- id: 4e_GEO_Ch2_L1
+  classe: 4e
+  domaine: geometrique
+  chapitre: "Repérage dans le plan"
+  lecon: "Repère orthogonal — coordonnées, distance, milieu"
+  savoir: "Dans un repère orthogonal (O,I,J), tout point M a des coordonnées (x;y) ; distance et milieu ont des formules"
+  savoir_faire:
+    - Placer et lire des points dans un repère orthogonal
+    - Calculer la distance entre deux points : OM = √(x²+y²) ou AB = √((xB-xA)²+(yB-yA)²)
+    - Calculer les coordonnées du milieu d'un segment : ((xA+xB)/2 ; (yA+yB)/2)
+    - Vérifier qu'un point appartient à un segment ou une droite
+  prerequis_ids: [6e_GEO_Ch5_L1, 5e_GEO_Ch1_L2]
+  mots_cles: [repère, coordonnées, distance, milieu, formule, orthogonal, x, y]
+  erreurs_frequentes:
+    - Inverser les coordonnées (x et y) lors du calcul du milieu
+    - Oublier la racine carrée dans le calcul de la distance
+
+- id: 4e_GEO_Ch3_L1
+  classe: 4e
+  domaine: geometrique
+  chapitre: "Translation"
+  lecon: "Définition et propriétés de la translation"
+  savoir: "Une translation de vecteur u⃗ fait correspondre à tout point M le point M' tel que MM⃗' = u⃗"
+  savoir_faire:
+    - Construire l'image d'un point par une translation de vecteur donné
+    - Construire l'image d'une figure par une translation
+    - Déterminer le vecteur d'une translation connaissant un point et son image
+    - Reconnaître que la translation conserve les longueurs, angles et aires
+  prerequis_ids: [4e_GEO_Ch4_L1, 6e_GEO_Ch5_L1]
+  mots_cles: [translation, vecteur, image, isométrie, conservation, MM']
+  erreurs_frequentes:
+    - Confondre translation et symétrie centrale
+    - Construire l'image dans le mauvais sens du vecteur
+
+- id: 4e_GEO_Ch4_L1
+  classe: 4e
+  domaine: geometrique
+  chapitre: "Vecteurs"
+  lecon: "Bipoints équipollents — définition et notation d'un vecteur"
+  savoir: "Un vecteur u⃗ est défini par sa direction, son sens et sa norme ; deux bipoints sont équipollents s'ils définissent le même vecteur"
+  savoir_faire:
+    - Reconnaître des bipoints équipollents et construire des vecteurs égaux
+    - Noter un vecteur avec la notation AB⃗ ou u⃗
+    - Identifier direction, sens et norme d'un vecteur
+    - Construire un parallélogramme connaissant trois sommets
+  prerequis_ids: [6e_GEO_Ch5_L1, 6e_GEO_Ch1_L2]
+  mots_cles: [vecteur, bipoint, équipollent, direction, sens, norme, parallélogramme]
+  erreurs_frequentes:
+    - Confondre le vecteur AB⃗ et le vecteur BA⃗ (sens opposé)
+    - Confondre le vecteur et le segment
+
+- id: 4e_GEO_Ch4_L2
+  classe: 4e
+  domaine: geometrique
+  chapitre: "Vecteurs"
+  lecon: "Opérations sur les vecteurs — somme et relation de Chasles"
+  savoir: "AB⃗ + BC⃗ = AC⃗ (relation de Chasles) ; la somme de deux vecteurs se construit par la règle du parallélogramme"
+  savoir_faire:
+    - Construire la somme de deux vecteurs (méthode du parallélogramme et méthode de Chasles)
+    - Appliquer la relation de Chasles dans des calculs vectoriels
+    - Calculer u⃗ + (−u⃗) = 0⃗ (vecteur nul)
+    - Utiliser la caractérisation vectorielle du milieu : si I milieu de [AB] alors AI⃗ = IB⃗
+    - Utiliser la caractérisation vectorielle d'un parallélogramme : ABCD est un parallélogramme ⟺ AB⃗ = DC⃗
+  prerequis_ids: [4e_GEO_Ch4_L1]
+  mots_cles: [somme de vecteurs, Chasles, parallélogramme, vecteur nul, milieu, AB+BC=AC]
+  erreurs_frequentes:
+    - Appliquer la relation de Chasles dans le mauvais ordre des points
+    - Construire la somme en bout à bout sans appliquer la règle du parallélogramme correctement
+
+- id: 4e_GEO_Ch5_L1
+  classe: 4e
+  domaine: geometrique
+  chapitre: "Polygones réguliers"
+  lecon: "Polygones convexes et réguliers — propriétés et construction"
+  savoir: "Un polygone régulier a tous ses côtés égaux et tous ses angles égaux ; il est inscrit dans un cercle"
+  savoir_faire:
+    - Reconnaître un polygone convexe ou concave
+    - Construire un polygone régulier inscrit dans un cercle (hexagone, triangle équilatéral)
+    - Calculer la somme des angles d'un polygone : (n−2) × 180°
+    - Calculer chaque angle d'un polygone régulier à n côtés : (n−2) × 180° / n
+  prerequis_ids: [6e_GEO_Ch3_L1, 6e_GEO_Ch4_L1]
+  mots_cles: [polygone, régulier, convexe, concave, angles, somme des angles, (n-2)×180°]
+  erreurs_frequentes:
+    - Confondre polygone convexe et polygone régulier
+    - Mal appliquer la formule (n−2) × 180° (confondre n avec le nombre d'angles)
+
+- id: 4e_GEO_Ch6_L1
+  classe: 4e
+  domaine: geometrique
+  chapitre: "Théorème de Thalès"
+  lecon: "Théorème de Thalès — énoncé, application et réciproque"
+  savoir: "Si (BC) ∥ (B'C') et A, B', B et A, C', C colinéaires, alors AB'/AB = AC'/AC = B'C'/BC"
+  savoir_faire:
+    - Identifier une configuration de Thalès dans une figure
+    - Calculer une longueur inconnue en appliquant le rapport de Thalès
+    - Vérifier le parallélisme de deux droites en utilisant la réciproque
+    - Résoudre un problème de similarité (maquette, carte, ombre)
+  prerequis_ids: [6e_GEO_Ch2_L2, 5e_NUM_Ch3_L6, 6e_NUM_Ch8_L3]
+  mots_cles: [Thalès, parallèles, rapport, proportionnalité, colinéaires, réciproque, similarité]
+  erreurs_frequentes:
+    - Mal identifier les points colinéaires dans la configuration
+    - Inverser les rapports (AB/AB' au lieu de AB'/AB)
+    - Ne pas vérifier que les droites sont bien parallèles avant d'appliquer Thalès
+
+- id: 4e_GEO_Ch7_L1
+  classe: 4e
+  domaine: geometrique
+  chapitre: "Projection orthogonale"
+  lecon: "Définition et propriétés de la projection orthogonale"
+  savoir: "La projection orthogonale d'un point M sur une droite (d) est le pied de la perpendiculaire abaissée de M sur (d)"
+  savoir_faire:
+    - Construire la projection orthogonale d'un point sur une droite
+    - Utiliser la propriété : le projeté orthogonal est le point de (d) le plus proche de M
+    - Construire la hauteur d'un triangle comme projection orthogonale
+  prerequis_ids: [6e_GEO_Ch2_L1, 4e_GEO_Ch1_L1]
+  mots_cles: [projection orthogonale, pied, perpendiculaire, hauteur, distance]
+  erreurs_frequentes:
+    - Confondre projection orthogonale et projection oblique

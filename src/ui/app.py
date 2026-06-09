@@ -305,6 +305,7 @@ with st.sidebar:
     )
 
 
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _page_header(title: str, subtitle: str = "") -> None:
@@ -416,6 +417,25 @@ def _display_results(result, key_prefix: str = "") -> None:
                 qs = ", ".join(rc.linked_questions) if rc.linked_questions else "—"
                 with st.expander(f"Questions {qs} — {rc.visible_error}"):
                     st.markdown(f"**Cause cachée :** {rc.hidden_cause}")
+
+        if diag.competency_gaps:
+            st.markdown("#### Compétences non maîtrisées (programme officiel)")
+            st.caption(
+                "Compétences extraites du programme du Ministère de l'Éducation du Burkina Faso, "
+                "identifiées sur la base des questions échouées et du barème Hakili."
+            )
+            for gap in diag.competency_gaps:
+                badge = f"{gap.classe} · {gap.domaine.capitalize()}"
+                with st.expander(f"[{gap.chunk_id}]  {gap.chapitre} — {gap.lecon}"):
+                    st.markdown(f"**Niveau :** {badge}")
+                    if gap.savoir_faire:
+                        st.markdown("**Savoir-faire à retravailler :**")
+                        for sf in gap.savoir_faire:
+                            st.markdown(f"- {sf}")
+                    if gap.erreurs_frequentes:
+                        st.markdown("**Erreurs fréquentes associées :**")
+                        for ef in gap.erreurs_frequentes:
+                            st.caption(f"⚠ {ef}")
 
         if diag.remediation_plan:
             st.markdown("#### Plan de remédiation")
@@ -534,10 +554,60 @@ elif page == "TRAITEMENT UNIQUE":
     if "single_result" not in st.session_state:
         st.session_state.single_result = None
 
+    from src.knowledge.test_registry import get_registry as _get_registry
+
+    # ── Sélection du mode ─────────────────────────────────────────────────────
+    _registry = _get_registry()
+    _available = _registry.available_tests()
+
+    _MODE_OPTIONS = ["Mode libre (barème + énoncé manuels)"] + [
+        f"Test Hakili : {t.label}" for t in _available.values()
+    ]
+    _MODE_IDS = [""] + list(_available.keys())
+
+    selected_mode_label = st.selectbox(
+        "Mode de correction",
+        options=_MODE_OPTIONS,
+        help=(
+            "Mode Hakili : l'énoncé et le barème sont chargés automatiquement. "
+            "Il suffit d'uploader la copie de l'élève. "
+            "Mode libre : chargez votre propre énoncé et barème."
+        ),
+    )
+    selected_mode_idx = _MODE_OPTIONS.index(selected_mode_label)
+    bareme_id_single = _MODE_IDS[selected_mode_idx]
+    hakili_test = _registry.get_test(bareme_id_single) if bareme_id_single else None
+
+    # Pré-chargement du retriever RAG dès la sélection du test (singleton — ne charge qu'une fois)
+    if hakili_test:
+        from src.pipeline.pipeline import _get_retriever as _prewarm_retriever
+        _prewarm_retriever()
+
+    # Bandeau d'info quand un test Hakili est sélectionné
+    if hakili_test:
+        st.markdown(
+            f"""<div style="background:#eef6ff;border:1px solid #b8d4f5;border-radius:6px;
+                padding:12px 16px;margin-bottom:16px;font-size:13px;color:#1a3a5c;">
+            <strong>{hakili_test.label}</strong><br>
+            <span style="color:#5a7aa8;font-size:12px;">
+                {hakili_test.description} · Niveaux : {hakili_test.niveaux} ·
+                <strong>{hakili_test.total_questions} questions</strong>
+            </span><br>
+            <span style="color:#2d7a2d;font-size:11.5px;margin-top:4px;display:block;">
+                ✓ Énoncé chargé automatiquement &nbsp;·&nbsp;
+                ✓ Barème {hakili_test.total_questions} questions pré-chargé &nbsp;·&nbsp;
+                ✓ Diagnostic RAG activé
+            </span>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+    st.divider()
+
     col_input, col_config = st.columns(2, gap="large")
 
     with col_input:
-        st.markdown("#### Fichiers d'entrée")
+        st.markdown("#### Copie de l'élève")
         copy_files = st.file_uploader(
             "Copie de l'élève",
             type=["pdf", "jpg", "jpeg", "png"],
@@ -552,32 +622,48 @@ elif page == "TRAITEMENT UNIQUE":
             else:
                 st.caption(f"{n} photos chargées — vérifiez qu'elles sont dans le bon ordre (page 1, 2…)")
 
-        subject_file = st.file_uploader(
-            "Énoncé (optionnel)",
-            type=["pdf", "jpg", "jpeg", "png"],
-            key="single_subject",
-            help="PDF ou image de l'énoncé. Laisser vide si non disponible.",
-        )
-
-        st.markdown("#### Barème (optionnel)")
-        rubric_file = st.file_uploader(
-            "Importer le barème (PDF ou image)",
-            type=["pdf", "jpg", "jpeg", "png"],
-            key="single_rubric_file",
-            help="Joignez le document barème — l'IA en extraira automatiquement les items.",
-        )
+        # Énoncé et barème : affichés seulement en mode libre
+        if not hakili_test:
+            st.markdown("#### Fichiers optionnels")
+            subject_file = st.file_uploader(
+                "Énoncé (optionnel)",
+                type=["pdf", "jpg", "jpeg", "png"],
+                key="single_subject",
+                help="PDF ou image de l'énoncé.",
+            )
+            st.markdown("**Barème (optionnel)**")
+            rubric_file = st.file_uploader(
+                "Importer le barème (PDF ou image)",
+                type=["pdf", "jpg", "jpeg", "png"],
+                key="single_rubric_file",
+                help="Joignez le document barème — l'IA en extraira automatiquement les items.",
+            )
+        else:
+            subject_file = None
+            rubric_file = None
 
     with col_config:
         st.markdown("#### Instructions expert")
         expert_instructions = st.text_area(
             "Critères d'interprétation spécifiques (optionnel)",
-            height=96,
+            height=130,
             placeholder=(
                 "Ex : Pour Q2b, accepter x = 0 même si la justification est absente. "
                 "Ne pas pénaliser les fautes d'orthographe."
             ),
-            help="Injectées dans le prompt de correction (D-CEO-04).",
+            help="Injectées dans le prompt de correction.",
         )
+        if not hakili_test:
+            st.caption(
+                "En mode libre, vous pouvez aussi saisir le barème manuellement ci-dessous."
+            )
+            rubric_text = st.text_area(
+                "Barème texte (optionnel — une question par ligne : ID: intitulé)",
+                height=80,
+                placeholder="Q1: Calculer l'expression\nQ2a: Résoudre l'équation\nQ2b: Vérifier la solution",
+            )
+        else:
+            rubric_text = ""
 
     st.divider()
 
@@ -588,54 +674,81 @@ elif page == "TRAITEMENT UNIQUE":
             st.error("Impossible de mélanger un PDF avec des images. Chargez soit 1 PDF, soit plusieurs images.")
         else:
             st.session_state.single_result = None
-            with st.spinner("Pipeline en cours…"):
-                try:
-                    from src.core.anonymizer import make_copy_id
-                    from src.core.config import settings
-                    from src.pipeline.pipeline import run_single_copy
+            try:
+                from src.core.anonymizer import make_copy_id
+                from src.core.config import settings
+                from src.pipeline.pipeline import run_single_copy
+                from src.ui.progress import PipelineProgressUI
 
-                    runs_dir = Path(settings.runs_dir)
-                    student_name = (
-                        Path(copy_files[0].name).stem.replace("_", " ").replace("-", " ").title()
-                    )
-                    copy_id = make_copy_id(student_name)
+                runs_dir = Path(settings.runs_dir)
+                student_name = (
+                    Path(copy_files[0].name).stem.replace("_", " ").replace("-", " ").title()
+                )
+                copy_id = make_copy_id(student_name)
 
-                    rubric = _parse_rubric_text("")
+                # Barème + énoncé : pré-chargés (test Hakili) ou manuels (mode libre)
+                if hakili_test:
+                    rubric = hakili_test.rubric
+                    subject_text_val = hakili_test.subject_text
+                    rubric_file_path = None
+                    subject_file_path = None
+                else:
+                    rubric = _parse_rubric_text(rubric_text)
+                    subject_text_val = ""
+                    subject_file_path = None
+                    rubric_file_path = None
 
-                    with tempfile.TemporaryDirectory() as tmp:
-                        saved_paths: list[Path] = []
-                        for uf in copy_files:
-                            p = Path(tmp) / uf.name
-                            _save_upload(uf, p)
-                            saved_paths.append(p)
+                # Récupère le logo encodé pour l'affichage de la progression
+                _logo_path = Path(__file__).parent / "hakili_logo.png"
+                _logo_b64 = (
+                    base64.b64encode(_logo_path.read_bytes()).decode("utf-8")
+                    if _logo_path.exists() else ""
+                )
 
-                        subject_file_path = None
+                st.divider()
+                progress_ui = PipelineProgressUI(
+                    logo_b64=_logo_b64,
+                    test_label=hakili_test.label if hakili_test else "Correction libre",
+                    student_name=student_name,
+                )
+
+                with tempfile.TemporaryDirectory() as tmp:
+                    saved_paths: list[Path] = []
+                    for uf in copy_files:
+                        p = Path(tmp) / uf.name
+                        _save_upload(uf, p)
+                        saved_paths.append(p)
+
+                    if not hakili_test:
                         if subject_file:
                             subject_tmp = Path(tmp) / f"subject_{subject_file.name}"
                             _save_upload(subject_file, subject_tmp)
                             subject_file_path = subject_tmp
-
-                        rubric_file_path = None
                         if rubric_file:
                             rubric_tmp = Path(tmp) / f"rubric_{rubric_file.name}"
                             _save_upload(rubric_file, rubric_tmp)
                             rubric_file_path = rubric_tmp
 
-                        result = run_single_copy(
-                            copy_id=copy_id,
-                            student_name=student_name,
-                            file_paths=saved_paths,
-                            rubric=rubric,
-                            rubric_file_path=rubric_file_path,
-                            subject_file_path=subject_file_path,
-                            expert_instructions=expert_instructions,
-                            runs_dir=runs_dir,
-                        )
+                    result = run_single_copy(
+                        copy_id=copy_id,
+                        student_name=student_name,
+                        file_paths=saved_paths,
+                        rubric=rubric,
+                        rubric_file_path=rubric_file_path,
+                        subject_text=subject_text_val,
+                        subject_file_path=subject_file_path,
+                        expert_instructions=expert_instructions,
+                        bareme_id=bareme_id_single,
+                        official_answers=hakili_test.official_answers if hakili_test else "",
+                        runs_dir=runs_dir,
+                        on_progress=progress_ui.update,
+                    )
 
-                    st.session_state.single_result = result
+                progress_ui.finish()
+                st.session_state.single_result = result
 
-                except Exception as e:
-                    st.error(f"Erreur inattendue : {e}")
+            except Exception as e:
+                st.error(f"Erreur inattendue : {e}")
 
     if st.session_state.single_result is not None:
         st.divider()
@@ -652,46 +765,96 @@ elif page == "TRAITEMENT BATCH":
     if "batch_errors" not in st.session_state:
         st.session_state.batch_errors = []
 
+    from src.knowledge.test_registry import get_registry as _get_registry_batch
+    _registry_batch = _get_registry_batch()
+    _available_batch = _registry_batch.available_tests()
+
+    # ── Sélection du mode batch ───────────────────────────────────────────────
+    _MODE_OPTIONS_BATCH = ["Mode libre (barème + énoncé manuels)"] + [
+        f"Test Hakili : {t.label}" for t in _available_batch.values()
+    ]
+    _MODE_IDS_BATCH = [""] + list(_available_batch.keys())
+
+    selected_mode_label_batch = st.selectbox(
+        "Mode de correction",
+        options=_MODE_OPTIONS_BATCH,
+        key="batch_mode_select",
+        help="Mode Hakili : énoncé et barème chargés automatiquement pour toutes les copies.",
+    )
+    selected_mode_idx_batch = _MODE_OPTIONS_BATCH.index(selected_mode_label_batch)
+    bareme_id_batch = _MODE_IDS_BATCH[selected_mode_idx_batch]
+    hakili_test_batch = _registry_batch.get_test(bareme_id_batch) if bareme_id_batch else None
+
+    if hakili_test_batch:
+        from src.pipeline.pipeline import _get_retriever as _prewarm_retriever_batch
+        _prewarm_retriever_batch()
+
+    if hakili_test_batch:
+        st.markdown(
+            f"""<div style="background:#eef6ff;border:1px solid #b8d4f5;border-radius:6px;
+                padding:12px 16px;margin-bottom:12px;font-size:13px;color:#1a3a5c;">
+            <strong>{hakili_test_batch.label}</strong> · {hakili_test_batch.niveaux}
+            · <strong>{hakili_test_batch.total_questions} questions</strong><br>
+            <span style="color:#2d7a2d;font-size:11.5px;">
+                ✓ Énoncé pré-chargé &nbsp;·&nbsp; ✓ Barème pré-chargé &nbsp;·&nbsp;
+                ✓ Diagnostic RAG activé pour toutes les copies
+            </span>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+    st.divider()
+
     col_a, col_b = st.columns(2, gap="large")
     with col_a:
         exam_name = st.text_input(
             "Nom du devoir / Examen",
-            placeholder="Ex : DS1 — Fonctions numériques  |  Composition T1 — Suites",
+            placeholder="Ex : Session recrutement Juin 2026",
         )
         class_select = st.text_input(
             "Classe / Groupe",
-            placeholder="Ex : 6e A  |  4e B  |  3e A  |  2nde  |  Tle C",
+            placeholder="Ex : Groupe 1  |  Groupe A",
         )
     with col_b:
         exam_date = st.date_input("Date de l'examen")
         num_students = st.number_input("Nombre d'élèves attendus", min_value=1, max_value=500, value=30)
 
     st.divider()
-    st.markdown("#### Fichiers communs")
 
-    col_x, col_y = st.columns(2, gap="large")
-    with col_x:
-        subject_file_batch = st.file_uploader(
-            "Énoncé (optionnel)",
-            type=["pdf", "jpg", "jpeg", "png"],
-            key="batch_subject",
-            help="PDF ou image de l'énoncé commun à toutes les copies.",
-        )
-        st.markdown("**Barème (optionnel)**")
-        rubric_file_batch = st.file_uploader(
-            "Importer le barème (PDF ou image)",
-            type=["pdf", "jpg", "jpeg", "png"],
-            key="batch_rubric_file",
-            help="Joignez le document barème — l'IA en extraira les items automatiquement.",
-        )
-    with col_y:
+    # Fichiers communs : seulement en mode libre
+    if not hakili_test_batch:
+        st.markdown("#### Fichiers communs (mode libre)")
+        col_x, col_y = st.columns(2, gap="large")
+        with col_x:
+            subject_file_batch = st.file_uploader(
+                "Énoncé (optionnel)",
+                type=["pdf", "jpg", "jpeg", "png"],
+                key="batch_subject",
+                help="PDF ou image de l'énoncé commun à toutes les copies.",
+            )
+            rubric_file_batch = st.file_uploader(
+                "Barème (optionnel)",
+                type=["pdf", "jpg", "jpeg", "png"],
+                key="batch_rubric_file",
+                help="Joignez le document barème.",
+            )
+        with col_y:
+            expert_instructions_batch = st.text_area(
+                "Instructions expert (optionnel)",
+                height=120,
+                placeholder="Critères d'interprétation spécifiques à ce devoir…",
+            )
+        st.divider()
+    else:
+        subject_file_batch = None
+        rubric_file_batch = None
         expert_instructions_batch = st.text_area(
             "Instructions expert (optionnel)",
-            height=140,
+            height=80,
             placeholder="Critères d'interprétation spécifiques à ce devoir…",
         )
+        st.divider()
 
-    st.divider()
     st.markdown("#### Copies des élèves")
     st.caption("Un fichier par élève, nommé avec le nom de l'élève (ex : `sawadogo_aminata.pdf`).")
     copies_folder = st.file_uploader(
@@ -718,31 +881,65 @@ elif page == "TRAITEMENT BATCH":
             from src.pipeline.pipeline import run_single_copy
 
             runs_dir = Path(settings.runs_dir)
-            rubric = _parse_rubric_text("")
             results = []
             errors = []
             total = len(copies_folder)
-            progress = st.progress(0, text="Initialisation…")
+
+            # Barème + énoncé communs
+            if hakili_test_batch:
+                rubric_batch = hakili_test_batch.rubric
+                subject_text_batch = hakili_test_batch.subject_text
+            else:
+                rubric_batch = _parse_rubric_text("")
+                subject_text_batch = ""
+
+            # Logo pour la progression
+            from src.ui.progress import PipelineProgressUI
+            _logo_path_b = Path(__file__).parent / "hakili_logo.png"
+            _logo_b64_b = (
+                base64.b64encode(_logo_path_b.read_bytes()).decode("utf-8")
+                if _logo_path_b.exists() else ""
+            )
+
+            # Barre globale batch
+            batch_header = st.empty()
+            global_bar = st.progress(0)
+            st.divider()
+            copy_progress_slot = st.empty()
 
             with tempfile.TemporaryDirectory() as tmp:
                 subject_file_path_batch = None
-                if subject_file_batch:
-                    subject_tmp_batch = Path(tmp) / f"subject_{subject_file_batch.name}"
-                    _save_upload(subject_file_batch, subject_tmp_batch)
-                    subject_file_path_batch = subject_tmp_batch
-
                 rubric_file_path_batch = None
-                if rubric_file_batch:
-                    rubric_tmp_batch = Path(tmp) / f"rubric_{rubric_file_batch.name}"
-                    _save_upload(rubric_file_batch, rubric_tmp_batch)
-                    rubric_file_path_batch = rubric_tmp_batch
+
+                if not hakili_test_batch:
+                    if subject_file_batch:
+                        subject_tmp_batch = Path(tmp) / f"subject_{subject_file_batch.name}"
+                        _save_upload(subject_file_batch, subject_tmp_batch)
+                        subject_file_path_batch = subject_tmp_batch
+                    if rubric_file_batch:
+                        rubric_tmp_batch = Path(tmp) / f"rubric_{rubric_file_batch.name}"
+                        _save_upload(rubric_file_batch, rubric_tmp_batch)
+                        rubric_file_path_batch = rubric_tmp_batch
 
                 for i, uploaded in enumerate(copies_folder):
                     student_name_raw = (
                         Path(uploaded.name).stem.replace("_", " ").replace("-", " ").title()
                     )
                     copy_id = make_copy_id(student_name_raw, str(i + 1))
-                    progress.progress((i + 1) / total, text=f"Traitement {student_name_raw} ({i+1}/{total})…")
+
+                    batch_header.markdown(
+                        f"**Session batch** — Copie {i + 1} / {total} : **{student_name_raw}**"
+                    )
+                    global_bar.progress((i) / total)
+
+                    # Progression par copie
+                    with copy_progress_slot.container():
+                        copy_ui = PipelineProgressUI(
+                            logo_b64=_logo_b64_b,
+                            test_label=hakili_test_batch.label if hakili_test_batch else "Correction libre",
+                            student_name=f"{student_name_raw}  ({i+1}/{total})",
+                        )
+
                     tmp_path = Path(tmp) / uploaded.name
                     _save_upload(uploaded, tmp_path)
                     try:
@@ -750,15 +947,24 @@ elif page == "TRAITEMENT BATCH":
                             copy_id=copy_id,
                             student_name=student_name_raw,
                             file_paths=[tmp_path],
-                            rubric=rubric,
+                            rubric=rubric_batch,
                             rubric_file_path=rubric_file_path_batch,
+                            subject_text=subject_text_batch,
                             subject_file_path=subject_file_path_batch,
                             expert_instructions=expert_instructions_batch,
+                            bareme_id=bareme_id_batch,
+                            official_answers=hakili_test_batch.official_answers if hakili_test_batch else "",
                             runs_dir=runs_dir,
+                            on_progress=copy_ui.update,
                         )
+                        copy_ui.finish()
                         results.append(result)
                     except Exception as e:
                         errors.append(f"{student_name_raw} : {e}")
+
+            global_bar.progress(1.0)
+            batch_header.markdown(f"**Session batch terminée** — {len(results)}/{total} copies traitées")
+            copy_progress_slot.empty()
 
             progress.empty()
             st.session_state.batch_results = results
@@ -829,6 +1035,12 @@ elif page == "TRAITEMENT BATCH":
                             st.markdown("**Forces :** " + " · ".join(r.diagnostic.strengths))
                         if r.diagnostic.weaknesses:
                             st.markdown("**Lacunes :** " + " · ".join(r.diagnostic.weaknesses))
+                        if r.diagnostic.competency_gaps:
+                            gap_labels = [
+                                f"[{g.chunk_id}] {g.lecon}"
+                                for g in r.diagnostic.competency_gaps
+                            ]
+                            st.caption("Compétences non maîtrisées : " + " · ".join(gap_labels))
 
                     bc1, bc2 = st.columns(2)
                     r_slug = (

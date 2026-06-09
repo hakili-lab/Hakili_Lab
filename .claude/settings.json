@@ -12,7 +12,20 @@
       "Skill(claude-api:*)",
       "Bash(pip show *)",
       "Bash(python -m py_compile src/api/deepseek_client.py src/api/mistral_client.py src/pipeline/pipeline.py src/core/config.py)",
-      "Bash(.\\\\.venv\\\\Scripts\\\\python.exe -c \"import google.generativeai; import openai; import mistralai; print\\('OK'\\)\")"
+      "Bash(.\\\\.venv\\\\Scripts\\\\python.exe -c \"import google.generativeai; import openai; import mistralai; print\\('OK'\\)\")",
+      "Bash(.venv\\\\Scripts\\\\python.exe -c \"import ast, sys; ast.parse\\(open\\('src/api/mistral_client.py'\\).read\\(\\)\\); print\\('OK syntax'\\)\")",
+      "Bash(.venv\\\\Scripts\\\\python.exe -c \"import ast; ast.parse\\(open\\('src/core/config.py'\\).read\\(\\)\\); ast.parse\\(open\\('src/pipeline/pipeline.py'\\).read\\(\\)\\); ast.parse\\(open\\('src/ui/app.py'\\).read\\(\\)\\); print\\('OK syntax all'\\)\")",
+      "WebSearch",
+      "Bash(.venv/Scripts/pip install *)",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(.venv/Scripts/python -c ' *)",
+      "Bash(dir /s /b *.md)",
+      "Bash(findstr /v \".git\")",
+      "Bash(findstr /v \".venv\")",
+      "Bash(.\\\\.venv\\\\Scripts\\\\python.exe -c \"import sys; print\\(sys.version\\)\")",
+      "Bash(.\\\\.venv\\\\Scripts\\\\pip.exe list *)",
+      "Bash(findstr -i \"streamlit anthropic google mistral deepseek pyyaml python-docx\")",
+      "Bash(.\\\\.venv\\\\Scripts\\\\python.exe -c \"from src.knowledge.answer_loader import get_answer_loader; loader = get_answer_loader\\(\\); print\\('Tests chargés:', loader.available_tests\\(\\)\\); print\\(loader.get_official_answers\\('hakili_3e_v1'\\)[:300]\\)\")"
     ]
   }
 }

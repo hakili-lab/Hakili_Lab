@@ -1,5 +1,5 @@
 # Registre des Décisions — Hakili Lab AI Correction
-**Mis à jour le : 2026-06-05**
+**Mis à jour le : 2026-06-08**
 
 ---
 
@@ -164,6 +164,72 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 
 ---
 
+### D-CEO-12 — Diagnostic ancré sur le programme officiel (RAG) *(nouveau 2026-06-08)*
+**Décision :** Implémenter un système **RAG (Retrieval-Augmented Generation)** basé sur les curricula officiels du Burkina Faso pour le secondaire (6e → 3e).
+
+**Architecture RAG :**
+1. **Base de connaissance** (`data/knowledge/curriculum_*.yaml`) — 121 leçons structurées par classe, domaine, chapitre et leçon, avec `savoir`, `savoir_faire[]`, `prerequis_ids[]`, `mots_cles[]`, `erreurs_frequentes[]`
+2. **Barèmes enrichis** (`data/knowledge/bareme_test_*.yaml`) — chaque question du test est mappée à ses `chunk_ids` de curriculum
+3. **Retrieval** (`src/knowledge/curriculum_retriever.py`) — à la fin de la correction, les chunks associés aux questions échouées sont récupérés et injectés dans le prompt diagnostic via `{{CURRICULUM_CONTEXT}}`
+4. **Sortie structurée** — `DiagnosticResult.competency_gaps: list[CompetencyGap]` avec chunk_id, classe, domaine, leçon, savoir_faire, erreurs_fréquentes
+
+**Justification :** Un diagnostic qui dit "lacune en algèbre" est inutilisable. Un diagnostic qui dit "l'élève ne maîtrise pas `[4e_NUM_Ch4_L3] Identités remarquables` — erreur fréquente : (a+b)² = a²+b² (oubli de 2ab)" est actionnable par l'enseignant et valorisable auprès des parents.
+
+**Couverture actuelle :** 6e, 5e, 4e, 3e. Le primaire (CE1–CM2, pertinent pour le test 6e) n'a pas encore de chunks — le diagnostic reste valide mais sans références de leçons spécifiques.
+
+**Backward-compatible :** `get_diagnostic_context()` retourne `""` si `bareme_id` absent ou si aucune question échouée → le pipeline tourne sans RAG sans modification.
+
+---
+
+### D-CEO-13 — Tests Hakili pré-chargés (TestRegistry) *(nouveau 2026-06-08)*
+**Décision :** Créer un **catalogue de tests standards Hakili** (`src/knowledge/test_registry.py`) qui auto-charge l'énoncé et le barème de chaque test standard au démarrage de la session.
+
+**Flux enseignant avec TestRegistry :**
+1. L'enseignant sélectionne "Test d'entrée en 3e" dans le menu déroulant
+2. Un bandeau confirme : `✓ Énoncé pré-chargé (3 777 car.) · ✓ Barème 33 questions · ✓ RAG activé`
+3. L'enseignant charge **uniquement la copie de l'élève** (PDF ou photos)
+4. Aucun upload d'énoncé ni de barème n'est demandé
+
+**Tests disponibles (v1) :**
+
+| ID | Label | DOCX source | Barème YAML | Questions |
+|---|---|---|---|---|
+| `hakili_3e_v1` | Test d'entrée en 3e | `Hakilisso test de niveau 3e.docx` | `bareme_test_3e.yaml` | 33 (NUM + GEO) |
+| `hakili_6e_v1` | Test d'entrée en 6e | `TEST DE NIVEAU,6eme,GROUPE 1.docx` | `bareme_test_6e.yaml` | 33 (NUM + GEO) |
+
+**Justification :** Éliminer la friction opérationnelle (upload énoncé + saisie barème à chaque copie) est critique pour que l'outil soit utilisé quotidiennement par les enseignants Hakili sans formation.
+
+**Extension :** Ajouter un test = ajouter une entrée dans `_TEST_CATALOG` + un DOCX dans `data/Documents/` + un YAML dans `data/knowledge/`. Aucune modification du code pipeline nécessaire.
+
+---
+
+### D-CEO-14 — Interface premium et positionnement marketing *(nouveau 2026-06-08)*
+**Décision :** L'interface doit refléter le positionnement premium de Hakili Lab et fonctionner comme **instrument marketing** auprès des parents d'élèves.
+
+**Implémentation (`src/ui/progress.py`) :**
+- **Écran "Analyse en cours"** (remplace le spinner Streamlit générique) avec 7 étapes nommées, barre de progression temps réel (%, transition CSS cubic-bezier), logo Hakili animé (pulsation avec lueur)
+- **Palette identitaire** : `#001e4a` (bleu marine), `#4a90e2` (bleu Hakili), `#27ae60` (vert validation)
+- **Langage** : "Correction intelligente — ensemble voting", "Diagnostic pédagogique approfondi", "Génération du plan de remédiation" — vocabulaire expert qui justifie la valeur
+- **Validation** : bandeau vert "✓ Analyse complète — rapport disponible" à la fin
+
+**Étapes visibles (7) :**
+
+| Étape | Label affiché | % déclenchement |
+|---|---|---|
+| ingestion | Ingestion & contrôle qualité image | 8% |
+| transcription | Transcription multimodale (manuscrit) | 28% |
+| correction | Correction intelligente — ensemble voting | 55% |
+| rag | Récupération du contexte programme | 68% |
+| diagnostic | Diagnostic pédagogique approfondi | 80% |
+| remediation | Génération du plan de remédiation | 90% |
+| export | Export PDF & rapport JSON | 98% |
+
+**Modèle commercial visé :** Outil interne Hakili Lab pour les enseignants. Le rapport PDF + sujet de remédiation constituent le livrable.
+
+**Justification :** Un outil qui produit un "spinner" générique n'est pas facturable. Un outil qui montre en temps réel une "Transcription multimodale" puis un "Diagnostic pédagogique approfondi" ancré sur le programme officiel justifie un prix premium.
+
+---
+
 ## Tableau de synthèse
 
 | ID | Sujet | Décision finale | Date |
@@ -184,3 +250,6 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 | D-CEO-09 | Modes interface | Copie Unique + Batch | 2026-05-08 |
 | D-CEO-10 | Format entrée | **PDF scanner 150 DPI, niveaux de gris** | **2026-06-05** |
 | D-CEO-11 | Coût cible | **~$0.02/copie · ~$12/an** pour 540 copies | **2026-06-05** |
+| D-CEO-12 | Diagnostic RAG | Ancré sur programme officiel MEN Burkina Faso (121 leçons 6e→3e) | **2026-06-08** |
+| D-CEO-13 | Tests Hakili pré-chargés | TestRegistry : énoncé + barème auto · enseignant charge uniquement la copie | **2026-06-08** |
+| D-CEO-14 | UI premium · marketing | Écran animé Hakili · 7 étapes en temps réel · logo pulsant · facturable parents | **2026-06-08** |

@@ -1,0 +1,553 @@
+# ============================================================================
+# PROGRAMME DE MATHÉMATIQUES — CLASSE DE 5ème
+# Source : Ministère de l'Éducation Nationale du Burkina Faso, Juillet 2022
+# ============================================================================
+
+# ─── ACTIVITÉS NUMÉRIQUES ────────────────────────────────────────────────────
+
+- id: 5e_NUM_Ch1_L1
+  classe: 5e
+  domaine: numerique
+  chapitre: "Multiples et diviseurs d'un entier naturel"
+  lecon: "Multiples d'un entier naturel"
+  savoir: "Définir le multiple : b est multiple de a si et seulement si il existe k∈ℕ tel que b = k×a"
+  savoir_faire:
+    - Déterminer les k premiers multiples d'un entier naturel a
+    - Reconnaître si un entier b est multiple d'un entier a
+    - Lister les multiples communs de deux entiers
+  prerequis_ids: [6e_NUM_Ch2_L2]
+  mots_cles: [multiple, diviseur, entier, table de multiplication, k×a]
+  erreurs_frequentes:
+    - Confondre multiple et diviseur (a est diviseur de b ⟺ b est multiple de a)
+
+- id: 5e_NUM_Ch1_L2
+  classe: 5e
+  domaine: numerique
+  chapitre: "Multiples et diviseurs d'un entier naturel"
+  lecon: "Diviseurs d'un entier naturel"
+  savoir: "Définir le diviseur : a est diviseur de b si la division de b par a est exacte (reste 0)"
+  savoir_faire:
+    - Déterminer tous les diviseurs d'un entier naturel (méthode exhaustive)
+    - Utiliser les critères de divisibilité (2, 3, 5, 9, 10) pour trouver des diviseurs
+    - Reconnaître si a divise b (notation a | b)
+  prerequis_ids: [6e_NUM_Ch4_L8, 5e_NUM_Ch1_L1]
+  mots_cles: [diviseur, divise, a|b, reste nul, critères de divisibilité]
+  erreurs_frequentes:
+    - Oublier de tester la divisibilité par tous les entiers jusqu'à √b
+    - Confondre "a divise b" et "b divise a"
+
+- id: 5e_NUM_Ch1_L3
+  classe: 5e
+  domaine: numerique
+  chapitre: "Multiples et diviseurs d'un entier naturel"
+  lecon: "Division euclidienne"
+  savoir: "Énoncer la propriété : pour tout a∈ℕ et b∈ℕ*, il existe un unique couple (q,r) avec a = b×q + r et 0 ≤ r < b"
+  savoir_faire:
+    - Écrire la relation de division euclidienne : a = b×q + r
+    - Identifier quotient et reste dans une division euclidienne
+    - Vérifier une division euclidienne par la formule de contrôle
+    - Utiliser la division euclidienne pour tester la divisibilité (r = 0 ⟺ b | a)
+  prerequis_ids: [6e_NUM_Ch2_L3, 5e_NUM_Ch1_L2]
+  mots_cles: [division euclidienne, quotient, reste, dividende, diviseur, a=bq+r, exacte]
+  erreurs_frequentes:
+    - Confondre quotient et reste
+    - Ne pas vérifier que le reste est bien strictement inférieur au diviseur
+
+- id: 5e_NUM_Ch1_L4
+  classe: 5e
+  domaine: numerique
+  chapitre: "Multiples et diviseurs d'un entier naturel"
+  lecon: "Nombres premiers"
+  savoir: "Définir un nombre premier : entier ≥ 2 dont les seuls diviseurs sont 1 et lui-même"
+  savoir_faire:
+    - Reconnaître si un entier est premier (test de division par tous les premiers jusqu'à √n)
+    - Citer les nombres premiers inférieurs à 30 : 2, 3, 5, 7, 11, 13, 17, 19, 23, 29
+    - Justifier qu'un entier N n'est pas premier en exhibant un diviseur autre que 1 et N
+  prerequis_ids: [5e_NUM_Ch1_L2]
+  mots_cles: [nombre premier, diviseurs, 1 et lui-même, premier, crible, Ératosthène]
+  erreurs_frequentes:
+    - Croire que 1 est un nombre premier
+    - Croire que tous les nombres impairs sont premiers
+
+- id: 5e_NUM_Ch1_L5
+  classe: 5e
+  domaine: numerique
+  chapitre: "Multiples et diviseurs d'un entier naturel"
+  lecon: "Décomposition d'un entier en produit de facteurs premiers"
+  savoir: "Théorème fondamental de l'arithmétique : tout entier ≥ 2 se décompose de manière unique en produit de facteurs premiers"
+  savoir_faire:
+    - Décomposer un entier en produit de facteurs premiers (méthode des divisions successives)
+    - Écrire la décomposition en notation exponentielle (ex : 360 = 2³ × 3² × 5)
+    - Utiliser la décomposition pour calculer PGCD et PPCM
+  prerequis_ids: [5e_NUM_Ch1_L3, 5e_NUM_Ch1_L4]
+  mots_cles: [décomposition, facteurs premiers, produit, exponentielle, 2³×3², arbre des facteurs]
+  erreurs_frequentes:
+    - Arrêter la décomposition trop tôt (avant d'avoir des facteurs premiers)
+    - Oublier d'écrire les exposants dans la notation
+
+- id: 5e_NUM_Ch2_L1
+  classe: 5e
+  domaine: numerique
+  chapitre: "PGCD et PPCM"
+  lecon: "PGCD — Plus Grand Commun Diviseur"
+  savoir: "Définir le PGCD de deux entiers a et b comme le plus grand entier qui divise à la fois a et b"
+  savoir_faire:
+    - Calculer le PGCD par la méthode des diviseurs communs (pour de petits entiers)
+    - Calculer le PGCD par l'algorithme d'Euclide (divisions successives)
+    - Calculer le PGCD par la décomposition en facteurs premiers (produit des facteurs communs avec les plus petits exposants)
+    - Appliquer le PGCD pour simplifier une fraction en fraction irréductible
+    - Résoudre des problèmes de partage équitable en utilisant le PGCD
+  prerequis_ids: [5e_NUM_Ch1_L3, 5e_NUM_Ch1_L5]
+  mots_cles: [PGCD, Euclide, diviseurs communs, simplification, irréductible, facteurs premiers]
+  erreurs_frequentes:
+    - Confondre PGCD et PPCM
+    - Mal appliquer l'algorithme d'Euclide (inverser dividende et reste)
+    - S'arrêter à une simplification partielle de la fraction sans atteindre l'irréductible
+
+- id: 5e_NUM_Ch2_L2
+  classe: 5e
+  domaine: numerique
+  chapitre: "PGCD et PPCM"
+  lecon: "PPCM — Plus Petit Commun Multiple"
+  savoir: "Définir le PPCM de deux entiers a et b comme le plus petit entier qui est multiple à la fois de a et b"
+  savoir_faire:
+    - Calculer le PPCM par la liste des multiples communs (pour de petits entiers)
+    - Calculer le PPCM via la décomposition en facteurs premiers (produit avec les plus grands exposants)
+    - Utiliser la relation PGCD(a,b) × PPCM(a,b) = a × b
+    - Appliquer le PPCM pour trouver le dénominateur commun de deux fractions
+  prerequis_ids: [5e_NUM_Ch2_L1]
+  mots_cles: [PPCM, multiple commun, dénominateur commun, fractions, facteurs premiers]
+  erreurs_frequentes:
+    - Confondre PPCM et PGCD dans les applications
+    - Utiliser a × b comme PPCM sans vérifier (valide seulement si PGCD = 1)
+
+- id: 5e_NUM_Ch3_L1
+  classe: 5e
+  domaine: numerique
+  chapitre: "Opérations sur les fractions"
+  lecon: "Simplification d'une fraction à l'aide du PGCD"
+  savoir: "Comprendre que diviser numérateur et dénominateur par leur PGCD donne la fraction irréductible"
+  savoir_faire:
+    - Calculer le PGCD du numérateur et du dénominateur
+    - Simplifier la fraction en divisant par le PGCD
+    - Vérifier qu'une fraction est irréductible (PGCD = 1)
+    - Distinguer fractions équivalentes et simplification
+  prerequis_ids: [5e_NUM_Ch2_L1, 6e_NUM_Ch4_L9]
+  mots_cles: [PGCD, simplification, irréductible, fraction, équivalence, réduire]
+  erreurs_frequentes:
+    - Diviser seulement le numérateur ou seulement le dénominateur par le PGCD
+    - Confondre PGCD et PPCM dans cette application
+
+- id: 5e_NUM_Ch3_L2
+  classe: 5e
+  domaine: numerique
+  chapitre: "Opérations sur les fractions"
+  lecon: "Réduction de deux fractions au même dénominateur (PPCM)"
+  savoir: "Le dénominateur commun optimal est le PPCM des deux dénominateurs"
+  savoir_faire:
+    - Calculer le PPCM de deux dénominateurs
+    - Réduire deux fractions au même dénominateur en utilisant le PPCM
+    - Réduire au même dénominateur sans utiliser le PPCM (multiplier les dénominateurs)
+  prerequis_ids: [5e_NUM_Ch2_L2, 6e_NUM_Ch4_L4]
+  mots_cles: [dénominateur commun, PPCM, réduction, fractions, mise au même dénominateur]
+  erreurs_frequentes:
+    - Modifier la valeur de la fraction en ne multipliant que le dénominateur
+    - Utiliser le produit des dénominateurs quand le PPCM est plus petit (calculs lourds)
+
+- id: 5e_NUM_Ch3_L3
+  classe: 5e
+  domaine: numerique
+  chapitre: "Opérations sur les fractions"
+  lecon: "Addition et soustraction de fractions"
+  savoir: "Pour additionner des fractions, les mettre au même dénominateur puis additionner les numérateurs"
+  savoir_faire:
+    - Additionner deux fractions de même dénominateur
+    - Additionner deux fractions de dénominateurs différents (via PPCM)
+    - Soustraire deux fractions
+    - Simplifier le résultat à la fraction irréductible
+    - Additionner une fraction et un entier
+  prerequis_ids: [5e_NUM_Ch3_L2, 5e_NUM_Ch3_L1]
+  mots_cles: [addition, soustraction, fractions, dénominateur commun, PPCM, irréductible]
+  erreurs_frequentes:
+    - Additionner les numérateurs ET les dénominateurs : a/b + c/d = (a+c)/(b+d)
+    - Oublier de simplifier le résultat
+
+- id: 5e_NUM_Ch3_L4
+  classe: 5e
+  domaine: numerique
+  chapitre: "Opérations sur les fractions"
+  lecon: "Soustraction de fractions"
+  savoir: "Appliquer la même démarche que l'addition en changeant le signe"
+  savoir_faire:
+    - Soustraire deux fractions de même dénominateur
+    - Soustraire deux fractions de dénominateurs différents
+    - Soustraire une fraction d'un entier
+  prerequis_ids: [5e_NUM_Ch3_L3]
+  mots_cles: [soustraction, fractions, dénominateur commun, signe, entier]
+  erreurs_frequentes:
+    - Soustraire les dénominateurs entre eux
+
+- id: 5e_NUM_Ch3_L5
+  classe: 5e
+  domaine: numerique
+  chapitre: "Opérations sur les fractions"
+  lecon: "Multiplication de fractions"
+  savoir: "Règle : (a/b) × (c/d) = (ac)/(bd) — multiplier numérateur par numérateur et dénominateur par dénominateur"
+  savoir_faire:
+    - Multiplier deux fractions
+    - Multiplier une fraction par un entier
+    - Simplifier avant de multiplier (simplification croisée) pour alléger les calculs
+    - Calculer le carré et le cube d'une fraction
+  prerequis_ids: [5e_NUM_Ch3_L1]
+  mots_cles: [multiplication, fractions, produit, numérateur, dénominateur, simplification croisée]
+  erreurs_frequentes:
+    - Mettre au même dénominateur pour multiplier (réflexe de l'addition appliqué à tort)
+    - Oublier de simplifier le résultat
+
+- id: 5e_NUM_Ch3_L6
+  classe: 5e
+  domaine: numerique
+  chapitre: "Opérations sur les fractions"
+  lecon: "Comparaison de fractions"
+  savoir: "Pour comparer a/b et c/d, les mettre au même dénominateur et comparer les numérateurs"
+  savoir_faire:
+    - Comparer deux fractions de même dénominateur (comparer les numérateurs)
+    - Comparer deux fractions de dénominateurs différents (mise au même dénominateur)
+    - Comparer une fraction à 1 ou à un entier
+    - Ranger plusieurs fractions par ordre croissant
+  prerequis_ids: [5e_NUM_Ch3_L2]
+  mots_cles: [comparaison, fractions, même dénominateur, inégalité, ordre, rangement]
+  erreurs_frequentes:
+    - Comparer les numérateurs sans mettre au même dénominateur
+    - Croire que 3/7 > 3/5 car "7 > 5"
+
+- id: 5e_NUM_Ch4_L1
+  classe: 5e
+  domaine: numerique
+  chapitre: "Addition et soustraction dans ⅅ — nombres décimaux relatifs"
+  lecon: "Identification de ⅅ et propriétés de l'addition"
+  savoir: "ⅅ est l'ensemble des nombres décimaux (positifs, négatifs, nul) ; l'addition est commutative et associative dans ⅅ"
+  savoir_faire:
+    - Identifier un nombre décimal relatif
+    - Utiliser la commutativité : a + b = b + a dans ⅅ
+    - Utiliser l'associativité pour regrouper des termes
+  prerequis_ids: [6e_NUM_Ch6_L2, 6e_NUM_Ch4_L1]
+  mots_cles: [décimaux relatifs, ⅅ, commutativité, associativité, addition]
+  erreurs_frequentes:
+    - Confondre les règles des signes de l'addition avec celles de la multiplication
+
+- id: 5e_NUM_Ch4_L2
+  classe: 5e
+  domaine: numerique
+  chapitre: "Addition et soustraction dans ⅅ"
+  lecon: "Associativité de l'addition dans ⅅ"
+  savoir: "L'addition est associative : (a+b)+c = a+(b+c) dans ⅅ"
+  savoir_faire:
+    - Regrouper des termes de signes identiques pour simplifier un calcul
+    - Utiliser l'associativité pour réorganiser une somme algébrique
+  prerequis_ids: [5e_NUM_Ch4_L1]
+  mots_cles: [associativité, regroupement, termes, somme algébrique, calcul]
+  erreurs_frequentes:
+    - Modifier les signes en regroupant des termes
+
+- id: 5e_NUM_Ch4_L3
+  classe: 5e
+  domaine: numerique
+  chapitre: "Addition et soustraction dans ⅅ"
+  lecon: "Multiplication et division dans ⅅ — règles des signes"
+  savoir: "Règle des signes : (−)×(−) = (+), (+)×(−) = (−), (+)×(+) = (+)"
+  savoir_faire:
+    - Appliquer les règles des signes pour la multiplication de relatifs
+    - Appliquer les règles des signes pour la division de relatifs
+    - Calculer le produit ou le quotient de plusieurs nombres relatifs
+  prerequis_ids: [6e_NUM_Ch6_L1, 6e_NUM_Ch2_L2, 6e_NUM_Ch2_L3]
+  mots_cles: [multiplication, division, relatifs, règles des signes, produit, quotient]
+  erreurs_frequentes:
+    - Appliquer "moins par moins = plus" à l'addition au lieu de la multiplication
+    - Confondre le signe de l'opération et le signe du nombre
+
+- id: 5e_NUM_Ch4_L4
+  classe: 5e
+  domaine: numerique
+  chapitre: "Addition et soustraction dans ⅅ"
+  lecon: "Distributivité dans ⅅ — développement et factorisation"
+  savoir: "La distributivité s'applique dans ⅅ avec les nombres relatifs : k(a+b) = ka + kb"
+  savoir_faire:
+    - Développer et réduire une expression du type k(a+b) avec k, a, b dans ⅅ
+    - Factoriser une expression en mettant en évidence un facteur commun relatif
+    - Appliquer la distributivité double : (a+b)(c+d) = ac+ad+bc+bd
+  prerequis_ids: [6e_NUM_Ch2_L6, 5e_NUM_Ch4_L3]
+  mots_cles: [distributivité, développer, factoriser, facteur commun, relatifs, k(a+b)]
+  erreurs_frequentes:
+    - Oublier de distribuer le signe négatif sur tous les termes
+    - Écrire k(a+b) = ka + b (oubli du facteur sur le second terme)
+
+- id: 5e_NUM_Ch5_L1
+  classe: 5e
+  domaine: numerique
+  chapitre: "Expressions algébriques — lettre et calcul littéral"
+  lecon: "Introduction du calcul littéral — monômes"
+  savoir: "Comprendre qu'une lettre représente un nombre ; définir un monôme (coefficient × variable^exposant)"
+  savoir_faire:
+    - Calculer la valeur numérique d'une expression littérale pour une valeur donnée de la variable
+    - Identifier le coefficient et le degré d'un monôme
+    - Additionner et soustraire des monômes de même degré (termes semblables)
+    - Multiplier deux monômes
+  prerequis_ids: [5e_NUM_Ch4_L4]
+  mots_cles: [calcul littéral, monôme, lettre, variable, coefficient, degré, termes semblables]
+  erreurs_frequentes:
+    - Additionner des termes non semblables : 3x + 2x² = 5x³ (faux)
+    - Oublier la valeur absolue du coefficient en substituant une valeur négative
+
+- id: 5e_NUM_Ch5_L2
+  classe: 5e
+  domaine: numerique
+  chapitre: "Expressions algébriques"
+  lecon: "Polynômes — définition, degré, termes"
+  savoir: "Un polynôme est une somme de monômes ; son degré est le degré du terme de plus haut degré"
+  savoir_faire:
+    - Identifier le degré et les termes d'un polynôme
+    - Réduire un polynôme (regrouper les termes semblables)
+    - Ordonner un polynôme selon les puissances décroissantes
+    - Additionner et soustraire deux polynômes
+  prerequis_ids: [5e_NUM_Ch5_L1]
+  mots_cles: [polynôme, degré, termes semblables, réduire, ordonner, puissances décroissantes]
+  erreurs_frequentes:
+    - Confondre degré du polynôme et nombre de termes
+    - Additionner des termes de degrés différents
+
+- id: 5e_NUM_Ch5_L3
+  classe: 5e
+  domaine: numerique
+  chapitre: "Expressions algébriques"
+  lecon: "Développement et réduction d'expressions — double distributivité"
+  savoir: "Maîtriser le développement : (a+b)(c+d) = ac + ad + bc + bd"
+  savoir_faire:
+    - Développer et réduire un produit de deux binômes (a+b)(c+d)
+    - Développer et réduire k×(ax + b) + l×(cx + d)
+    - Vérifier un développement par substitution numérique
+  prerequis_ids: [5e_NUM_Ch5_L2, 5e_NUM_Ch4_L4]
+  mots_cles: [développement, réduction, binôme, double distributivité, (a+b)(c+d)]
+  erreurs_frequentes:
+    - Oublier les termes croisés dans (a+b)(c+d)
+    - Mal gérer les signes lors du développement avec des termes négatifs
+
+- id: 5e_NUM_Ch5_L4
+  classe: 5e
+  domaine: numerique
+  chapitre: "Expressions algébriques"
+  lecon: "Factorisation — facteur commun"
+  savoir: "Factoriser c'est écrire une somme comme un produit ; la technique de base est la mise en évidence du facteur commun"
+  savoir_faire:
+    - Identifier le facteur commun d'une expression (numériques et/ou littéraux)
+    - Factoriser une expression en mettant le facteur commun en évidence
+    - Vérifier une factorisation en développant
+  prerequis_ids: [5e_NUM_Ch5_L3]
+  mots_cles: [factorisation, facteur commun, mise en évidence, produit, vérification]
+  erreurs_frequentes:
+    - Oublier de diviser tous les termes par le facteur commun mis en évidence
+    - Prendre un facteur partiel (ex : mettre 2 en évidence au lieu de 4 pour 4x + 8y)
+
+- id: 5e_NUM_Ch6_L1
+  classe: 5e
+  domaine: numerique
+  chapitre: "Équations du premier degré à une inconnue"
+  lecon: "Notion d'équation — solution, ensemble solution"
+  savoir: "Définir une équation du premier degré ax + b = 0 et ce qu'est une solution"
+  savoir_faire:
+    - Vérifier si une valeur est solution d'une équation par substitution
+    - Identifier l'ensemble solution d'une équation dans ℝ, ℤ ou ℕ
+    - Distinguer équation (=) et inéquation (< > ≤ ≥)
+  prerequis_ids: [6e_NUM_Ch5_L1, 5e_NUM_Ch5_L1]
+  mots_cles: [équation, inconnue, solution, ensemble solution, substitution, vérification]
+  erreurs_frequentes:
+    - Confondre solution de l'équation et valeur de l'inconnue dans un contexte
+    - Ne pas vérifier la solution dans l'équation de départ
+
+- id: 5e_NUM_Ch6_L2
+  classe: 5e
+  domaine: numerique
+  chapitre: "Équations du premier degré à une inconnue"
+  lecon: "Résolution d'équations du 1er degré — méthode algébrique"
+  savoir: "Principes d'équivalence : on peut ajouter un même nombre des deux côtés, ou multiplier/diviser par un même nombre non nul"
+  savoir_faire:
+    - Résoudre une équation du type ax = b (x = b/a, a ≠ 0)
+    - Résoudre une équation du type ax + b = c
+    - Résoudre une équation du type ax + b = cx + d (transposer les termes)
+    - Résoudre une équation avec parenthèses (développer d'abord)
+    - Vérifier la solution dans l'équation de départ
+  prerequis_ids: [5e_NUM_Ch6_L1, 5e_NUM_Ch5_L3]
+  mots_cles: [équation, résolution, transposition, principes d'équivalence, ax+b=c, vérification]
+  erreurs_frequentes:
+    - Transposer un terme sans changer son signe
+    - Diviser par le coefficient seulement d'un côté
+    - Oublier la vérification finale
+
+- id: 5e_NUM_Ch6_L3
+  classe: 5e
+  domaine: numerique
+  chapitre: "Équations du premier degré à une inconnue"
+  lecon: "Mise en équation et résolution de problèmes"
+  savoir: "Traduire un problème concret en équation, résoudre, interpréter le résultat dans le contexte"
+  savoir_faire:
+    - Choisir et nommer l'inconnue
+    - Traduire les données du problème en équation
+    - Résoudre l'équation
+    - Vérifier et interpréter la solution dans le contexte (unités, cohérence)
+  prerequis_ids: [5e_NUM_Ch6_L2]
+  mots_cles: [mise en équation, problème, inconnue, traduction, interprétation, contexte]
+  erreurs_frequentes:
+    - Oublier l'interprétation de la solution dans le contexte du problème
+    - Négliger les unités dans la réponse
+
+- id: 5e_NUM_Ch7_L1
+  classe: 5e
+  domaine: numerique
+  chapitre: "Statistiques descriptives"
+  lecon: "Séries statistiques — effectifs, fréquences, représentations"
+  savoir: "Définir : population, individu, caractère, modalité, effectif, fréquence, fréquence cumulée"
+  savoir_faire:
+    - Construire un tableau statistique (effectifs et fréquences)
+    - Calculer les fréquences relatives (effectif / effectif total)
+    - Construire et lire un diagramme en bâtons et un diagramme circulaire
+    - Calculer les fréquences cumulées croissantes
+  prerequis_ids: [6e_NUM_Ch8_L5, 6e_NUM_Ch7_L2]
+  mots_cles: [statistique, effectif, fréquence, diagramme, tableau, population, caractère]
+  erreurs_frequentes:
+    - Confondre effectif et fréquence
+    - Ne pas vérifier que la somme des fréquences vaut 1 (ou 100%)
+
+- id: 5e_NUM_Ch7_L2
+  classe: 5e
+  domaine: numerique
+  chapitre: "Statistiques descriptives"
+  lecon: "Paramètres de position — moyenne arithmétique"
+  savoir: "Définir la moyenne : somme des valeurs divisée par l'effectif total"
+  savoir_faire:
+    - Calculer la moyenne d'une série simple
+    - Calculer la moyenne pondérée à partir d'un tableau effectifs/valeurs (Σ(nᵢ×xᵢ)/N)
+    - Interpréter la moyenne dans le contexte du problème
+  prerequis_ids: [5e_NUM_Ch7_L1]
+  mots_cles: [moyenne, arithmétique, pondérée, somme, effectif, Σnᵢxᵢ/N]
+  erreurs_frequentes:
+    - Calculer la moyenne sans pondération quand les effectifs sont différents
+    - Diviser par le nombre de modalités au lieu de l'effectif total
+
+- id: 5e_NUM_Ch7_L3
+  classe: 5e
+  domaine: numerique
+  chapitre: "Statistiques descriptives"
+  lecon: "Médiane et étendue"
+  savoir: "Définir la médiane (valeur centrale après rangement) et l'étendue (max − min)"
+  savoir_faire:
+    - Calculer l'étendue d'une série
+    - Trouver la médiane d'une série après rangement croissant
+    - Distinguer moyenne et médiane et savoir quand utiliser l'une ou l'autre
+  prerequis_ids: [5e_NUM_Ch7_L2]
+  mots_cles: [médiane, étendue, rangement, max, min, paramètres de dispersion]
+  erreurs_frequentes:
+    - Ne pas ranger la série avant de chercher la médiane
+    - Confondre médiane et moyenne
+
+# ─── ACTIVITÉS GÉOMÉTRIQUES ───────────────────────────────────────────────────
+
+- id: 5e_GEO_Ch1_L1
+  classe: 5e
+  domaine: geometrique
+  chapitre: "Triangles — propriétés et constructions"
+  lecon: "Triangles isocèle et équilatéral — propriétés et construction"
+  savoir: "Triangle isocèle : deux côtés égaux, deux angles à la base égaux. Équilatéral : trois côtés égaux, trois angles de 60°"
+  savoir_faire:
+    - Construire un triangle isocèle connaissant les deux côtés égaux et la base
+    - Construire un triangle équilatéral de côté donné (au compas)
+    - Utiliser les propriétés pour calculer des angles inconnus
+    - Identifier l'axe de symétrie d'un triangle isocèle
+  prerequis_ids: [6e_GEO_Ch3_L1, 6e_GEO_Ch3_L2]
+  mots_cles: [isocèle, équilatéral, angles à la base, 60°, axe de symétrie, construction]
+  erreurs_frequentes:
+    - Ne pas identifier l'angle au sommet dans un triangle isocèle
+
+- id: 5e_GEO_Ch1_L2
+  classe: 5e
+  domaine: geometrique
+  chapitre: "Triangles — propriétés et constructions"
+  lecon: "Triangle rectangle — théorème de Pythagore (introduction)"
+  savoir: "Dans un triangle rectangle, le carré de l'hypoténuse est égal à la somme des carrés des deux autres côtés"
+  savoir_faire:
+    - Identifier l'hypoténuse dans un triangle rectangle (côté opposé à l'angle droit)
+    - Calculer la longueur de l'hypoténuse par le théorème de Pythagore
+    - Calculer la longueur d'un côté de l'angle droit par Pythagore
+    - Vérifier qu'un triangle est rectangle en utilisant la réciproque
+  prerequis_ids: [6e_GEO_Ch3_L1, 6e_GEO_Ch4_L1]
+  mots_cles: [Pythagore, triangle rectangle, hypoténuse, carré, racine carrée, théorème, réciproque]
+  erreurs_frequentes:
+    - Confondre l'hypoténuse avec un côté de l'angle droit
+    - Calculer c² = a² + b² pour un triangle non rectangle
+    - Oublier la racine carrée pour trouver la longueur
+
+- id: 5e_GEO_Ch2_L1
+  classe: 5e
+  domaine: geometrique
+  chapitre: "Quadrilatères"
+  lecon: "Parallélogramme — définition, propriétés, construction"
+  savoir: "Un parallélogramme a ses côtés opposés parallèles et égaux, ses diagonales se coupent en leur milieu"
+  savoir_faire:
+    - Reconnaître et construire un parallélogramme
+    - Utiliser les propriétés (côtés opposés égaux, diagonales bissectrices) pour calculer
+    - Calculer l'aire d'un parallélogramme (b×h)
+  prerequis_ids: [6e_GEO_Ch2_L2, 6e_GEO_Ch1_L2]
+  mots_cles: [parallélogramme, côtés opposés, diagonales, milieu, aire, construction]
+  erreurs_frequentes:
+    - Confondre hauteur et côté dans le calcul de l'aire
+
+- id: 5e_GEO_Ch2_L2
+  classe: 5e
+  domaine: geometrique
+  chapitre: "Quadrilatères"
+  lecon: "Rectangle, losange, carré — propriétés et distinctions"
+  savoir: "Rectangle : parallélogramme avec angles droits. Losange : côtés égaux. Carré : rectangle et losange."
+  savoir_faire:
+    - Classer les quadrilatères particuliers dans un diagramme hiérarchique
+    - Calculer les diagonales d'un rectangle par Pythagore
+    - Utiliser les propriétés du losange (diagonales perpendiculaires, bissectrices)
+    - Calculer les aires du rectangle (L×l), du losange (d₁×d₂/2) et du carré (c²)
+  prerequis_ids: [5e_GEO_Ch2_L1, 5e_GEO_Ch1_L2]
+  mots_cles: [rectangle, losange, carré, quadrilatères, diagonales, propriétés, aire]
+  erreurs_frequentes:
+    - Confondre les formules d'aire du rectangle et du losange
+    - Croire que tout quadrilatère avec des côtés égaux est un carré
+
+- id: 5e_GEO_Ch3_L1
+  classe: 5e
+  domaine: geometrique
+  chapitre: "Symétrie centrale"
+  lecon: "Définition et construction — symétrique par rapport à un point"
+  savoir: "M' est le symétrique de M par rapport au centre O si O est le milieu de [MM']"
+  savoir_faire:
+    - Construire le symétrique d'un point par rapport à un centre O
+    - Construire le symétrique d'une figure par rapport à un point
+    - Identifier si une figure admet un centre de symétrie
+    - Distinguer symétrie centrale (par rapport à un point) et axiale (par rapport à une droite)
+  prerequis_ids: [6e_GEO_Ch6_L1, 6e_GEO_Ch1_L2]
+  mots_cles: [symétrie centrale, centre, milieu, symétrique, point, figure]
+  erreurs_frequentes:
+    - Confondre symétrie axiale et symétrie centrale
+    - Construire le symétrique en faisant tourner la figure au lieu d'utiliser le milieu
+
+- id: 5e_GEO_Ch4_L1
+  classe: 5e
+  domaine: geometrique
+  chapitre: "Solides de l'espace — volumes"
+  lecon: "Volumes des solides usuels"
+  savoir: "Connaître les formules de volume du prisme droit, cylindre, pyramide, cône et sphère"
+  savoir_faire:
+    - Calculer le volume d'un prisme droit V = Aire_base × hauteur
+    - Calculer le volume d'un cylindre V = πR²h
+    - Calculer le volume d'une pyramide V = (1/3) × Aire_base × hauteur
+    - Identifier la base et la hauteur d'un solide
+    - Convertir des unités de volume (cm³, dm³, m³, L)
+  prerequis_ids: [6e_GEO_Ch7_L1, 6e_GEO_Ch4_L1]
+  mots_cles: [volume, prisme, cylindre, pyramide, cône, sphère, hauteur, base, formule]
+  erreurs_frequentes:
+    - Confondre aire de la base et périmètre de la base
+    - Oublier le facteur 1/3 pour la pyramide et le cône

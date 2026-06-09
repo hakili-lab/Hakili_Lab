@@ -1,0 +1,353 @@
+# ============================================================================
+# PROGRAMME DE MATHÉMATIQUES — CLASSE DE 3ème
+# Source : Ministère de l'Éducation Nationale du Burkina Faso, Juillet 2022
+# ============================================================================
+
+# ─── ACTIVITÉS NUMÉRIQUES ────────────────────────────────────────────────────
+
+- id: 3e_NUM_Ch1_L1
+  classe: 3e
+  domaine: numerique
+  chapitre: "Identités remarquables — factorisation avancée"
+  lecon: "Révision et maîtrise des identités remarquables"
+  savoir: "Les trois identités (a±b)² et (a+b)(a−b) = a²−b² permettent de développer et factoriser"
+  savoir_faire:
+    - Développer et réduire des expressions utilisant les trois identités
+    - Factoriser une expression en reconnaissant une identité remarquable
+    - Factoriser par mise en facteur commun après regroupement de termes
+    - Appliquer successivement factorisation par facteur commun et identité remarquable
+  prerequis_ids: [4e_NUM_Ch4_L3, 4e_NUM_Ch4_L4]
+  mots_cles: [identités remarquables, (a+b)², (a-b)², différence de carrés, factorisation, développement]
+  erreurs_frequentes:
+    - Oublier 2ab dans (a+b)² lors du développement
+    - Ne pas reconnaître la structure a²−b² comme une différence de carrés
+
+- id: 3e_NUM_Ch1_L2
+  classe: 3e
+  domaine: numerique
+  chapitre: "Identités remarquables — factorisation avancée"
+  lecon: "Factorisation par regroupement et par substitution"
+  savoir: "Certaines expressions se factorisent en regroupant les termes par paires ou en effectuant un changement de variable"
+  savoir_faire:
+    - Factoriser par regroupement de termes (ax+ay+bx+by = (a+b)(x+y))
+    - Reconnaître et factoriser a⁴−b⁴ = (a²+b²)(a+b)(a−b)
+    - Utiliser un changement de variable pour factoriser un trinôme en x² (poser X=x+a)
+  prerequis_ids: [3e_NUM_Ch1_L1, 4e_NUM_Ch4_L4]
+  mots_cles: [regroupement, factorisation avancée, changement de variable, ax+ay+bx+by]
+  erreurs_frequentes:
+    - Ne pas vérifier la factorisation par développement
+    - Grouper les mauvais termes ensemble
+
+- id: 3e_NUM_Ch2_L1
+  classe: 3e
+  domaine: numerique
+  chapitre: "Fractions rationnelles"
+  lecon: "Simplification d'une fraction algébrique"
+  savoir: "Une fraction algébrique P(x)/Q(x) est simplifiable si P et Q ont un facteur commun ; on le simplifie après factorisation"
+  savoir_faire:
+    - Factoriser numérateur et dénominateur d'une fraction algébrique
+    - Simplifier la fraction en éliminant les facteurs communs
+    - Préciser les valeurs de l'inconnue qui annulent le dénominateur (condition d'existence)
+    - Effectuer la multiplication et la division de fractions algébriques
+  prerequis_ids: [3e_NUM_Ch1_L1, 4e_NUM_Ch2_L1]
+  mots_cles: [fraction algébrique, P/Q, simplification, facteur commun, condition d'existence, valeurs interdites]
+  erreurs_frequentes:
+    - Simplifier term à terme au lieu de factoriser : (x²+2x)/(x+2) ≠ x (il faut factoriser d'abord)
+    - Oublier les valeurs d'annulation du dénominateur
+
+- id: 3e_NUM_Ch2_L2
+  classe: 3e
+  domaine: numerique
+  chapitre: "Fractions rationnelles"
+  lecon: "Addition et soustraction de fractions algébriques"
+  savoir: "Pour additionner deux fractions algébriques, on les met au même dénominateur"
+  savoir_faire:
+    - Trouver le dénominateur commun de deux fractions algébriques
+    - Additionner et soustraire des fractions algébriques
+    - Réduire le résultat à sa forme irréductible
+  prerequis_ids: [3e_NUM_Ch2_L1, 5e_NUM_Ch3_L3]
+  mots_cles: [fractions algébriques, dénominateur commun, addition, soustraction, réduction]
+  erreurs_frequentes:
+    - Additionner directement les numérateurs sans mettre au même dénominateur
+    - Oublier de mettre au même dénominateur avant de soustraire
+
+- id: 3e_NUM_Ch3_L1
+  classe: 3e
+  domaine: numerique
+  chapitre: "Systèmes d'équations du premier degré à deux inconnues"
+  lecon: "Résolution par substitution et par combinaison"
+  savoir: "Un système 2×2 d'équations du 1er degré admet une solution unique (si les droites sont sécantes), aucune (parallèles) ou une infinité (confondues)"
+  savoir_faire:
+    - Résoudre un système par substitution (isoler une inconnue dans une équation, substituer dans l'autre)
+    - Résoudre un système par combinaison linéaire (multiplier et additionner les équations)
+    - Choisir la méthode la plus efficace selon la forme du système
+    - Vérifier la solution en la substituant dans les deux équations
+    - Résoudre un problème concret menant à un système d'équations
+  prerequis_ids: [4e_NUM_Ch5_L1, 5e_NUM_Ch6_L2]
+  mots_cles: [système, deux inconnues, substitution, combinaison, 2×2, solution unique, vérification]
+  erreurs_frequentes:
+    - Substituer dans la même équation que celle utilisée pour isoler l'inconnue
+    - Oublier de multiplier TOUS les termes de l'équation lors de la combinaison
+
+- id: 3e_NUM_Ch4_L1
+  classe: 3e
+  domaine: numerique
+  chapitre: "Fonctions numériques — étude et représentation graphique"
+  lecon: "Fonction affine — représentation graphique et lecture"
+  savoir: "f : x ↦ ax + b est une fonction affine ; sa représentation est une droite de pente a et d'ordonnée à l'origine b"
+  savoir_faire:
+    - Identifier la pente a et l'ordonnée à l'origine b d'une fonction affine
+    - Construire la droite représentative à partir de deux points (tableau de valeurs ou points caractéristiques)
+    - Déterminer graphiquement l'image d'un antécédent et vice versa
+    - Lire les coordonnées du point d'intersection de deux droites
+    - Déterminer algébriquement l'équation d'une droite passant par deux points donnés
+  prerequis_ids: [4e_NUM_Ch5_L3, 4e_GEO_Ch2_L1]
+  mots_cles: [fonction affine, pente, ordonnée à l'origine, droite, représentation graphique, image, antécédent]
+  erreurs_frequentes:
+    - Confondre la pente a et l'ordonnée à l'origine b
+    - Tracer la droite avec un seul point (il en faut deux pour sécuriser la construction)
+
+- id: 3e_NUM_Ch4_L2
+  classe: 3e
+  domaine: numerique
+  chapitre: "Fonctions numériques — étude et représentation graphique"
+  lecon: "Tableau de variation — sens de variation d'une fonction affine"
+  savoir: "Si a > 0 la fonction affine est croissante ; si a < 0 elle est décroissante ; si a = 0 elle est constante"
+  savoir_faire:
+    - Dresser le tableau de variation d'une fonction affine
+    - Déterminer le sens de variation à partir du coefficient a
+    - Lire les extrema sur un tableau de variation
+    - Résoudre graphiquement f(x) > g(x) pour deux fonctions affines
+  prerequis_ids: [3e_NUM_Ch4_L1]
+  mots_cles: [tableau de variation, croissant, décroissant, sens de variation, extrema]
+  erreurs_frequentes:
+    - Dresser le tableau de variation sans vérifier le signe de a
+    - Confondre les flèches montantes/descendantes dans le tableau de variation
+
+- id: 3e_NUM_Ch5_L1
+  classe: 3e
+  domaine: numerique
+  chapitre: "Statistiques — fréquences et représentations graphiques"
+  lecon: "Fréquences, fréquences cumulées et représentations"
+  savoir: "La fréquence est le ratio de l'effectif partiel sur l'effectif total ; les fréquences cumulées permettent de construire la courbe en escalier"
+  savoir_faire:
+    - Calculer les effectifs et fréquences d'une distribution
+    - Calculer les fréquences cumulées croissantes
+    - Construire un histogramme, un diagramme en bâtons, un diagramme circulaire
+    - Construire et lire la courbe des fréquences cumulées
+    - Lire la médiane sur la courbe des fréquences cumulées
+  prerequis_ids: [4e_NUM_Ch7_L1, 5e_NUM_Ch7_L1]
+  mots_cles: [fréquence, effectif, fréquences cumulées, histogramme, diagramme circulaire, médiane graphique]
+  erreurs_frequentes:
+    - Calculer les fréquences sur l'effectif de la classe au lieu de l'effectif total
+    - Construire un histogramme avec des barres non jointives (à la différence du diagramme en bâtons)
+
+- id: 3e_NUM_Ch5_L2
+  classe: 3e
+  domaine: numerique
+  chapitre: "Statistiques — paramètres de dispersion"
+  lecon: "Variance et écart-type"
+  savoir: "La variance V = (1/n)∑(xi−x̄)² mesure la dispersion ; l'écart-type σ = √V est dans la même unité que les données"
+  savoir_faire:
+    - Calculer la variance d'une série statistique
+    - Calculer l'écart-type σ = √V
+    - Comparer la dispersion de deux séries statistiques via leurs écarts-types
+    - Interpréter la valeur de σ en contexte (notes d'une classe homogène vs hétérogène)
+  prerequis_ids: [4e_NUM_Ch7_L1, 4e_NUM_Ch6_L1]
+  mots_cles: [variance, écart-type, σ, dispersion, moyenne, homogène, hétérogène]
+  erreurs_frequentes:
+    - Calculer les carrés des xi au lieu des carrés des écarts (xi − x̄)²
+    - Oublier la racine carrée pour passer de la variance à l'écart-type
+
+- id: 3e_NUM_Ch6_L1
+  classe: 3e
+  domaine: numerique
+  chapitre: "Introduction aux probabilités"
+  lecon: "Probabilité classique et dénombrement"
+  savoir: "La probabilité d'un événement A est P(A) = card(A)/card(Ω) lorsque les issues sont équiprobables"
+  savoir_faire:
+    - Dénombrer les issues d'une expérience aléatoire simple
+    - Calculer la probabilité d'un événement par la définition classique
+    - Calculer P(A∪B), P(A∩B), P(Ā) = 1 − P(A)
+    - Résoudre un problème de probabilité sur tirage de boules, lancer de dé
+  prerequis_ids: [5e_NUM_Ch7_L2, 6e_NUM_Ch8_L4]
+  mots_cles: [probabilité, événement, univers, équiprobable, P(A), dénombrement, complémentaire]
+  erreurs_frequentes:
+    - Confondre la probabilité et l'effectif (donner le nombre d'issues au lieu du ratio)
+    - Calculer P(A) > 1 ou P(A) < 0 (impossibilité physique — toujours vérifier)
+
+# ─── ACTIVITÉS GÉOMÉTRIQUES ───────────────────────────────────────────────────
+
+- id: 3e_GEO_Ch1_L1
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Théorème de Pythagore"
+  lecon: "Théorème de Pythagore — énoncé, démonstration et applications"
+  savoir: "Dans un triangle rectangle en A : BC² = AB² + AC² (le carré de l'hypoténuse = somme des carrés des deux cathètes)"
+  savoir_faire:
+    - Identifier l'hypoténuse (côté opposé à l'angle droit — le plus long)
+    - Calculer la longueur d'un côté inconnu d'un triangle rectangle
+    - Vérifier si un triangle est rectangle connaissant ses trois côtés (réciproque)
+    - Appliquer le théorème dans des configurations géométriques (diagonale d'un rectangle, hauteur d'un triangle équilatéral)
+    - Résoudre des problèmes concrets (hauteur d'un mur, longueur d'une pente)
+  prerequis_ids: [5e_GEO_Ch1_L3, 4e_NUM_Ch6_L1, 6e_GEO_Ch2_L3]
+  mots_cles: [Pythagore, hypoténuse, cathètes, triangle rectangle, réciproque, BC²=AB²+AC²]
+  erreurs_frequentes:
+    - Appliquer Pythagore en prenant un côté autre que l'hypoténuse comme grand terme
+    - Oublier la racine carrée pour obtenir la longueur à partir du carré
+
+- id: 3e_GEO_Ch1_L2
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Théorème de Pythagore"
+  lecon: "Réciproque du théorème de Pythagore"
+  savoir: "Si BC² = AB² + AC², alors le triangle ABC est rectangle en A"
+  savoir_faire:
+    - Vérifier si BC² = AB² + AC² pour identifier un angle droit
+    - Démontrer formellement qu'un triangle est rectangle en utilisant la réciproque
+    - Utiliser la contraposée : si BC² ≠ AB² + AC², le triangle n'est pas rectangle en A
+  prerequis_ids: [3e_GEO_Ch1_L1]
+  mots_cles: [réciproque, Pythagore, triangle rectangle, démonstration, vérification]
+  erreurs_frequentes:
+    - Appliquer la réciproque sans identifier correctement le côté candidat à l'hypoténuse (le plus long)
+
+- id: 3e_GEO_Ch2_L1
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Trigonométrie dans le triangle rectangle"
+  lecon: "Sinus, cosinus, tangente d'un angle aigu"
+  savoir: "Dans un triangle rectangle, sin(α) = côté opposé/hypoténuse ; cos(α) = côté adjacent/hypoténuse ; tan(α) = côté opposé/adjacent"
+  savoir_faire:
+    - Identifier le côté opposé et le côté adjacent à un angle aigu
+    - Calculer sin(α), cos(α), tan(α) dans un triangle rectangle
+    - Utiliser la calculatrice pour obtenir sin/cos/tan d'un angle en degrés
+    - Calculer un côté inconnu à partir d'un angle et d'un côté connu
+    - Calculer un angle inconnu à partir du rapport de deux côtés (arcsin, arccos, arctan)
+  prerequis_ids: [3e_GEO_Ch1_L1, 6e_GEO_Ch1_L3]
+  mots_cles: [sinus, cosinus, tangente, triangle rectangle, SOH-CAH-TOA, angle aigu, hypoténuse, calculatrice]
+  erreurs_frequentes:
+    - Confondre côté opposé et côté adjacent selon l'angle considéré
+    - Appliquer sin/cos/tan à l'angle droit au lieu d'un angle aigu
+    - Utiliser la formule de Pythagore quand la trigonométrie est plus directe (et vice versa)
+
+- id: 3e_GEO_Ch2_L2
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Trigonométrie dans le triangle rectangle"
+  lecon: "Relations trigonométriques fondamentales"
+  savoir: "sin²(α) + cos²(α) = 1 ; tan(α) = sin(α)/cos(α) ; sin(α) = cos(90°−α)"
+  savoir_faire:
+    - Utiliser sin²α + cos²α = 1 pour calculer sin ou cos connaissant l'autre
+    - Calculer tan(α) = sin(α)/cos(α)
+    - Appliquer sin(α) = cos(90°−α) pour passer d'une fonction à l'autre
+    - Résoudre des problèmes d'angle d'élévation et de dépression
+  prerequis_ids: [3e_GEO_Ch2_L1]
+  mots_cles: [sin²+cos²=1, identité trigonométrique, tan=sin/cos, complémentaires, angle d'élévation]
+  erreurs_frequentes:
+    - Confondre sin(α) = cos(α) avec sin(α) = cos(90°−α) (différente en valeur)
+    - Ne pas appliquer sin²+cos²=1 pour simplifier une expression
+
+- id: 3e_GEO_Ch3_L1
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Homothétie"
+  lecon: "Homothétie — définition, construction et propriétés"
+  savoir: "L'homothétie de centre O et de rapport k fait correspondre M à M' tel que OM⃗' = k·OM⃗"
+  savoir_faire:
+    - Construire l'image d'un point par une homothétie de centre et rapport donnés
+    - Construire l'image d'une figure par une homothétie
+    - Déterminer le centre et le rapport d'une homothétie connaissant une figure et son image
+    - Appliquer les propriétés : conservation des angles, multiplication des longueurs par |k|, des aires par k²
+    - Reconnaître qu'une homothétie de rapport k = 1 est l'identité, k = −1 la symétrie centrale
+  prerequis_ids: [4e_GEO_Ch4_L1, 5e_GEO_Ch3_L1]
+  mots_cles: [homothétie, centre, rapport k, image, agrandissement, réduction, conservation des angles]
+  erreurs_frequentes:
+    - Confondre le rapport de l'homothétie et le rapport de similitude des aires
+    - Ne pas placer le centre O correctement lors de la construction
+
+- id: 3e_GEO_Ch3_L2
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Homothétie"
+  lecon: "Similitude — figures semblables"
+  savoir: "Deux figures sont semblables si l'une est l'image de l'autre par une similitude (homothétie composée avec isométrie) ; les angles correspondants sont égaux et les côtés proportionnels"
+  savoir_faire:
+    - Reconnaître deux figures semblables
+    - Calculer le rapport de similitude
+    - Utiliser la proportionnalité des côtés pour calculer une longueur inconnue
+    - Calculer l'aire d'une figure semblable : A' = k²·A
+    - Lier le théorème de Thalès et la similitude des triangles
+  prerequis_ids: [3e_GEO_Ch3_L1, 4e_GEO_Ch6_L1]
+  mots_cles: [similitude, figures semblables, rapport de similitude, Thalès, angles correspondants, proportionnalité]
+  erreurs_frequentes:
+    - Oublier que le rapport des aires est k² (carré du rapport de similitude linéaire)
+    - Appliquer la proportionnalité aux angles au lieu des longueurs
+
+- id: 3e_GEO_Ch4_L1
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Géométrie analytique"
+  lecon: "Équation d'une droite — pente et ordonnée à l'origine"
+  savoir: "Toute droite non verticale a une équation de la forme y = ax + b ; a est la pente (coefficient directeur) et b l'ordonnée à l'origine"
+  savoir_faire:
+    - Déterminer l'équation d'une droite connaissant sa pente et un point
+    - Déterminer l'équation d'une droite passant par deux points donnés
+    - Lire la pente et l'ordonnée à l'origine sur l'équation
+    - Vérifier si un point appartient à une droite d'équation donnée
+    - Trouver graphiquement ou algébriquement l'intersection de deux droites
+  prerequis_ids: [3e_NUM_Ch4_L1, 4e_GEO_Ch2_L1]
+  mots_cles: [équation de droite, pente, coefficient directeur, ordonnée à l'origine, y=ax+b, intersection]
+  erreurs_frequentes:
+    - Calculer la pente comme Δx/Δy au lieu de Δy/Δx
+    - Confondre ordonnée à l'origine (point (0;b)) avec abscisse à l'origine (point (c;0))
+
+- id: 3e_GEO_Ch4_L2
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Géométrie analytique"
+  lecon: "Droites parallèles et perpendiculaires — conditions analytiques"
+  savoir: "Deux droites y=a₁x+b₁ et y=a₂x+b₂ sont parallèles ⟺ a₁=a₂ ; perpendiculaires ⟺ a₁×a₂ = −1"
+  savoir_faire:
+    - Vérifier le parallélisme de deux droites par comparaison des pentes
+    - Vérifier la perpendicularité par le produit des pentes
+    - Trouver l'équation d'une droite parallèle ou perpendiculaire à une droite donnée passant par un point
+    - Identifier les positions relatives de deux droites dans un repère
+  prerequis_ids: [3e_GEO_Ch4_L1, 4e_GEO_Ch1_L1]
+  mots_cles: [parallèles, perpendiculaires, pentes, a₁=a₂, a₁×a₂=-1, positions relatives]
+  erreurs_frequentes:
+    - Confondre la condition de parallélisme (pentes égales) et la condition de perpendiculaire (produit = −1)
+    - Oublier que deux droites verticales (x = k) sont parallèles sans avoir de pente définie
+
+- id: 3e_GEO_Ch5_L1
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Cercle — arc, corde et angle"
+  lecon: "Angle inscrit et angle au centre"
+  savoir: "Un angle inscrit est la moitié de l'angle au centre qui intercepte le même arc ; tout angle inscrit dans un demi-cercle est droit"
+  savoir_faire:
+    - Identifier un angle inscrit et l'angle au centre correspondant
+    - Appliquer la propriété : angle inscrit = ½ × angle au centre
+    - Démontrer qu'un triangle inscrit dans un demi-cercle est rectangle (théorème de Thalès-cercle)
+    - Calculer la mesure d'un arc connaissant un angle inscrit ou au centre
+  prerequis_ids: [6e_GEO_Ch4_L1, 5e_GEO_Ch1_L4]
+  mots_cles: [angle inscrit, angle au centre, arc, demi-cercle, angle droit inscrit, cercle]
+  erreurs_frequentes:
+    - Confondre l'angle inscrit et l'angle au centre (rapport ½)
+    - Oublier la condition : les deux angles doivent intercepter le MÊME arc
+
+- id: 3e_GEO_Ch5_L2
+  classe: 3e
+  domaine: geometrique
+  chapitre: "Cercle — arc, corde et angle"
+  lecon: "Tangente à un cercle — propriétés"
+  savoir: "La tangente à un cercle en un point M est perpendiculaire au rayon OM ; deux tangentes issues d'un point extérieur sont égales"
+  savoir_faire:
+    - Construire la tangente à un cercle en un point
+    - Vérifier qu'une droite est tangente à un cercle (distance centre-droite = rayon)
+    - Démontrer les propriétés des tangentes issues d'un point extérieur
+    - Calculer des longueurs dans des configurations avec tangentes
+  prerequis_ids: [6e_GEO_Ch4_L1, 4e_GEO_Ch1_L1]
+  mots_cles: [tangente, perpendiculaire au rayon, point de contact, tangentes égales, point extérieur]
+  erreurs_frequentes:
+    - Confondre tangente et corde
+    - Oublier que OT ⊥ tangente (angle droit au point de tangence)

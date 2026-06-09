@@ -15,18 +15,27 @@ class Settings(BaseSettings):
 
     # Google Gemini (vision — gratuit jusqu'à 1 M tokens/jour)
     google_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
-    # "gemini" = Gemini Flash pour transcription | "claude" = Claude pour tout
+    gemini_model: str = "gemini-3.1-flash-lite"
+    # "gemini" | "claude" — provider utilisé pour la transcription
     vision_provider: str = "claude"
+
+    # Providers par étape du pipeline (indépendants des clés API)
+    # grading_provider    : "deepseek" | "claude"
+    # diagnostic_provider : "deepseek" | "mistral" | "claude"
+    # remediation_provider: "mistral"  | "deepseek" | "claude"
+    grading_provider: str = "deepseek"
+    diagnostic_provider: str = "deepseek"
+    remediation_provider: str = "mistral"
 
     # DeepSeek (correction V3 + diagnostic R1)
     deepseek_api_key: str = ""
     deepseek_model_v3: str = "deepseek-chat"       # DeepSeek V3 — correction
     deepseek_model_r1: str = "deepseek-reasoner"   # DeepSeek R1 — diagnostic
 
-    # Mistral (remédiation — français académique natif)
+    # Mistral (remédiation + transcription vision via Pixtral)
     mistral_api_key: str = ""
     mistral_model: str = "mistral-small-latest"
+    mistral_vision_model: str = "pixtral-12b-2409"
 
     # Seuils pipeline
     confidence_review_threshold: float = 0.75

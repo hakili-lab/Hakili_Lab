@@ -1,0 +1,734 @@
+# ============================================================================
+# PROGRAMME DE MATHÉMATIQUES — CLASSE DE 6ème
+# Source : Ministère de l'Éducation Nationale du Burkina Faso, Juillet 2022
+# Référentiel : Approche Par Compétences (APC) — Post-primaire
+#
+# Structure de chaque entrée :
+#   id            : identifiant unique (classe_domaine_ChX_LY)
+#   classe        : niveau scolaire
+#   domaine       : numerique | geometrique
+#   chapitre      : intitulé officiel du chapitre
+#   lecon         : intitulé officiel de la leçon
+#   savoir        : connaissance théorique à retenir (taxonomie Bloom niv.1-2)
+#   savoir_faire  : compétences opératoires testables (niv.3-4) — grain atomique
+#   prerequis_ids : identifiants des leçons dont cette leçon dépend directement
+#   mots_cles     : termes déclencheurs pour le moteur de récupération RAG
+#   erreurs_frequentes : pièges pédagogiques identifiés chez les élèves burkinabè
+# ============================================================================
+
+# ─── ACTIVITÉS NUMÉRIQUES ────────────────────────────────────────────────────
+
+- id: 6e_NUM_Ch1_L1
+  classe: 6e
+  domaine: numerique
+  chapitre: "Numération décimale"
+  lecon: "Chiffres, nombres entiers et décimaux — lecture et écriture"
+  savoir: "Distinguer chiffre et nombre ; connaître la valeur positionnelle des chiffres dans un nombre décimal"
+  savoir_faire:
+    - Lire et écrire un nombre entier ou décimal en chiffres et en lettres
+    - Identifier la valeur d'un chiffre selon sa position (unités, dixièmes, centièmes…)
+    - Distinguer la partie entière et la partie décimale d'un nombre
+    - Différencier les ensembles ℕ et ℝ⁺ et situer un nombre dans l'un ou l'autre
+  prerequis_ids: []   # Acquis du CM — consolidation
+  mots_cles: [nombre, chiffre, décimal, entier, position, virgule, lecture, écriture, ℕ, unité, dizaine, centaine]
+  erreurs_frequentes:
+    - Confondre chiffre et nombre (dire que 347 est un chiffre)
+    - Inverser partie entière et partie décimale lors de la lecture
+    - Croire que 3,10 et 3,1 sont différents
+
+- id: 6e_NUM_Ch1_L2
+  classe: 6e
+  domaine: numerique
+  chapitre: "Numération décimale"
+  lecon: "Comparaison de deux nombres décimaux"
+  savoir: "Connaître les symboles < > = et les règles de comparaison des décimaux"
+  savoir_faire:
+    - Comparer deux nombres décimaux positifs en utilisant les symboles < > =
+    - Ranger plusieurs nombres par ordre croissant ou décroissant
+    - Intercaler un décimal entre deux autres
+  prerequis_ids: [6e_NUM_Ch1_L1]
+  mots_cles: [comparaison, inférieur, supérieur, ordre, croissant, décroissant, rangement]
+  erreurs_frequentes:
+    - Comparer en longueur de chiffres (croire que 1,35 > 1,9 car "35 > 9")
+    - Confondre ordre croissant et décroissant
+
+- id: 6e_NUM_Ch2_L1
+  classe: 6e
+  domaine: numerique
+  chapitre: "Opérations sur les entiers et décimaux positifs"
+  lecon: "Addition et soustraction des entiers et décimaux positifs"
+  savoir: "Maîtriser les techniques opératoires de l'addition et de la soustraction posées"
+  savoir_faire:
+    - Poser et effectuer une addition de décimaux positifs (alignement de la virgule)
+    - Poser et effectuer une soustraction de décimaux positifs
+    - Vérifier un résultat par la preuve (addition ↔ soustraction)
+  prerequis_ids: [6e_NUM_Ch1_L1]
+  mots_cles: [addition, soustraction, décimaux, virgule, retenue, emprunt, calcul posé]
+  erreurs_frequentes:
+    - Ne pas aligner les virgules lors de la pose
+    - Oublier les retenues ou les emprunts
+
+- id: 6e_NUM_Ch2_L2
+  classe: 6e
+  domaine: numerique
+  chapitre: "Opérations sur les entiers et décimaux positifs"
+  lecon: "Multiplication des entiers et décimaux positifs"
+  savoir: "Maîtriser la technique de la multiplication posée, y compris avec décimaux"
+  savoir_faire:
+    - Multiplier deux entiers par la méthode classique
+    - Multiplier deux décimaux en comptant le nombre total de chiffres après la virgule
+    - Multiplier par 10, 100, 1000 (déplacement de virgule)
+  prerequis_ids: [6e_NUM_Ch2_L1]
+  mots_cles: [multiplication, produit, virgule, facteur, décimaux, tables]
+  erreurs_frequentes:
+    - Mal placer la virgule dans le produit de deux décimaux
+    - Oublier de décaler les produits partiels
+
+- id: 6e_NUM_Ch2_L3
+  classe: 6e
+  domaine: numerique
+  chapitre: "Opérations sur les entiers et décimaux positifs"
+  lecon: "Division des entiers et décimaux positifs"
+  savoir: "Comprendre la division euclidienne et la division décimale"
+  savoir_faire:
+    - Effectuer une division euclidienne et identifier quotient et reste
+    - Effectuer une division décimale (résultat décimal à l'ordre demandé)
+    - Diviser par 10, 100, 1000 (déplacement de virgule)
+    - Vérifier : dividende = diviseur × quotient + reste
+  prerequis_ids: [6e_NUM_Ch2_L2]
+  mots_cles: [division, quotient, reste, dividende, diviseur, euclidienne, décimale]
+  erreurs_frequentes:
+    - Confondre dividende et diviseur dans la pose
+    - Abandonner la division avant d'obtenir le nombre de décimales demandé
+    - Erreur dans la vérification euclidienne
+
+- id: 6e_NUM_Ch2_L4
+  classe: 6e
+  domaine: numerique
+  chapitre: "Opérations sur les entiers et décimaux positifs"
+  lecon: "Règle de priorité des opérations et utilisation des parenthèses"
+  savoir: "Énoncer la règle de priorité : × et ÷ avant + et −, parenthèses en premier"
+  savoir_faire:
+    - Effectuer une chaîne de calculs sans parenthèses en respectant les priorités
+    - Effectuer une chaîne de calculs avec parenthèses (max 2 niveaux)
+    - Identifier l'ordre correct d'exécution dans une expression donnée
+  prerequis_ids: [6e_NUM_Ch2_L1, 6e_NUM_Ch2_L2, 6e_NUM_Ch2_L3]
+  mots_cles: [priorité, parenthèses, ordre, opérations, calcul, crochets, chaîne]
+  erreurs_frequentes:
+    - Calculer de gauche à droite sans tenir compte de la priorité × / sur + −
+    - Oublier d'effectuer d'abord le contenu des parenthèses
+
+- id: 6e_NUM_Ch2_L5
+  classe: 6e
+  domaine: numerique
+  chapitre: "Opérations sur les entiers et décimaux positifs"
+  lecon: "Propriétés de l'addition et de la multiplication (commutativité, associativité)"
+  savoir: "Énoncer et identifier les propriétés : commutativité, associativité, élément neutre"
+  savoir_faire:
+    - Utiliser la commutativité pour simplifier un calcul (a+b = b+a, ab = ba)
+    - Utiliser l'associativité pour regrouper des termes favorables
+    - Identifier l'élément neutre de + (zéro) et de × (un)
+  prerequis_ids: [6e_NUM_Ch2_L1, 6e_NUM_Ch2_L2]
+  mots_cles: [commutativité, associativité, neutre, propriétés, addition, multiplication]
+  erreurs_frequentes:
+    - Appliquer la commutativité à la soustraction ou à la division
+
+- id: 6e_NUM_Ch2_L6
+  classe: 6e
+  domaine: numerique
+  chapitre: "Opérations sur les entiers et décimaux positifs"
+  lecon: "Distributivité de la multiplication par rapport à l'addition"
+  savoir: "Énoncer la propriété distributive : k(a+b) = ka + kb et k(a−b) = ka − kb"
+  savoir_faire:
+    - Développer une expression du type k(a+b) ou k(a−b)
+    - Factoriser une expression en mettant un facteur commun en évidence
+    - Appliquer la distributivité pour simplifier un calcul mental (ex : 99×7 = 100×7 − 7)
+  prerequis_ids: [6e_NUM_Ch2_L5]
+  mots_cles: [distributivité, développer, factoriser, facteur commun, k(a+b)]
+  erreurs_frequentes:
+    - Oublier de distribuer sur tous les termes : écrire k(a+b) = ka + b
+    - Confondre développement et factorisation
+
+- id: 6e_NUM_Ch3_L1
+  classe: 6e
+  domaine: numerique
+  chapitre: "Comparaison et rangement de nombres"
+  lecon: "Comparaison de deux décimaux — symboles < >"
+  savoir: "Utiliser correctement les symboles < et > (la pointe est toujours vers le plus petit)"
+  savoir_faire:
+    - Comparer deux décimaux et écrire la relation avec < ou >
+    - Encadrer un décimal entre deux entiers consécutifs
+    - Encadrer un décimal à un ordre donné (dixième, centième…)
+  prerequis_ids: [6e_NUM_Ch1_L2]
+  mots_cles: [symbole, inégalité, encadrement, consécutifs, ordre]
+  erreurs_frequentes:
+    - Inverser le sens de l'inégalité
+
+- id: 6e_NUM_Ch3_L2
+  classe: 6e
+  domaine: numerique
+  chapitre: "Comparaison et rangement de nombres"
+  lecon: "Approximation décimale — arrondi"
+  savoir: "Définir l'approximation par défaut et par excès à un ordre décimal donné"
+  savoir_faire:
+    - Donner une valeur approchée à 0,1 près (dixième) par défaut ou par excès
+    - Donner une valeur approchée à 0,01 près (centième) par défaut ou par excès
+    - Identifier la règle d'arrondi (chiffre suivant ≥ 5 → arrondi par excès)
+  prerequis_ids: [6e_NUM_Ch3_L1]
+  mots_cles: [approximation, arrondi, défaut, excès, dixième, centième]
+  erreurs_frequentes:
+    - Arrondir par excès même quand le chiffre suivant est < 5
+
+- id: 6e_NUM_Ch3_L3
+  classe: 6e
+  domaine: numerique
+  chapitre: "Comparaison et rangement de nombres"
+  lecon: "Ordre de grandeur d'un résultat"
+  savoir: "Comprendre l'utilité de l'ordre de grandeur pour contrôler un calcul"
+  savoir_faire:
+    - Estimer l'ordre de grandeur d'un produit ou d'une somme avant le calcul
+    - Détecter une erreur grossière grâce à l'ordre de grandeur
+  prerequis_ids: [6e_NUM_Ch3_L2]
+  mots_cles: [ordre de grandeur, estimation, contrôle, calcul mental]
+  erreurs_frequentes:
+    - Ne pas utiliser l'ordre de grandeur pour vérifier la vraisemblance d'un résultat
+
+- id: 6e_NUM_Ch4_L1
+  classe: 6e
+  domaine: numerique
+  chapitre: "Les fractions"
+  lecon: "Écriture fractionnaire d'un décimal positif"
+  savoir: "Définir numérateur et dénominateur ; reconnaître une fraction décimale"
+  savoir_faire:
+    - Écrire un décimal positif sous forme de fraction décimale (0,7 = 7/10)
+    - Identifier numérateur et dénominateur d'une fraction
+    - Reconnaître une fraction décimale (dénominateur puissance de 10)
+  prerequis_ids: [6e_NUM_Ch1_L1]
+  mots_cles: [fraction, numérateur, dénominateur, décimale, écriture fractionnaire]
+  erreurs_frequentes:
+    - Inverser numérateur et dénominateur
+    - Ne pas reconnaître qu'une fraction peut valoir plus de 1
+
+- id: 6e_NUM_Ch4_L2
+  classe: 6e
+  domaine: numerique
+  chapitre: "Les fractions"
+  lecon: "Écriture décimale d'une fraction décimale"
+  savoir: "Comprendre la correspondance fraction décimale ↔ écriture décimale"
+  savoir_faire:
+    - Convertir une fraction décimale en nombre décimal (7/100 = 0,07)
+    - Convertir un nombre décimal en fraction décimale
+  prerequis_ids: [6e_NUM_Ch4_L1]
+  mots_cles: [fraction décimale, conversion, écriture décimale, puissance de 10]
+  erreurs_frequentes:
+    - Mal placer la virgule lors de la conversion (7/100 écrit 0,7 au lieu de 0,07)
+
+- id: 6e_NUM_Ch4_L3
+  classe: 6e
+  domaine: numerique
+  chapitre: "Les fractions"
+  lecon: "Écriture d'un quotient de deux décimaux sous forme de fraction"
+  savoir: "Comprendre qu'un quotient a÷b s'écrit a/b"
+  savoir_faire:
+    - Écrire le quotient de deux décimaux sous forme fractionnaire
+    - Reconnaître qu'une fraction est un quotient
+  prerequis_ids: [6e_NUM_Ch4_L1, 6e_NUM_Ch2_L3]
+  mots_cles: [quotient, fraction, division, a/b]
+  erreurs_frequentes:
+    - Confondre a/b et b/a
+
+- id: 6e_NUM_Ch4_L4
+  classe: 6e
+  domaine: numerique
+  chapitre: "Les fractions"
+  lecon: "Addition de deux fractions"
+  savoir: "Connaître la règle d'addition de fractions (même dénominateur puis réduction)"
+  savoir_faire:
+    - Additionner deux fractions de même dénominateur
+    - Additionner deux fractions de dénominateurs différents (mise au même dénominateur)
+    - Simplifier le résultat si possible
+  prerequis_ids: [6e_NUM_Ch4_L1, 6e_NUM_Ch2_L1]
+  mots_cles: [addition, fractions, même dénominateur, dénominateur commun, mise au même dénominateur]
+  erreurs_frequentes:
+    - Additionner numérateurs ET dénominateurs : 1/3 + 1/4 = 2/7
+    - Ne pas réduire le résultat
+
+- id: 6e_NUM_Ch4_L5
+  classe: 6e
+  domaine: numerique
+  chapitre: "Les fractions"
+  lecon: "Addition d'un entier et d'une fraction"
+  savoir: "Convertir un entier en fraction de même dénominateur avant d'additionner"
+  savoir_faire:
+    - Exprimer un entier sous forme d'une fraction de dénominateur donné (3 = 3b/b)
+    - Additionner un entier et une fraction
+    - Convertir le résultat en nombre mixte si approprié
+  prerequis_ids: [6e_NUM_Ch4_L4]
+  mots_cles: [entier, fraction, nombre mixte, addition, dénominateur]
+  erreurs_frequentes:
+    - Ajouter l'entier au numérateur sans convertir
+
+- id: 6e_NUM_Ch4_L6
+  classe: 6e
+  domaine: numerique
+  chapitre: "Les fractions"
+  lecon: "Multiplication d'un décimal par une fraction"
+  savoir: "Comprendre qu'une fraction d'une quantité est une multiplication"
+  savoir_faire:
+    - Calculer une fraction d'une quantité (ex : 3/4 de 120 = 120 × 3/4)
+    - Multiplier un décimal par une fraction
+    - Calculer un pourcentage simple via la multiplication par une fraction (25% = 1/4)
+  prerequis_ids: [6e_NUM_Ch4_L1, 6e_NUM_Ch2_L2]
+  mots_cles: [fraction d'une quantité, pourcentage, multiplication, fraction, décimal]
+  erreurs_frequentes:
+    - Diviser par le numérateur au lieu de multiplier
+    - Confondre "3/4 de 120" et "120 ÷ 4 × 3" (ordre des opérations)
+
+- id: 6e_NUM_Ch4_L7
+  classe: 6e
+  domaine: numerique
+  chapitre: "Les fractions"
+  lecon: "Encadrement d'une fraction par deux décimaux"
+  savoir: "Comprendre qu'une fraction a/b peut être encadrée par des décimaux"
+  savoir_faire:
+    - Encadrer une fraction par deux décimaux consécutifs à l'ordre demandé
+    - Donner une valeur approchée décimale d'une fraction
+  prerequis_ids: [6e_NUM_Ch4_L2, 6e_NUM_Ch3_L2]
+  mots_cles: [encadrement, fraction, approximation, valeur approchée]
+  erreurs_frequentes:
+    - Mal effectuer la division pour trouver l'écriture décimale approchée
+
+- id: 6e_NUM_Ch4_L8
+  classe: 6e
+  domaine: numerique
+  chapitre: "Les fractions"
+  lecon: "Critères de divisibilité par 2, 3, 5, 9 et 10"
+  savoir: "Connaître les 5 critères de divisibilité par 2, 3, 5, 9 et 10"
+  savoir_faire:
+    - Reconnaître si un entier est divisible par 2 (chiffre des unités pair)
+    - Reconnaître si un entier est divisible par 3 (somme des chiffres divisible par 3)
+    - Reconnaître si un entier est divisible par 5 (unités = 0 ou 5)
+    - Reconnaître si un entier est divisible par 9 (somme des chiffres divisible par 9)
+    - Reconnaître si un entier est divisible par 10 (unités = 0)
+    - Combiner les critères pour tester la divisibilité par 6, 15, 18, etc.
+  prerequis_ids: [6e_NUM_Ch1_L1]
+  mots_cles: [divisibilité, critère, 2, 3, 5, 9, 10, chiffre des unités, somme des chiffres]
+  erreurs_frequentes:
+    - Confondre le critère de 3 et celui de 9
+    - Ne pas appliquer le critère de 3 correctement (sommer tous les chiffres)
+
+- id: 6e_NUM_Ch4_L9
+  classe: 6e
+  domaine: numerique
+  chapitre: "Les fractions"
+  lecon: "Simplification d'une fraction"
+  savoir: "Comprendre qu'une fraction est irréductible quand numérateur et dénominateur n'ont pas de diviseur commun autre que 1"
+  savoir_faire:
+    - Simplifier une fraction en divisant numérateur et dénominateur par un diviseur commun
+    - Vérifier qu'une fraction est irréductible (aucun diviseur commun > 1)
+    - Trouver la fraction irréductible équivalente à une fraction donnée
+  prerequis_ids: [6e_NUM_Ch4_L8, 6e_NUM_Ch4_L1]
+  mots_cles: [simplification, irréductible, fraction, diviseur commun, réduction]
+  erreurs_frequentes:
+    - Diviser seulement le numérateur ou seulement le dénominateur
+    - Croire qu'une fraction est irréductible après une seule simplification partielle
+
+- id: 6e_NUM_Ch5_L1
+  classe: 6e
+  domaine: numerique
+  chapitre: "Égalité à trous — initiation aux équations"
+  lecon: "Résoudre des égalités à trous par essai/ajustement"
+  savoir: "Comprendre qu'une égalité à trou est une équation simple à résoudre par intuition"
+  savoir_faire:
+    - Compléter une égalité du type a + □ = b (trouver l'inconnue)
+    - Compléter une égalité du type a × □ = b
+    - Compléter une égalité du type □ ÷ a = b
+    - Résoudre un problème concret conduisant à une égalité à trou
+  prerequis_ids: [6e_NUM_Ch2_L4]
+  mots_cles: [égalité, inconnue, trou, équation, résolution, intuitive]
+  erreurs_frequentes:
+    - Ne pas vérifier la solution en la substituant dans l'égalité
+
+- id: 6e_NUM_Ch6_L1
+  classe: 6e
+  domaine: numerique
+  chapitre: "Nombres relatifs"
+  lecon: "Introduction des nombres relatifs — ensemble ℤ et ⅅ"
+  savoir: "Comprendre le concept de nombre relatif à partir de situations concrètes (température, altitude, crédit/débit)"
+  savoir_faire:
+    - Situer un nombre relatif sur une droite graduée
+    - Lire et écrire des nombres relatifs avec leur signe
+    - Distinguer un nombre positif, négatif et zéro
+    - Interpréter un nombre relatif dans un contexte réel (thermomètre, altitude)
+  prerequis_ids: [6e_NUM_Ch1_L1]
+  mots_cles: [relatif, positif, négatif, signe, droite graduée, ℤ, température, altitude, opposé]
+  erreurs_frequentes:
+    - Confondre le signe du nombre et le signe de l'opération
+    - Croire que tout nombre négatif est "inférieur à tout positif" sans appliquer la valeur
+
+- id: 6e_NUM_Ch6_L2
+  classe: 6e
+  domaine: numerique
+  chapitre: "Nombres relatifs"
+  lecon: "Addition de deux nombres relatifs"
+  savoir: "Connaître les deux règles d'addition : mêmes signes → somme, signes différents → différence"
+  savoir_faire:
+    - Additionner deux nombres relatifs de même signe
+    - Additionner deux nombres relatifs de signes opposés
+    - Simplifier une somme de plusieurs relatifs
+  prerequis_ids: [6e_NUM_Ch6_L1, 6e_NUM_Ch2_L1]
+  mots_cles: [addition, relatifs, signes, même signe, signes contraires, somme]
+  erreurs_frequentes:
+    - Appliquer "moins par moins égal plus" à l'addition (règle valable pour la multiplication)
+    - Oublier de comparer les valeurs absolues pour les signes différents
+
+- id: 6e_NUM_Ch6_L3
+  classe: 6e
+  domaine: numerique
+  chapitre: "Nombres relatifs"
+  lecon: "Opposé d'un nombre relatif"
+  savoir: "Définir l'opposé : a + (-a) = 0 ; l'opposé de (+a) est (-a) et réciproquement"
+  savoir_faire:
+    - Donner l'opposé d'un nombre relatif
+    - Soustraire un nombre relatif en ajoutant son opposé (a − b = a + (−b))
+  prerequis_ids: [6e_NUM_Ch6_L2]
+  mots_cles: [opposé, soustraction, relatifs, a-b, règle de soustraction]
+  erreurs_frequentes:
+    - Écrire −(−a) = −a au lieu de +a
+
+- id: 6e_NUM_Ch6_L4
+  classe: 6e
+  domaine: numerique
+  chapitre: "Nombres relatifs"
+  lecon: "Valeur absolue d'un nombre relatif"
+  savoir: "Définir la valeur absolue d'un nombre a comme la distance de a à 0, toujours positive ou nulle"
+  savoir_faire:
+    - Calculer la valeur absolue d'un nombre relatif
+    - Utiliser la valeur absolue pour mesurer la distance entre deux nombres sur la droite
+  prerequis_ids: [6e_NUM_Ch6_L1]
+  mots_cles: [valeur absolue, distance, module, abs(a)]
+  erreurs_frequentes:
+    - Croire que |−5| = −5
+
+- id: 6e_NUM_Ch6_L5
+  classe: 6e
+  domaine: numerique
+  chapitre: "Nombres relatifs"
+  lecon: "Comparaison et rangement de nombres relatifs"
+  savoir: "Comprendre que sur la droite graduée, les nombres sont rangés de gauche à droite en ordre croissant"
+  savoir_faire:
+    - Comparer deux nombres relatifs
+    - Ranger plusieurs nombres relatifs par ordre croissant ou décroissant
+  prerequis_ids: [6e_NUM_Ch6_L1, 6e_NUM_Ch3_L1]
+  mots_cles: [comparaison, relatifs, ordre, croissant, décroissant, droite graduée]
+  erreurs_frequentes:
+    - Croire que −10 > −2 car "10 est plus grand que 2"
+
+- id: 6e_NUM_Ch7_L1
+  classe: 6e
+  domaine: numerique
+  chapitre: "Relations et fonctions"
+  lecon: "Vocabulaire et notation — ensembles, liens"
+  savoir: "Définir une relation comme un lien entre deux ensembles ; distinguer ensemble de départ et d'arrivée"
+  savoir_faire:
+    - Identifier ensemble de départ, ensemble d'arrivée, ensemble des couples
+    - Reconnaître si une relation est une fonction (tout élément de départ a une image unique)
+    - Utiliser la notation f(x) = y
+  prerequis_ids: [6e_NUM_Ch1_L1]
+  mots_cles: [relation, fonction, ensemble, image, antécédent, départ, arrivée, f(x)]
+  erreurs_frequentes:
+    - Confondre image et antécédent
+
+- id: 6e_NUM_Ch7_L2
+  classe: 6e
+  domaine: numerique
+  chapitre: "Relations et fonctions"
+  lecon: "Représentation par diagramme sagittal ou tableau de données"
+  savoir: "Maîtriser les deux modes de représentation non-graphiques d'une relation"
+  savoir_faire:
+    - Construire un diagramme sagittal à partir d'une liste de couples
+    - Construire un tableau de données (entrée/sortie) à partir d'une relation
+    - Lire image et antécédent sur un diagramme sagittal
+  prerequis_ids: [6e_NUM_Ch7_L1]
+  mots_cles: [diagramme sagittal, tableau, flèche, image, antécédent]
+  erreurs_frequentes:
+    - Inverser le sens des flèches dans le diagramme sagittal
+
+- id: 6e_NUM_Ch7_L3
+  classe: 6e
+  domaine: numerique
+  chapitre: "Relations et fonctions"
+  lecon: "Représentation graphique d'une relation"
+  savoir: "Comprendre qu'un graphique dans un repère représente une relation entre deux variables"
+  savoir_faire:
+    - Construire un graphique à partir d'un tableau de données
+    - Lire les coordonnées d'un point sur un graphique
+    - Déterminer l'image ou l'antécédent graphiquement
+  prerequis_ids: [6e_NUM_Ch7_L2, 6e_GEO_Ch5_L1]
+  mots_cles: [graphique, repère, coordonnées, abscisse, ordonnée, courbe]
+  erreurs_frequentes:
+    - Inverser abscisse et ordonnée lors du placement d'un point
+
+- id: 6e_NUM_Ch8_L1
+  classe: 6e
+  domaine: numerique
+  chapitre: "Proportionnalité"
+  lecon: "Définition des suites proportionnelles"
+  savoir: "Définir la proportionnalité : deux suites sont proportionnelles si leurs rapports sont tous égaux (coefficient de proportionnalité)"
+  savoir_faire:
+    - Reconnaître si deux suites de nombres sont proportionnelles
+    - Calculer le coefficient de proportionnalité
+    - Compléter un tableau de proportionnalité
+  prerequis_ids: [6e_NUM_Ch4_L6]
+  mots_cles: [proportionnalité, coefficient, rapport, tableau, suites proportionnelles]
+  erreurs_frequentes:
+    - Confondre tableau additif et tableau multiplicatif
+    - Croire que si a/b = c/d alors a−b = c−d
+
+- id: 6e_NUM_Ch8_L2
+  classe: 6e
+  domaine: numerique
+  chapitre: "Proportionnalité"
+  lecon: "Représentation graphique de la proportionnalité"
+  savoir: "Comprendre que la représentation graphique d'une proportionnalité est une droite passant par l'origine"
+  savoir_faire:
+    - Construire le graphique d'une situation de proportionnalité
+    - Reconnaître graphiquement si une situation est proportionnelle
+    - Lire des valeurs sur le graphique
+  prerequis_ids: [6e_NUM_Ch8_L1, 6e_NUM_Ch7_L3]
+  mots_cles: [graphique, proportionnalité, droite, origine, lecture graphique]
+  erreurs_frequentes:
+    - Tracer une droite ne passant pas par l'origine et conclure à la proportionnalité
+
+- id: 6e_NUM_Ch8_L3
+  classe: 6e
+  domaine: numerique
+  chapitre: "Proportionnalité"
+  lecon: "Calcul de la quatrième proportionnelle"
+  savoir: "Méthodes : règle de trois, produits en croix, retour à l'unité"
+  savoir_faire:
+    - Calculer la quatrième proportionnelle par la règle de trois
+    - Calculer la quatrième proportionnelle par le produit en croix (a/b = c/x → x = bc/a)
+    - Résoudre un problème de proportionnalité par le retour à l'unité
+  prerequis_ids: [6e_NUM_Ch8_L1]
+  mots_cles: [quatrième proportionnelle, règle de trois, produit en croix, retour unité]
+  erreurs_frequentes:
+    - Appliquer le produit en croix sans vérifier la structure proportionnelle
+    - Inverser le rapport (multiplier là où il faut diviser)
+
+- id: 6e_NUM_Ch8_L4
+  classe: 6e
+  domaine: numerique
+  chapitre: "Proportionnalité"
+  lecon: "Applications : vitesse, prix, durée"
+  savoir: "Connaître les formules v = d/t, coût = prix unitaire × quantité"
+  savoir_faire:
+    - Calculer une vitesse moyenne à partir de distance et durée
+    - Calculer un coût total ou un prix unitaire
+    - Résoudre des problèmes de conversion d'unités (km/h ↔ m/s)
+  prerequis_ids: [6e_NUM_Ch8_L3]
+  mots_cles: [vitesse, prix, durée, distance, coût, problème, unité]
+  erreurs_frequentes:
+    - Confondre distance = vitesse × temps avec temps = distance × vitesse
+
+- id: 6e_NUM_Ch8_L5
+  classe: 6e
+  domaine: numerique
+  chapitre: "Proportionnalité"
+  lecon: "Pourcentages"
+  savoir: "Comprendre qu'un pourcentage est une fraction de dénominateur 100"
+  savoir_faire:
+    - Calculer x% d'une quantité (multiplier par x/100)
+    - Exprimer une valeur sous forme de pourcentage d'un total
+    - Résoudre des problèmes concrets : réduction, augmentation, taux
+  prerequis_ids: [6e_NUM_Ch8_L3, 6e_NUM_Ch4_L6]
+  mots_cles: [pourcentage, pourcent, fraction, 100, taux, réduction, augmentation]
+  erreurs_frequentes:
+    - Calculer 15% de 80 en faisant 80 + 15 au lieu de 80 × 0,15
+    - Confondre "augmenter de 10%" et "multiplier par 10"
+
+# ─── ACTIVITÉS GÉOMÉTRIQUES ───────────────────────────────────────────────────
+
+- id: 6e_GEO_Ch1_L1
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Éléments de géométrie et vocabulaire"
+  lecon: "Droites du plan — notation, propriétés, positions relatives"
+  savoir: "Connaître les objets géométriques de base : point, droite, demi-droite, segment"
+  savoir_faire:
+    - Nommer et noter une droite (ex : droite (AB) ou droite (d))
+    - Reconnaître et tracer une droite, une demi-droite, un segment
+    - Identifier les positions relatives de deux droites (sécantes, parallèles, confondues)
+    - Placer un point sur une droite ou en dehors
+  prerequis_ids: []
+  mots_cles: [droite, segment, demi-droite, point, sécantes, parallèles, notation]
+  erreurs_frequentes:
+    - Confondre droite et segment (une droite est infinie)
+    - Mal noter la droite (oublier les doubles flèches ou les parenthèses)
+
+- id: 6e_GEO_Ch1_L2
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Éléments de géométrie et vocabulaire"
+  lecon: "Demi-droites et segments — mesure, milieu"
+  savoir: "Définir le milieu d'un segment ; comprendre la longueur d'un segment"
+  savoir_faire:
+    - Mesurer un segment au mm près
+    - Construire un segment de longueur donnée
+    - Trouver et placer le milieu d'un segment
+    - Utiliser la notation [AB] pour un segment et sa longueur AB
+  prerequis_ids: [6e_GEO_Ch1_L1]
+  mots_cles: [segment, longueur, milieu, mesure, compas, règle graduée]
+  erreurs_frequentes:
+    - Confondre [AB] (segment) et AB (longueur)
+    - Mal placer le milieu (ne pas utiliser le compas)
+
+- id: 6e_GEO_Ch1_L3
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Éléments de géométrie et vocabulaire"
+  lecon: "Angles — définition, mesure, types"
+  savoir: "Définir un angle ; connaître les types : aigu, droit, obtus, plat, rentrant"
+  savoir_faire:
+    - Identifier et nommer un angle avec sa notation (∠ABC)
+    - Mesurer un angle au rapporteur
+    - Tracer un angle de mesure donnée
+    - Classer un angle selon sa mesure (aigu < 90° < obtus < 180°)
+    - Construire la bissectrice d'un angle
+  prerequis_ids: [6e_GEO_Ch1_L1]
+  mots_cles: [angle, rapporteur, degré, aigu, droit, obtus, plat, bissectrice, mesure]
+  erreurs_frequentes:
+    - Lire la mauvaise graduation du rapporteur (double graduation)
+    - Confondre l'angle et sa mesure en degrés
+
+- id: 6e_GEO_Ch2_L1
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Droites perpendiculaires et parallèles"
+  lecon: "Droites perpendiculaires — définition et construction"
+  savoir: "Définir la perpendicularité : deux droites perpendiculaires forment un angle droit (90°)"
+  savoir_faire:
+    - Reconnaître deux droites perpendiculaires à l'équerre
+    - Tracer la perpendiculaire à une droite passant par un point donné
+    - Tracer la médiatrice d'un segment (perpendiculaire au milieu)
+  prerequis_ids: [6e_GEO_Ch1_L1, 6e_GEO_Ch1_L3]
+  mots_cles: [perpendiculaire, angle droit, équerre, médiatrice, 90°]
+  erreurs_frequentes:
+    - Ne pas utiliser l'équerre pour vérifier la perpendicularité
+    - Confondre médiatrice et bissectrice
+
+- id: 6e_GEO_Ch2_L2
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Droites perpendiculaires et parallèles"
+  lecon: "Droites parallèles — définition, propriétés et construction"
+  savoir: "Définir des droites parallèles comme n'ayant aucun point commun dans le plan"
+  savoir_faire:
+    - Reconnaître des droites parallèles à l'équerre et à la règle
+    - Tracer la parallèle à une droite passant par un point donné
+    - Appliquer : si deux droites sont perpendiculaires à une même droite, elles sont parallèles
+  prerequis_ids: [6e_GEO_Ch2_L1]
+  mots_cles: [parallèles, équidistantes, équerre, règle, construction, propriété]
+  erreurs_frequentes:
+    - Tracer deux droites qui "semblent" parallèles sans utiliser les instruments
+
+- id: 6e_GEO_Ch3_L1
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Triangles"
+  lecon: "Vocabulaire et classification des triangles"
+  savoir: "Connaître les types de triangles : quelconque, isocèle, équilatéral, rectangle, rectangle isocèle"
+  savoir_faire:
+    - Identifier et nommer les éléments d'un triangle (sommets, côtés, angles, hauteurs, médianes, médiatrices)
+    - Classer un triangle selon ses angles (rectangle, acutangle, obtusangle)
+    - Classer un triangle selon ses côtés (quelconque, isocèle, équilatéral)
+    - Calculer le périmètre d'un triangle
+  prerequis_ids: [6e_GEO_Ch1_L1, 6e_GEO_Ch1_L3]
+  mots_cles: [triangle, isocèle, équilatéral, rectangle, sommet, côté, périmètre, hauteur, médiane]
+  erreurs_frequentes:
+    - Confondre hauteur et médiane d'un triangle
+
+- id: 6e_GEO_Ch3_L2
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Triangles"
+  lecon: "Inégalité triangulaire et construction d'un triangle"
+  savoir: "Connaître la condition d'existence d'un triangle : la somme de deux côtés doit être supérieure au troisième"
+  savoir_faire:
+    - Vérifier si trois longueurs peuvent former un triangle (inégalité triangulaire)
+    - Construire un triangle connaissant ses trois côtés (au compas)
+    - Construire un triangle connaissant deux côtés et l'angle compris
+    - Calculer un angle manquant sachant que la somme des angles = 180°
+  prerequis_ids: [6e_GEO_Ch3_L1, 6e_GEO_Ch1_L3]
+  mots_cles: [inégalité triangulaire, construction, compas, somme des angles, 180°]
+  erreurs_frequentes:
+    - Oublier que la somme des angles d'un triangle vaut 180°
+    - Ne pas utiliser le compas pour la construction
+
+- id: 6e_GEO_Ch4_L1
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Cercle et disque"
+  lecon: "Définitions : cercle, disque, rayon, diamètre, corde, arc"
+  savoir: "Distinguer cercle (frontière) et disque (surface) ; connaître les éléments du cercle"
+  savoir_faire:
+    - Construire un cercle de centre et rayon donnés au compas
+    - Identifier rayon, diamètre, corde, arc sur un cercle
+    - Calculer le périmètre (2πR) et l'aire d'un disque (πR²)
+    - Appliquer d = 2R
+  prerequis_ids: [6e_GEO_Ch1_L2]
+  mots_cles: [cercle, disque, rayon, diamètre, corde, arc, périmètre, aire, π]
+  erreurs_frequentes:
+    - Confondre rayon et diamètre dans les formules
+    - Confondre périmètre du cercle et aire du disque
+
+- id: 6e_GEO_Ch5_L1
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Repérage dans le plan"
+  lecon: "Repère cartésien — coordonnées d'un point"
+  savoir: "Définir un repère (O,I,J) et les coordonnées (abscisse, ordonnée) d'un point"
+  savoir_faire:
+    - Placer un point de coordonnées données dans un repère
+    - Lire les coordonnées d'un point placé dans un repère
+    - Identifier l'abscisse (x) et l'ordonnée (y) d'un point
+  prerequis_ids: [6e_NUM_Ch1_L1, 6e_GEO_Ch1_L1]
+  mots_cles: [repère, coordonnées, abscisse, ordonnée, origine, x, y, placement]
+  erreurs_frequentes:
+    - Inverser abscisse et ordonnée : placer (3,4) en y=3 x=4
+    - Mal lire l'échelle du repère
+
+- id: 6e_GEO_Ch6_L1
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Symétrie axiale"
+  lecon: "Définition et construction du symétrique d'un point par rapport à une droite"
+  savoir: "Définir la symétrie axiale : M' est le symétrique de M par rapport à (d) si (d) est la médiatrice de [MM']"
+  savoir_faire:
+    - Construire le symétrique d'un point par rapport à une droite (à l'équerre et au compas)
+    - Construire le symétrique d'une figure par rapport à un axe
+    - Identifier si une figure a un axe de symétrie
+  prerequis_ids: [6e_GEO_Ch2_L1, 6e_GEO_Ch1_L2]
+  mots_cles: [symétrie axiale, axe, symétrique, médiatrice, équerre, compas, figure]
+  erreurs_frequentes:
+    - Ne pas vérifier que l'axe est bien la médiatrice de [MM']
+    - Confondre symétrie axiale et symétrie centrale
+
+- id: 6e_GEO_Ch7_L1
+  classe: 6e
+  domaine: geometrique
+  chapitre: "Aires et périmètres"
+  lecon: "Périmètres et aires des figures usuelles"
+  savoir: "Connaître les formules d'aire du carré, rectangle, triangle, parallélogramme et disque"
+  savoir_faire:
+    - Calculer le périmètre d'un polygone
+    - Calculer l'aire d'un rectangle (L×l), d'un carré (c²), d'un triangle (b×h/2)
+    - Calculer l'aire d'un parallélogramme (b×h)
+    - Distinguer périmètre (longueur du contour) et aire (surface intérieure)
+    - Convertir des unités d'aire (cm² → m², dm² → cm²…)
+  prerequis_ids: [6e_GEO_Ch3_L1, 6e_GEO_Ch4_L1]
+  mots_cles: [aire, périmètre, rectangle, carré, triangle, parallélogramme, formule, unité]
+  erreurs_frequentes:
+    - Confondre périmètre et aire
+    - Utiliser la formule du périmètre du rectangle pour calculer son aire
+    - Mal identifier la hauteur du triangle (perpendiculaire à la base)

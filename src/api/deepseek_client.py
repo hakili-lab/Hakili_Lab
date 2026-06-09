@@ -25,6 +25,7 @@ from src.models.domain import (
     ClaudeResponse,
     CopyGrade,
     DiagnosticResult,
+    RemediationSubject,
     Rubric,
     TranscriptionResult,
 )
@@ -149,9 +150,11 @@ def _load_prompt(filename: str) -> str:
 def _is_retryable_openai(exc: BaseException) -> bool:
     try:
         from openai import APIStatusError, APIConnectionError, APITimeoutError
+        if isinstance(exc, APITimeoutError):
+            return False  # timeout R1 = modèle trop lent → fallback immédiat, pas de retry
         if isinstance(exc, APIStatusError):
             return exc.status_code in (429, 500, 503)
-        return isinstance(exc, (APIConnectionError, APITimeoutError))
+        return isinstance(exc, APIConnectionError)
     except ImportError:
         return False
 
@@ -182,9 +185,11 @@ class DeepSeekClient:
         self._client = OpenAI(
             api_key=settings.deepseek_api_key,
             base_url="https://api.deepseek.com",
+            timeout=90.0,   # 90s max — évite le blocage de l'UI sur R1 chain-of-thought
         )
         self._grading_prompt = _load_prompt("grading_prompt.md")
         self._diagnostic_prompt = _load_prompt("diagnostic_prompt.md")
+        self._remediation_prompt = _load_prompt("remediation_subject_prompt.md")
         logger.info(
             "DeepSeekClient initialisé (grading=%s, diagnostic=%s)",
             settings.deepseek_model_v3, settings.deepseek_model_r1,
@@ -199,6 +204,7 @@ class DeepSeekClient:
         rubric: Rubric,
         subject_text: str,
         expert_instructions: str = "",
+        official_answers: str = "",
         temperature: float = 0,
     ) -> ClaudeResponse:
         """Correction selon barème via DeepSeek V3 — json_object forcé."""
@@ -207,6 +213,10 @@ class DeepSeekClient:
         expert_block = (
             f"\n\nINSTRUCTIONS EXPERT:\n{expert_instructions}"
             if expert_instructions.strip() else ""
+        )
+        official_block = (
+            f"\n\n{official_answers}"
+            if official_answers.strip() else ""
         )
         auto_block = (
             "\n\nINSTRUCTION SPÉCIALE : Aucun barème ni corrigé fourni. "
@@ -228,7 +238,7 @@ class DeepSeekClient:
         )
 
         user_content = (
-            f"{self._grading_prompt}{auto_block}{expert_block}"
+            f"{self._grading_prompt}{auto_block}{official_block}{expert_block}"
             f"\n\nÉNONCÉ:\n{subject_text}"
             f"\n\nBARÈME:\n{rubric.model_dump_json(indent=2)}"
             f"\n\nTRANSCRIPTION:\n{transcription.model_dump_json(indent=2)}"
@@ -268,7 +278,7 @@ class DeepSeekClient:
     # ── Diagnostic (R1) ───────────────────────────────────────────────────────
 
     @_retry
-    def diagnose(self, grades: CopyGrade) -> ClaudeResponse:
+    def diagnose(self, grades: CopyGrade, curriculum_context: str = "") -> ClaudeResponse:
         """
         Diagnostic pédagogique via DeepSeek R1 (modèle de raisonnement).
 
@@ -278,8 +288,11 @@ class DeepSeekClient:
         """
         logger.info("[%s] DeepSeek diagnostic — modèle : %s",
                     grades.copy_id, settings.deepseek_model_r1)
+        base_prompt = self._diagnostic_prompt.replace(
+            "{{CURRICULUM_CONTEXT}}", curriculum_context or ""
+        )
         user_content = (
-            f"{self._diagnostic_prompt}"
+            f"{base_prompt}"
             f"\n\nRÉSULTATS DE CORRECTION:\n{grades.model_dump_json(indent=2)}"
             f"\n\nRetourne UNIQUEMENT un objet JSON valide avec cette structure exacte :"
             f"\n{_DIAGNOSTIC_SCHEMA}"
@@ -289,7 +302,7 @@ class DeepSeekClient:
             response = self._client.chat.completions.create(
                 model=settings.deepseek_model_r1,
                 messages=[{"role": "user", "content": user_content}],
-                max_tokens=8192,
+                max_tokens=4096,  # 4096 suffit pour le JSON diagnostic ; réduit le temps R1
                 # R1 : pas de temperature, pas de response_format, pas de system
             )
             raw = response.choices[0].message.content or ""
@@ -307,5 +320,42 @@ class DeepSeekClient:
             return _parse_json_response(raw, DiagnosticResult)
         except Exception as e:
             logger.error("DeepSeek R1 diagnose erreur : %s", e)
+            return ClaudeResponse(success=False, data=None, confidence=0.0,
+                                  raw_response="", error=str(e))
+
+    # ── Remédiation (V3) ──────────────────────────────────────────────────────
+
+    @_retry
+    def generate_remediation_subject(self, diagnostic: DiagnosticResult) -> ClaudeResponse:
+        """Génère des exercices de remédiation via DeepSeek V3."""
+        logger.info("[%s] DeepSeek remédiation — modèle : %s",
+                    diagnostic.copy_id, settings.deepseek_model_v3)
+        if not diagnostic.weaknesses and not diagnostic.root_causes:
+            return ClaudeResponse(
+                success=False, data=None, confidence=0.0, raw_response="",
+                error="Aucune difficulté identifiée — pas de sujet de remédiation à générer.",
+            )
+        n_series = len(diagnostic.weaknesses) or len(diagnostic.root_causes)
+        user_content = (
+            f"{self._remediation_prompt}"
+            f"\n\n---\n\nDIAGNOSTIC ({n_series} difficulté(s) à couvrir):\n"
+            f"{diagnostic.model_dump_json(indent=2)}"
+        )
+        try:
+            response = self._client.chat.completions.create(
+                model=settings.deepseek_model_v3,
+                messages=[{"role": "user", "content": user_content}],
+                response_format={"type": "json_object"},
+                max_tokens=8192,
+                temperature=0.4,
+            )
+            raw = response.choices[0].message.content or ""
+            logger.info(
+                "DeepSeek V3 remédiation OK — tokens: %d in / %d out",
+                response.usage.prompt_tokens, response.usage.completion_tokens,
+            )
+            return _parse_json_response(raw, RemediationSubject)
+        except Exception as e:
+            logger.error("DeepSeek V3 generate_remediation_subject erreur : %s", e)
             return ClaudeResponse(success=False, data=None, confidence=0.0,
                                   raw_response="", error=str(e))
