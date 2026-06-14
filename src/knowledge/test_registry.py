@@ -33,16 +33,24 @@ _KB_DIR = _ROOT / "data" / "knowledge"
 
 _TEST_CATALOG: dict[str, dict] = {
     "hakili_3e_v1": {
-        "label": "Test d'entrée en 3e — Hakili Lab",
-        "description": "Évalue les compétences 6e → 4e (NUM + GEO)",
+        "label": "Test diagnostique Hakili 3e v1",
+        "description": "Évalue les acquis de la 6e à la 4e (calcul et géométrie)",
         "niveaux": "6e · 5e · 4e",
         "docx_filename": "Hakilisso test de niveau 3e.docx",
         "bareme_yaml": "bareme_test_3e.yaml",
         "corrige_yaml": "corrige_test_3e.yaml",
     },
+    "hakili_3e_v2": {
+        "label": "Test diagnostique Hakili 3e v2",
+        "description": "Évalue les acquis de la 6e à la 4e (calcul et géométrie) — version 2",
+        "niveaux": "6e · 5e · 4e",
+        "docx_filename": "Test-niveau 3ieme v2.docx",
+        "bareme_yaml": "bareme_test_3e_v2.yaml",
+        "corrige_yaml": "corrige_test_3e_v2.yaml",
+    },
     "hakili_6e_v1": {
-        "label": "Test d'entrée en 6e — Hakili Lab",
-        "description": "Évalue les compétences primaires CE1 → CM2 (NUM + GEO)",
+        "label": "Test diagnostique Hakili 6e v1",
+        "description": "Évalue les acquis du CE1 au CM2 (calcul et géométrie)",
         "niveaux": "CE1 · CE2 · CM1 · CM2",
         "docx_filename": "TEST DE NIVEAU,6eme,GROUPE 1.docx",
         "bareme_yaml": "bareme_test_6e.yaml",
@@ -109,12 +117,15 @@ def _build_rubric_from_yaml(bareme_yaml_path: Path) -> tuple["Rubric", int]:
         for q in raw.get(section, []):
             qid = q.get("id", "")
             label = q.get("enonce_court", qid)
+            pts = float(q.get("points_originaux", 1.0))
             if qid:
-                items.append(RubricItem(id=qid, label=label))
+                items.append(RubricItem(id=qid, label=label, max_score=pts))
 
+    meta = raw.get("meta", {})
+    total_pts = float(meta.get("total_possible") or sum(i.max_score for i in items))
     rubric = Rubric(
         subject="mathematics",
-        total_points=len(items),
+        total_points=total_pts,
         items=items,
     )
     return rubric, len(items)

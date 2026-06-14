@@ -7,6 +7,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 import anthropic
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pydantic import BaseModel
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
@@ -86,15 +87,15 @@ _GRADING_TOOL: dict[str, Any] = {
         "type": "object",
         "properties": {
             "copy_id": {"type": "string"},
-            "total_score": {"type": "integer"},
-            "total_possible": {"type": "integer"},
+            "total_score": {"type": "number"},
+            "total_possible": {"type": "number"},
             "questions": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
                         "rubric_item_id": {"type": "string"},
-                        "score": {"type": "integer", "enum": [0, 1]},
+                        "score": {"type": "number", "minimum": 0},
                         "confidence": {"type": "number"},
                         "comment": {"type": "string"},
                         "observed_answer": {"type": "string"},
@@ -176,7 +177,7 @@ _RUBRIC_EXTRACTION_TOOL: dict[str, Any] = {
 
 
 class _ExtractedRubric(BaseModel):
-    total_points: int = 0
+    total_points: float = 0.0
     items: list[dict] = []
 
 
@@ -188,6 +189,7 @@ _CLOSE_MAP: dict[str, str] = {"[": "]", "{": "}"}
 
 
 def _close_json(text: str) -> str:
+    """Répare un JSON tronqué : ferme les strings ouvertes puis les brackets."""
     stack: list[str] = []
     in_string = False
     i = 0
@@ -204,7 +206,9 @@ def _close_json(text: str) -> str:
             elif c in ("}", "]") and stack:
                 stack.pop()
         i += 1
-    return text + "".join(_CLOSE_MAP[c] for c in reversed(stack))
+    # Si on est en plein milieu d'une string (troncature), la fermer d'abord
+    suffix = ('"' if in_string else "") + "".join(_CLOSE_MAP[c] for c in reversed(stack))
+    return text + suffix
 
 
 def _is_retryable(exc: BaseException) -> bool:
@@ -228,6 +232,7 @@ class ClaudeClient:
         self._grading_prompt = self._load_prompt("grading_prompt.md")
         self._diagnostic_prompt = self._load_prompt("diagnostic_prompt.md")
         self._remediation_subject_prompt = self._load_prompt("remediation_subject_prompt.md")
+        self._enrichment_subject_prompt = self._load_prompt("enrichment_subject_prompt.md")
 
     def _load_prompt(self, filename: str) -> str:
         prompt_path = Path(__file__).parent.parent.parent / "prompts" / filename
@@ -243,14 +248,33 @@ class ClaudeClient:
         return self._transcribe_batched(copy_id, image_paths)
 
     def _transcribe_batched(self, copy_id: str, image_paths: list[Path]) -> ClaudeResponse:
+        batches = [
+            (start, image_paths[start : start + _MAX_PAGES_PER_BATCH])
+            for start in range(0, len(image_paths), _MAX_PAGES_PER_BATCH)
+        ]
+
+        batch_results: list[tuple[int, ClaudeResponse]] = []
+        with ThreadPoolExecutor(max_workers=len(batches)) as pool:
+            future_to_offset = {
+                pool.submit(self._transcribe_batch, copy_id, batch, offset): offset
+                for offset, batch in batches
+            }
+            for fut in as_completed(future_to_offset):
+                offset = future_to_offset[fut]
+                try:
+                    resp = fut.result()
+                except Exception as exc:
+                    logger.error("Claude batch (offset=%d, copy_id=%s) exception : %s", offset, copy_id, exc)
+                    return ClaudeResponse(success=False, data=None, confidence=0.0, raw_response="", error=str(exc))
+                if not resp.success or resp.data is None:
+                    return resp
+                batch_results.append((offset, resp))
+
+        batch_results.sort(key=lambda x: x[0])
+
         all_pages: list[PageTranscription] = []
         qualities: list[str] = []
-
-        for start in range(0, len(image_paths), _MAX_PAGES_PER_BATCH):
-            batch = image_paths[start : start + _MAX_PAGES_PER_BATCH]
-            resp = self._transcribe_batch(copy_id, batch, page_offset=start)
-            if not resp.success or resp.data is None:
-                return resp
+        for _, resp in batch_results:
             data: TranscriptionResult = resp.data
             all_pages.extend(data.pages)
             qualities.append(data.global_quality)
@@ -270,7 +294,7 @@ class ClaudeClient:
             success=True,
             data=merged,
             confidence=avg_conf,
-            raw_response=f"[batched {len(all_pages)} pages]",
+            raw_response=f"[claude batched parallel {len(all_pages)} pages]",
             error=None,
         )
 
@@ -396,35 +420,92 @@ class ClaudeClient:
     @_retry
     def diagnose(self, grades: CopyGrade, curriculum_context: str = "") -> ClaudeResponse:
         logger.info("[%s] Claude diagnostic — modèle : %s",
-                    grades.copy_id, settings.claude_model_light)
+                    grades.copy_id, settings.claude_model_opus)
         base_prompt = self._diagnostic_prompt.replace(
             "{{CURRICULUM_CONTEXT}}", curriculum_context or ""
         )
+
+        # Envoie toutes les questions : questions réussies pour les points forts et la détection
+        # d'inattention, questions échouées avec le détail complet pour l'analyse des erreurs.
+        import json as _json
+        all_question_details = []
+        for q in grades.questions:
+            effective = (
+                q.teacher_score
+                if q.teacher_score is not None and q.teacher_decision.value == "refused"
+                else q.score
+            )
+            if effective == 0:
+                all_question_details.append({
+                    "question_id": q.rubric_item_id,
+                    "score": 0,
+                    "max_score": q.score if q.score > 0 else 1,  # points disponibles
+                    "correct_answer": q.correct_answer or "—",
+                    "observed_answer": q.observed_answer,
+                    "comment_ia": q.comment,
+                })
+            else:
+                # Score réel (0.5, 0.75, 1.0…) pour que le modèle distingue
+                # réussite partielle de réussite complète — évite les hallucinations.
+                all_question_details.append({
+                    "question_id": q.rubric_item_id,
+                    "score": round(effective, 2),
+                })
+
+        all_block = _json.dumps(all_question_details, ensure_ascii=False, indent=2)
+
         prompt = (
             f"{base_prompt}"
-            f"\n\nRÉSULTATS DE CORRECTION:\n{grades.model_dump_json(indent=2)}"
+            f"\n\n## Données de la copie\n```json\n{all_block}\n```"
+            f"\n\nSCORE FINAL : {grades.final_score or grades.total_score} / {grades.total_possible}"
+            f"  (copy_id : {grades.copy_id})"
+            "\n\nCommence directement par { et termine par }. Aucune balise Markdown. Aucun texte avant ou après."
         )
 
-        response = self.client.messages.create(
-            model=settings.claude_model_light,
-            max_tokens=4096,
-            temperature=0,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": prompt,
-                            "cache_control": {"type": "ephemeral"},
-                        }
-                    ],
-                },
-                {"role": "assistant", "content": "{"},
-            ],
-        )
+        def _call_diagnose(model: str) -> object:
+            return self.client.messages.create(
+                model=model,
+                max_tokens=16384,
+                temperature=0,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt,
+                                "cache_control": {"type": "ephemeral"},
+                            }
+                        ],
+                    },
+                ],
+            )
 
-        raw = "{" + response.content[0].text
+        try:
+            response = _call_diagnose(settings.claude_model_opus)
+        except anthropic.BadRequestError:
+            logger.warning(
+                "[%s] claude_model_opus '%s' invalide (400) — fallback diagnostic → %s",
+                grades.copy_id, settings.claude_model_opus, settings.claude_model_heavy,
+            )
+            try:
+                response = _call_diagnose(settings.claude_model_heavy)
+            except Exception as exc2:
+                logger.error("[%s] Diagnostic fallback heavy échoué : %s", grades.copy_id, exc2)
+                return ClaudeResponse(success=False, data=None, confidence=0.0,
+                                      raw_response="", error=str(exc2))
+        except Exception as exc:
+            logger.error("[%s] Diagnostic — erreur inattendue : %s", grades.copy_id, exc)
+            return ClaudeResponse(success=False, data=None, confidence=0.0,
+                                  raw_response="", error=str(exc))
+
+        stop = getattr(response, "stop_reason", "?")
+        if stop == "max_tokens":
+            logger.warning(
+                "[%s] Diagnostic tronqué (stop_reason=max_tokens) — réponse incomplète, tentative de réparation JSON",
+                grades.copy_id,
+            )
+        raw = response.content[0].text.strip()
         return self._parse_response(raw, DiagnosticResult)
 
     # ── Sujet de remédiation ──────────────────────────────────────────────────
@@ -459,17 +540,65 @@ class ClaudeClient:
                     "content": [
                         {
                             "type": "text",
+                            "text": prompt + "\n\nIMPORTANT: Réponds UNIQUEMENT avec un"
+                            " objet JSON valide commençant par { et finissant par }."
+                            " Aucun texte avant ou après.",
+                            "cache_control": {"type": "ephemeral"},
+                        }
+                    ],
+                },
+            ],
+        )
+
+        raw = response.content[0].text.strip()
+        return self._parse_response(raw, RemediationSubject)
+
+    # ── Sujet d'enrichissement (score parfait) ────────────────────────────────
+
+    @_retry
+    def generate_enrichment_subject(self, grade: CopyGrade, rubric: "Rubric | None" = None) -> ClaudeResponse:
+        """Génère 5 exercices d'approfondissement niveau 2nde/1ère pour un élève à 20/20."""
+        logger.info("[%s] Claude enrichissement — modèle : %s | score parfait 20/20",
+                    grade.copy_id, settings.claude_model_heavy)
+
+        rubric_block = ""
+        if rubric and rubric.items:
+            rubric_block = (
+                f"\n\nSUJET DU TEST (pour contextualiser les thèmes maîtrisés) :\n"
+                f"{rubric.model_dump_json(indent=2)}"
+            )
+
+        prompt = (
+            f"{self._enrichment_subject_prompt}"
+            f"{rubric_block}"
+            f"\n\ncopy_id : {grade.copy_id}"
+            "\n\nIMPORTANT: Réponds UNIQUEMENT avec un objet JSON valide commençant"
+            " par { et finissant par }. Aucun texte avant ou après."
+        )
+
+        response = self.client.messages.create(
+            model=settings.claude_model_heavy,
+            max_tokens=8192,
+            temperature=0,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
                             "text": prompt,
                             "cache_control": {"type": "ephemeral"},
                         }
                     ],
                 },
-                {"role": "assistant", "content": "{"},
             ],
         )
 
-        raw = "{" + response.content[0].text
-        return self._parse_response(raw, RemediationSubject)
+        raw = response.content[0].text.strip()
+        result = self._parse_response(raw, RemediationSubject)
+        if result.success and result.data is not None:
+            result.data.is_enrichment = True
+        return result
 
     # ── Nom de l'élève depuis la première page ────────────────────────────────
 
@@ -911,6 +1040,14 @@ class ClaudeClient:
             candidate = _TRAILING_COMMA.sub(r"\1", candidate)
             try:
                 data = json.loads(candidate)
+                # Défauts pour DiagnosticResult partiellement tronqué
+                if model_cls.__name__ == "DiagnosticResult":
+                    data.setdefault("academic_profile", "")
+                    data.setdefault("strengths", [])
+                    data.setdefault("weaknesses", [])
+                    data.setdefault("skills", [])
+                    data.setdefault("remediation_plan", [])
+                    data.setdefault("root_causes", [])
                 validated = model_cls(**data)
                 return ClaudeResponse(
                     success=True,

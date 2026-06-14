@@ -16,6 +16,7 @@ pymupdf>=1.24.9        # wheel pré-compilé dispo 1.27+ pour Python 3.13 Window
 # --- Génération PDF ---
 reportlab==4.2.2
 jinja2==3.1.4
+xhtml2pdf>=0.2.14
 
 # --- Interface ---
 streamlit>=1.36.0

@@ -25,6 +25,18 @@ logger = logging.getLogger(__name__)
 _KB_DIR = Path(__file__).parent.parent.parent / "data" / "knowledge"
 
 
+def _coerce_str(item: Any) -> str:
+    """Convertit un item YAML en chaîne.
+
+    PyYAML parse `- texte : formule` (espace-deux-points-espace) en dict
+    au lieu de string. Cette fonction reconstruit la chaîne attendue.
+    """
+    if isinstance(item, dict):
+        parts = [f"{k} : {v}" if v is not None else str(k) for k, v in item.items()]
+        return " ".join(parts)
+    return str(item)
+
+
 class CurriculumChunk:
     """Un chunk = une leçon du programme officiel."""
 
@@ -35,10 +47,10 @@ class CurriculumChunk:
         self.chapitre: str = data.get("chapitre", "")
         self.lecon: str = data.get("lecon", "")
         self.savoir: str = data.get("savoir", "")
-        self.savoir_faire: list[str] = data.get("savoir_faire", [])
+        self.savoir_faire: list[str] = [_coerce_str(x) for x in data.get("savoir_faire", [])]
         self.prerequis_ids: list[str] = data.get("prerequis_ids", [])
         self.mots_cles: list[str] = data.get("mots_cles", [])
-        self.erreurs_frequentes: list[str] = data.get("erreurs_frequentes", [])
+        self.erreurs_frequentes: list[str] = [_coerce_str(x) for x in data.get("erreurs_frequentes", [])]
 
     def to_context_text(self) -> str:
         """Texte injecté dans le prompt diagnostic pour ce chunk."""

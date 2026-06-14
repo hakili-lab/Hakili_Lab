@@ -1,25 +1,15 @@
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
-# ── Qualité image ─────────────────────────────────────────────────────────────
+# ── Validation enseignant ──────────────────────────────────────────────────────
 
-class PageQualityReport(BaseModel):
-    page_number: int
-    width: int
-    height: int
-    brightness: float
-    blur_variance: float
-    issues: list[str] = Field(default_factory=list)
-    quality: Literal["good", "poor"]
-
-
-class QualityReport(BaseModel):
-    copy_id: str
-    global_quality: Literal["good", "poor"]
-    pages: list[PageQualityReport]
-    rescan_requested: bool = False
+class TeacherDecision(str, Enum):
+    pending  = "pending"   # pas encore décidé
+    accepted = "accepted"  # enseignant accepte la note IA
+    refused  = "refused"   # enseignant refuse et saisit sa propre note
 
 
 # ── Transcription ──────────────────────────────────────────────────────────────
@@ -39,52 +29,96 @@ class TranscriptionResult(BaseModel):
     pages: list[PageTranscription]
 
 
-# ── Barème (notation binaire) ──────────────────────────────────────────────────
+# ── Barème ─────────────────────────────────────────────────────────────────────
 
 class RubricItem(BaseModel):
-    id: str                      # "Q1", "Q2a", "Q2b"
+    id: str                       # "Q1", "Q2a", "Q2b"
     label: str
-    max_score: Literal[1] = 1   # Toujours 1 — système binaire
+    max_score: float = 1.0        # Points de la question (ex : 0.25, 0.5, 1.0, 2.0)
     parent_id: str | None = None  # Non-None si sous-question
 
 
 class Rubric(BaseModel):
     subject: Literal["mathematics"]
-    total_points: int
+    total_points: float
     items: list[RubricItem]
 
 
-# ── Correction (scores 0 ou 1) ─────────────────────────────────────────────────
+# ── Correction ─────────────────────────────────────────────────────────────────
 
 class QuestionGrade(BaseModel):
     rubric_item_id: str
-    score: Literal[0, 1]
+    score: float                  # proposition IA : 0 ou max_score
     confidence: float = Field(ge=0.0, le=1.0)
     comment: str
-    observed_answer: str
+    observed_answer: str          # ce que l'élève a écrit ("—" si absent/illisible)
+    correct_answer: str = ""      # bonne réponse (corrigé officiel ou calculée par l'IA)
     requires_review: bool
+    # ── Validation enseignant ──────────────────────────────────────────────────
+    teacher_decision: TeacherDecision = TeacherDecision.pending
+    teacher_score: float | None = None  # note saisie par l'enseignant si refus
 
 
 class CopyGrade(BaseModel):
     copy_id: str
-    total_score: int
-    total_possible: int
+    total_score: float            # somme des propositions IA
+    total_possible: float         # total officiel du test (meta.total_possible) — pour l'affichage
     questions: list[QuestionGrade]
     expert_instructions_used: bool = False
+    # Somme réelle des max_score du barème (peut différer de total_possible si incohérence source)
+    # Utilisé comme dénominateur pour la conversion /20 — garantit qu'un élève parfait obtient 20/20.
+    rubric_actual_max: float | None = None
+    # ── Score validé ──────────────────────────────────────────────────────────
+    final_score: float | None = None        # calculé après validation enseignant
+    final_score_on_20: float | None = None  # note /20 convertie
+    validation_complete: bool = False       # True quand toutes les questions ont été décidées
+
+    def compute_final_score(self) -> "CopyGrade":
+        """Calcule final_score en priorisant les décisions enseignant."""
+        total = 0.0
+        for q in self.questions:
+            if q.teacher_decision == TeacherDecision.refused and q.teacher_score is not None:
+                total += q.teacher_score
+            else:
+                total += q.score  # note IA (accepted ou pending)
+        self.final_score = total
+        # Dénominateur = total_possible (officiel du test, ex: 20).
+        # rubric_actual_max n'est pas utilisé ici : l'élève voit son score sur le total déclaré.
+        denom = self.total_possible
+        if denom > 0:
+            # Arrondi au 0.25 le plus proche — cohérent avec le barème binaire 0/0.25/0.5/0.75/1
+            self.final_score_on_20 = round(round(total / denom * 20 * 4) / 4, 2)
+        self.validation_complete = all(
+            q.teacher_decision != TeacherDecision.pending for q in self.questions
+        )
+        return self
 
 
 # ── Diagnostic et remédiation ─────────────────────────────────────────────────
 
 class SkillAssessment(BaseModel):
     name: str
-    level: Literal["mastered", "partial", "weak", "unknown"]
+    # Niveaux français : acquis | part_acquis | non_acquis | unknown
+    # Valeurs anglaises acceptées pour rétrocompatibilité : mastered→acquis, partial→part_acquis, weak→non_acquis
+    level: str = "unknown"
     evidence: str
+    chunk_ids: list[str] = Field(default_factory=list)  # IDs RAG du programme (classe+chapitre)
+    note: str = ""  # contexte complémentaire, ex: "Erreur de vigilance isolée — compétence réussie en Q_NUM_05"
+
+    @field_validator("level", mode="before")
+    @classmethod
+    def _normalise_level(cls, v: str) -> str:
+        _compat = {"mastered": "acquis", "partial": "part_acquis", "weak": "non_acquis"}
+        return _compat.get(str(v).lower(), str(v).lower())
 
 
 class RootCauseError(BaseModel):
     """Erreur cachée derrière une erreur visible — cœur du diagnostic pédagogique."""
     visible_error: str
     hidden_cause: str
+    # "dette_cycle_anterieur" | "lacune_contemporaine" | "erreur_inattention"
+    nature: str = "lacune_contemporaine"
+    pedagogical_trigger: str = ""
     linked_questions: list[str] = Field(default_factory=list)
 
 
@@ -92,6 +126,7 @@ class RemediationItem(BaseModel):
     priority: int
     topic: str
     action: str
+    pedagogical_trigger: str = ""
 
 
 class CompetencyGap(BaseModel):
@@ -105,14 +140,28 @@ class CompetencyGap(BaseModel):
     savoir_faire: list[str] = Field(default_factory=list)
     erreurs_frequentes: list[str] = Field(default_factory=list)
 
+    @field_validator("savoir_faire", "erreurs_frequentes", mode="before")
+    @classmethod
+    def _coerce_str_list(cls, v: Any) -> list[str]:
+        # PyYAML parse "- texte : formule" en dict — on reconstitue la chaîne.
+        result = []
+        for item in (v or []):
+            if isinstance(item, dict):
+                parts = [f"{k} : {val}" if val is not None else str(k) for k, val in item.items()]
+                result.append(" ".join(parts))
+            else:
+                result.append(str(item))
+        return result
+
 
 class DiagnosticResult(BaseModel):
     copy_id: str
-    strengths: list[str]
-    weaknesses: list[str]
+    academic_profile: str = ""  # synthèse du profil élève pour le tuteur
+    strengths: list[str] = Field(default_factory=list)
+    weaknesses: list[str] = Field(default_factory=list)
     root_causes: list[RootCauseError] = Field(default_factory=list)
-    skills: list[SkillAssessment]
-    remediation_plan: list[RemediationItem]
+    skills: list[SkillAssessment] = Field(default_factory=list)
+    remediation_plan: list[RemediationItem] = Field(default_factory=list)
     competency_gaps: list[CompetencyGap] = Field(default_factory=list)
 
 
@@ -122,12 +171,13 @@ class Exercise(BaseModel):
     number: int
     topic: str
     question: str
-    hint: str = ""
+    hint: str | None = None  # None pour les exercices 3-5 (pas de guidage)
 
 
 class RemediationSubject(BaseModel):
     copy_id: str
     exercises: list[Exercise]
+    is_enrichment: bool = False  # True quand score parfait → exercices d'approfondissement
 
 
 # ── Ingestion ────────────────────────────────────────────────────────────────

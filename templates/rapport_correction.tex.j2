@@ -1,0 +1,410 @@
+% ===========================================================
+%  HAKILI LAB - Rapport de correction IA
+%  Compilateur : XeLaTeX  |  Template : Jinja2
+% ===========================================================
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{fontspec}
+\setmainfont{Georgia}
+\setsansfont[Scale=0.96]{Calibri}
+\setmonofont[Scale=0.88]{Courier New}
+
+\usepackage[
+  a4paper,
+  top=28mm, bottom=24mm,
+  left=20mm, right=20mm,
+  headheight=24mm, headsep=5mm,
+  footskip=11mm
+]{geometry}
+
+\usepackage[table,dvipsnames]{xcolor}
+\definecolor{HakiliRed}        {HTML}{C0392B}
+\definecolor{HakiliRedLight}   {HTML}{FDECEA}
+\definecolor{HakiliRedDark}    {HTML}{922B21}
+\definecolor{HakiliGray}       {HTML}{5D6D7E}
+\definecolor{HakiliLightGray}  {HTML}{F4F6F7}
+\definecolor{HakiliGreen}      {HTML}{1E8449}
+\definecolor{HakiliGreenLight} {HTML}{EAFAF1}
+\definecolor{HakiliBlue}       {HTML}{1A5276}
+\definecolor{HakiliAccent}     {HTML}{F39C12}
+
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{ifthen}
+
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{amsmath,amssymb}
+\usepackage{unicode-math}
+\setmathfont{Latin Modern Math}
+\usepackage[hidelinks]{hyperref}
+
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+%% ── Filet rouge réutilisable ─────────────────────────────
+\newcommand{\HakiliRule}{
+  \noindent\textcolor{HakiliRed}{\rule{\linewidth}{1.2pt}}
+}
+
+%% ── Titre de section bandeau bleu + filet rouge ──────────
+{% raw %}
+\newcommand{\HakiliSection}[1]{%
+  \vspace{14pt}%
+  \noindent
+  \colorbox{HakiliBlue}{%
+    \parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+      \vspace{2pt}%
+      \sffamily\bfseries\normalsize\textcolor{white}{\MakeUppercase{#1}}%
+      \vspace{2pt}%
+    }%
+  }%
+  \par\nointerlineskip\vspace{1pt}%
+  \HakiliRule
+  \vspace{8pt}%
+}
+{% endraw %}
+
+%% ── Badge de compétence ──────────────────────────────────
+{% raw %}
+\newcommand{\skillbadge}[1]{%
+  \ifthenelse{\equal{#1}{acquis}}{%
+    \colorbox{HakiliGreenLight}{%
+      \textcolor{HakiliGreen}{\sffamily\bfseries\small Acquis}}%
+  }{\ifthenelse{\equal{#1}{partial}}{%
+    \colorbox{HakiliAccent!25}{%
+      \textcolor{HakiliAccent!80!black}{\sffamily\bfseries\small Part.~acquis}}%
+  }{\ifthenelse{\equal{#1}{weak}}{%
+    \colorbox{HakiliRedLight}{%
+      \textcolor{HakiliRed}{\sffamily\bfseries\small Non~acquis}}%
+  }{%
+    \colorbox{HakiliLightGray}{%
+      \textcolor{HakiliGray}{\sffamily\bfseries\small ---}}%
+  }}}%
+}
+{% endraw %}
+
+%% ══════════════════════════════════════════════════════════
+%%  EN-TÊTE & PIED DE PAGE
+%% ══════════════════════════════════════════════════════════
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead[L]{
+  \raisebox{1pt}{
+    \fcolorbox{HakiliBlue}{HakiliBlue}{
+      \textcolor{white}{\sffamily\bfseries\small~HL~}
+    }
+  }\hspace{5pt}
+  \begin{minipage}[c]{62mm}
+    {\sffamily\bfseries\large\textcolor{HakiliBlue}{HAKILI LAB}}\\[-2pt]
+    {\sffamily\small\textcolor{HakiliGray}{Rapport de correction IA}}
+  \end{minipage}
+}
+\fancyhead[R]{
+  \sffamily\small\textcolor{HakiliGray}{Page~\thepage~/~\pageref{LastPage}}
+}
+\fancyhead[C]{
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[HakiliRed,line width=1.4pt]
+      ([xshift=20mm,yshift=-29mm]current page.north west)
+      -- ([xshift=-20mm,yshift=-29mm]current page.north east);
+  \end{tikzpicture}
+}
+\renewcommand{\headrulewidth}{0pt}
+
+\fancyfoot[C]{
+  \sffamily\footnotesize\textcolor{HakiliGray}{
+    Hakili Lab\enspace\textbullet\enspace
+    Document confidentiel\enspace\textbullet\enspace
+    Usage pédagogique exclusif
+  }
+}
+\renewcommand{\footrulewidth}{0.4pt}
+
+%% ══════════════════════════════════════════════════════════
+%%  DOCUMENT
+%% ══════════════════════════════════════════════════════════
+\begin{document}
+\thispagestyle{fancy}
+
+%% ── BANDEAU ÉLÈVE ────────────────────────────────────────
+\begin{tcolorbox}[
+  enhanced, arc=0pt,
+  colback=HakiliBlue, colframe=HakiliRedDark,
+  boxrule=2pt,
+  left=8pt, right=8pt, top=10pt, bottom=10pt
+]
+  \centering
+  {\sffamily\bfseries\LARGE\textcolor{white}{ {{ STUDENT_NAME }} }}\\[4pt]
+  {\sffamily\small\textcolor{white!70!HakiliBlue}{
+    Identifiant copie~: \texttt{ {{ COPY_ID }} }
+  }}
+\end{tcolorbox}
+
+\vspace{10pt}
+
+%% ── SCORE HÉRO ───────────────────────────────────────────
+\begin{tcolorbox}[
+  enhanced, arc=4pt,
+  colback=HakiliLightGray, colframe=HakiliGray!40,
+  boxrule=0.6pt,
+  left=6pt, right=6pt, top=10pt, bottom=10pt
+]
+  \begin{tabularx}{\linewidth}{
+    >{\centering\arraybackslash}X
+    >{\centering\arraybackslash}X
+    >{\centering\arraybackslash}X}
+    {\sffamily\small\textcolor{HakiliGray}{Note finale}} &
+    {\sffamily\small\textcolor{HakiliGray}{Note / 20}} &
+    {\sffamily\small\textcolor{HakiliGray}{Confiance IA}} \\[6pt]
+    {\sffamily\bfseries\Huge\textcolor{HakiliBlue}{ {{ FINAL_SCORE }} }%
+     {\normalsize\textcolor{HakiliGray}{\;/\; {{ TOTAL_POSSIBLE }} }}} &
+    {\sffamily\bfseries\Huge\textcolor{ {{- SCORE_COLOR -}} }{ {{ FINAL_SCORE_20 }} }%
+     {\normalsize\textcolor{HakiliGray}{\;/\;20}}} &
+    {\sffamily\bfseries\Huge\textcolor{HakiliAccent}{ {{ AI_CONFIDENCE_PCT }} }%
+     {\normalsize\textcolor{HakiliGray}{\;\%}}} \\
+  \end{tabularx}
+\end{tcolorbox}
+
+%% ════════════════════════════════════════════════════════
+%%  RÉSUMÉ DE CORRECTION — BONNES RÉPONSES
+%% ════════════════════════════════════════════════════════
+\HakiliSection{Bonnes réponses}
+
+{% if good_questions %}
+\setlength{\extrarowheight}{4pt}
+\begin{tabularx}{\linewidth}{
+  >{\sffamily\small\bfseries\ttfamily}p{22mm}
+  >{\centering\arraybackslash\sffamily\small}p{28mm}
+  >{\centering\arraybackslash\sffamily\small}p{18mm}
+  >{\sffamily\small\raggedright\arraybackslash}X
+}
+\toprule
+\rowcolor{HakiliBlue}
+\textcolor{white}{\normalfont\sffamily\bfseries Question} &
+\textcolor{white}{\normalfont\sffamily\bfseries Score obtenu} &
+\textcolor{white}{\normalfont\sffamily\bfseries Conf.} &
+\textcolor{white}{\normalfont\sffamily\bfseries Réponse élève} \\
+\midrule
+{% for q in good_questions %}
+\rowcolor{HakiliGreenLight}
+{{ q.id }} &
+\textcolor{HakiliGreen}{\bfseries {{ q.score_fmt }}\,/\,{{ q.max_fmt }}}\enspace\textcolor{HakiliGreen}{\small $\checkmark$} &
+{{ q.conf_pct }}\,\% &
+{\small {{ q.observed }} } \\[2pt]
+{% endfor %}
+\bottomrule
+\end{tabularx}
+\setlength{\extrarowheight}{0pt}
+{% else %}
+{\small\itshape\textcolor{HakiliGray}{Aucune question réussie.}}
+{% endif %}
+
+\vspace{10pt}
+
+%% ════════════════════════════════════════════════════════
+%%  RÉSUMÉ DE CORRECTION — MAUVAISES RÉPONSES
+%% ════════════════════════════════════════════════════════
+\HakiliSection{Mauvaises réponses}
+
+{% if REVIEW_COUNT > 0 %}
+{\small\textcolor{HakiliGray}{
+  \textbf{\textcolor{HakiliAccent}{$\triangle$}}\enspace
+  Fond orangé~: transcription ambiguë, révision manuelle recommandée.
+}}
+\vspace{4pt}
+{% endif %}
+
+{% if bad_questions %}
+\setlength{\extrarowheight}{4pt}
+\begin{longtable}{
+  >{\sffamily\small\bfseries\ttfamily}p{18mm}
+  >{\sffamily\small\itshape}p{35mm}
+  >{\sffamily\small\itshape}p{35mm}
+  >{\centering\arraybackslash\sffamily\small}p{18mm}
+  >{\sffamily\small\raggedright\arraybackslash}X
+}
+\toprule
+\rowcolor{HakiliBlue}
+\textcolor{white}{\normalfont\sffamily\bfseries Question} &
+\textcolor{white}{\normalfont\sffamily\bfseries Bonne réponse} &
+\textcolor{white}{\normalfont\sffamily\bfseries Réponse élève} &
+\textcolor{white}{\normalfont\sffamily\bfseries Score} &
+\textcolor{white}{\normalfont\sffamily\bfseries Commentaire IA} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{HakiliBlue}
+\textcolor{white}{\normalfont\sffamily\bfseries Question} &
+\textcolor{white}{\normalfont\sffamily\bfseries Bonne réponse} &
+\textcolor{white}{\normalfont\sffamily\bfseries Réponse élève} &
+\textcolor{white}{\normalfont\sffamily\bfseries Score} &
+\textcolor{white}{\normalfont\sffamily\bfseries Commentaire IA} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+{% for q in bad_questions %}
+{% if q.review %}\rowcolor{HakiliAccent!15}{% else %}\rowcolor{HakiliRedLight}{% endif %}
+{{ q.id }} &
+{\small {{ q.correct }} } &
+{\small {{ q.observed }} } &
+\textcolor{HakiliRed}{\bfseries {{ q.score_fmt }}\,/\,{{ q.max_fmt }}}\enspace\textcolor{HakiliRed}{\small $\times$} &
+{\small {{ q.comment }} } \\[2pt]
+{% endfor %}
+\end{longtable}
+\setlength{\extrarowheight}{0pt}
+{% else %}
+{\small\itshape\textcolor{HakiliGray}{Aucune question échouée.}}
+{% endif %}
+
+{% if has_diagnostic %}
+
+%% ════════════════════════════════════════════════════════
+%%  DIAGNOSTIC DES COMPÉTENCES
+%% ════════════════════════════════════════════════════════
+\HakiliSection{Diagnostic des compétences}
+
+%% ── Forces / Faiblesses ──────────────────────────────────
+\begin{tabularx}{\linewidth}{
+  >{\columncolor{HakiliGreenLight}}X
+  >{\columncolor{HakiliRedLight}}X}
+\multicolumn{1}{c}{\rule{0pt}{14pt}
+  \sffamily\bfseries\textcolor{HakiliGreen}{$\checkmark$\enspace Points forts}} &
+\multicolumn{1}{c}{
+  \sffamily\bfseries\textcolor{HakiliRed}{$\times$\enspace Points à renforcer}} \\[2pt]
+\begin{minipage}[t]{\linewidth}
+\begin{itemize}[leftmargin=10pt,itemsep=3pt,topsep=2pt,
+                parsep=0pt,label={\textcolor{HakiliGreen}{$\triangleright$}}]
+{% if strengths %}
+{% for s in strengths %}
+  \item {\small {{ s }} }
+{% endfor %}
+{% else %}
+  \item {\small\itshape Aucun point fort identifié.}
+{% endif %}
+\end{itemize}
+\vspace{4pt}
+\end{minipage}
+&
+\begin{minipage}[t]{\linewidth}
+\begin{itemize}[leftmargin=10pt,itemsep=3pt,topsep=2pt,
+                parsep=0pt,label={\textcolor{HakiliRed}{$\triangleright$}}]
+{% if weaknesses %}
+{% for w in weaknesses %}
+  \item {\small {{ w }} }
+{% endfor %}
+{% else %}
+  \item {\small\itshape Aucun point faible identifié.}
+{% endif %}
+\end{itemize}
+\vspace{4pt}
+\end{minipage}
+\\
+\end{tabularx}
+
+\vspace{12pt}
+
+%% ── Tableau compétences ──────────────────────────────────
+{% if skills %}
+{\sffamily\bfseries\small\textcolor{HakiliBlue}{Évaluation par compétence}}
+
+\vspace{5pt}
+\setlength{\extrarowheight}{2pt}
+
+\begin{tabularx}{\linewidth}{>{\sffamily\small\raggedright\arraybackslash}p{55mm}p{28mm}p{38mm}X}
+\toprule
+\rowcolor{HakiliBlue}
+\textcolor{white}{\sffamily\bfseries Compétence} &
+\textcolor{white}{\sffamily\bfseries Niveau} &
+\textcolor{white}{\sffamily\bfseries Programme} &
+\textcolor{white}{\sffamily\bfseries Observation} \\
+\midrule
+{% for sk in skills %}
+{{ sk.name }} &
+{{ sk.badge }} &
+{% if sk.prog != '---' %}{\small\textcolor{HakiliBlue}{ {{ sk.prog }} }}{% else %}{\small\textcolor{HakiliGray}{---}}{% endif %} &
+{\small {{ sk.evidence }} } \\
+{% endfor %}
+\bottomrule
+\end{tabularx}
+
+\setlength{\extrarowheight}{0pt}
+\vspace{8pt}
+{% endif %}
+
+%% ── Erreurs cachées ──────────────────────────────────────
+{% if root_causes %}
+\HakiliSection{Erreurs cachées --- Causes profondes}
+
+{\small\textcolor{HakiliGray}{
+  Ces mécanismes mal maîtrisés expliquent plusieurs points perdus.
+  Une remédiation ciblée sur ces causes est plus efficace
+  que de retravailler chaque erreur isolément.
+}}
+
+\vspace{6pt}
+\setlength{\extrarowheight}{4pt}
+
+\begin{tabularx}{\linewidth}{p{38mm}Xp{34mm}}
+\toprule
+\rowcolor{HakiliBlue}
+\textcolor{white}{\sffamily\bfseries Erreur visible} &
+\textcolor{white}{\sffamily\bfseries Cause profonde} &
+\textcolor{white}{\sffamily\bfseries Questions} \\
+\midrule
+{% for rc in root_causes %}
+{\small {{ rc.visible }} } &
+{\small\textcolor{HakiliRed}{ {{ rc.hidden }} }} &
+{\small\ttfamily {{ rc.qs }} } \\[2pt]
+{% endfor %}
+\bottomrule
+\end{tabularx}
+
+\setlength{\extrarowheight}{0pt}
+\vspace{8pt}
+{% endif %}
+
+%% ── Plan de remédiation ──────────────────────────────────
+{% if remediation %}
+\HakiliSection{Plan de remédiation personnalisé}
+
+\begin{enumerate}[
+  leftmargin=*,
+  label={\sffamily\bfseries\textcolor{HakiliBlue}{\arabic*.}},
+  itemsep=10pt,
+  topsep=4pt
+]
+{% for item in remediation %}
+\item \textbf{ {{ item.topic }} }\\[3pt]
+  {\small\textcolor{HakiliGray}{ {{ item.action }} }}
+{% endfor %}
+\end{enumerate}
+{% endif %}
+
+{% endif %}
+
+\vspace{16pt}
+\HakiliRule
+\vspace{6pt}
+\begin{center}
+  {\sffamily\footnotesize\textcolor{HakiliGray}{
+    Document généré automatiquement par Hakili Lab IA\quad---\quad
+    \textit{L'enseignant reste seul responsable de l'évaluation finale.}
+  }}
+
+\end{center}
+
+\end{document}

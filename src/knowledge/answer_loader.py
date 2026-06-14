@@ -82,11 +82,16 @@ class AnswerLoader:
             return ""
 
         lines = [
-            "## Corrigé officiel — utilise ces réponses comme référence de correction",
+            "## Corrigé officiel",
             "",
-            "Ces réponses sont extraites du corrigé officiel Hakili Lab.",
-            "Pour chaque question, compare la réponse de l'élève à la réponse officielle ci-dessous.",
-            "Ne te fie PAS à ton propre calcul si une réponse officielle est fournie ici.",
+            "Ces réponses officielles te donnent le CONCEPT ou la VALEUR attendue pour chaque question.",
+            "Ton rôle : vérifier si l'élève a démontré qu'il connaît ce concept ou a trouvé cette valeur —",
+            "PAS vérifier si l'élève a écrit exactement la même chose que le corrigé.",
+            "",
+            "La forme du corrigé (notation formelle, ordre des termes, présentation compacte) est",
+            "une convention de rédaction, pas un gabarit à reproduire mot pour mot.",
+            "Un élève qui écrit la bonne réponse en prose, avec une notation différente, ou dans un",
+            "ordre différent, a QUAND MÊME trouvé — accorde le point.",
             "",
         ]
         for ans in answers:
@@ -94,6 +99,13 @@ class AnswerLoader:
             lines.append("")
 
         return "\n".join(lines)
+
+    def get_answer_map(self, test_id: str) -> dict[str, str]:
+        """Retourne {question_id: reponse_courte} pour un test donné."""
+        answers = self._answers.get(test_id)
+        if not answers:
+            return {}
+        return {a.id: a.reponse for a in answers}
 
     def available_tests(self) -> list[str]:
         return list(self._answers.keys())

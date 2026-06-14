@@ -39,15 +39,15 @@ _TRAILING_COMMA = re.compile(r",\s*([}\]])")
 _GRADING_SCHEMA = """
 {
   "copy_id": "<string>",
-  "total_score": <integer>,
-  "total_possible": <integer>,
+  "total_score": <nombre décimal, ex: 12.5>,
+  "total_possible": <nombre décimal, ex: 20.0>,
   "questions": [
     {
-      "rubric_item_id": "<string>  ex: Q1, Q2a",
-      "score": <0 ou 1>,
+      "rubric_item_id": "<string — DOIT être l'id EXACT du RubricItem dans le barème, ex: Q_NUM_04, Q_GEO_01>",
+      "score": <0 si incorrect, ou valeur exacte du champ max_score du RubricItem si correct>,
       "confidence": <float 0.0-1.0>,
-      "comment": "<string>",
-      "observed_answer": "<string>",
+      "comment": "<1 phrase bienveillante pour l'enseignant>",
+      "observed_answer": "<ce que l'élève a écrit, résumé en 1 ligne — '—' si absent/illisible>",
       "requires_review": <true|false>
     }
   ]
@@ -265,7 +265,7 @@ class DeepSeekClient:
                 )
                 for q in result.data.questions:
                     logger.warning(
-                        "  %s → score=%d conf=%.0f%% | observed='%s' | comment='%s'",
+                        "  %s → score=%g conf=%.0f%% | observed='%s' | comment='%s'",
                         q.rubric_item_id, q.score, q.confidence * 100,
                         q.observed_answer[:80], q.comment[:80],
                     )

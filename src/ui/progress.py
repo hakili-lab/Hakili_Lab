@@ -14,13 +14,13 @@ import streamlit as st
 
 STEPS: list[tuple[str, str, int]] = [
     # (key, label affiché, % à l'entrée de l'étape)
-    ("ingestion",      "Ingestion & contrôle qualité image",       8),
-    ("transcription",  "Transcription multimodale (manuscrit)",    28),
-    ("correction",     "Correction intelligente", 55),
-    ("rag",            "Récupération du contexte programme",        68),
-    ("diagnostic",     "Diagnostic pédagogique approfondi",         80),
-    ("remediation",    "Génération du plan de remédiation",          90),
-    ("export",         "Export PDF & rapport JSON",                  98),
+    ("ingestion",      "Chargement des fichiers ..",       8),
+    ("transcription",  "Lecture de la copie ..",    28),
+    ("correction",     "Correction intelligente ..", 55),
+    ("rag",            "Récupération du contexte programme ..",        68),
+    ("diagnostic",     "Diagnostic pédagogique approfondi ..",         80),
+    ("remediation",    "Plan de remédiation ..",          90),
+    ("export",         "Finalisation ..",                  98),
 ]
 
 _STEP_INDEX: dict[str, int] = {key: i for i, (key, _, _) in enumerate(STEPS)}

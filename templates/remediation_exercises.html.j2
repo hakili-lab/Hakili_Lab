@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Feuille de remédiation — {{ STUDENT_NAME }}</title>
+  <style>
+    /* ===== PAGE ===== */
+    @page {
+      size: A4;
+      margin-top: 26mm;
+      margin-left: 18mm;
+      margin-right: 18mm;
+      margin-bottom: 20mm;
+
+      @frame header_frame {
+        -pdf-frame-content: page_header;
+        left: 18mm;
+        width: 174mm;
+        top: 7mm;
+        height: 15mm;
+      }
+      @frame footer_frame {
+        -pdf-frame-content: page_footer;
+        left: 18mm;
+        width: 174mm;
+        bottom: 5mm;
+        height: 10mm;
+      }
+    }
+
+    /* ===== BASE ===== */
+    * { box-sizing: border-box; }
+    body {
+      font-family: {{ FONT_NAME }}, Helvetica, sans-serif;
+      font-size: 10pt;
+      color: #1a1a1a;
+      line-height: 1.5;
+    }
+    p { margin: 0 0 4pt 0; }
+
+    /* ===== COULEURS ===== */
+    .c-blue  { color: #1A5276; }
+    .c-red   { color: #C0392B; }
+    .c-gray  { color: #5D6D7E; }
+    .bold    { font-weight: bold; }
+    .small   { font-size: 8.5pt; }
+    .italic  { font-style: italic; }
+
+    /* ===== BANNER ===== */
+    .banner {
+      background-color: #1A5276;
+      border: 2pt solid #C0392B;
+      padding: 10pt 14pt;
+      text-align: center;
+      margin-bottom: 10pt;
+    }
+    .banner-title {
+      font-size: 16pt;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 3pt;
+    }
+    .banner-sub {
+      font-size: 9pt;
+      color: #aad4f5;
+    }
+
+    /* ===== INFO BOX ===== */
+    .info-box {
+      background-color: #EAF2FF;
+      border: 0.8pt solid #2E86C1;
+      padding: 6pt 10pt;
+      margin-bottom: 12pt;
+      font-size: 9pt;
+    }
+
+    /* ===== SÉRIE ===== */
+    .serie-header {
+      background-color: #1A5276;
+      color: white;
+      font-weight: bold;
+      font-size: 10.5pt;
+      padding: 5pt 8pt;
+      margin-top: 14pt;
+      margin-bottom: 2pt;
+    }
+    .serie-rule {
+      border-top: 1.5pt solid #C0392B;
+      margin-bottom: 8pt;
+    }
+
+    /* ===== EXERCICE ===== */
+    .exo-box {
+      border: 0.8pt solid #d0d0d0;
+      margin-bottom: 8pt;
+      page-break-inside: avoid;
+    }
+    .exo-header {
+      background-color: #F4F6F7;
+      border-bottom: 0.5pt solid #ccc;
+      padding: 4pt 8pt;
+      font-weight: bold;
+      font-size: 9.5pt;
+      color: #1A5276;
+    }
+    .exo-body {
+      padding: 6pt 8pt;
+    }
+    .exo-question {
+      font-size: 10pt;
+      margin-bottom: 4pt;
+    }
+    .exo-hint {
+      font-size: 8.5pt;
+      color: #5D6D7E;
+      font-style: italic;
+      border-top: 0.5pt dashed #ccc;
+      padding-top: 4pt;
+      margin-top: 4pt;
+    }
+
+    /* ===== ESPACE RÉPONSE ===== */
+    .answer-space {
+      border: 0.5pt solid #ccc;
+      background-color: #fafafa;
+      height: 28mm;
+      margin-top: 6pt;
+    }
+
+    /* ===== PIED ===== */
+    .doc-footer {
+      margin-top: 16pt;
+      border-top: 1pt solid #ddd;
+      padding-top: 5pt;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── EN-TÊTE DE PAGE ────────────────────────────────────────── -->
+<div id="page_header">
+  <table style="width:100%; border-collapse:collapse;">
+    <tr>
+      <td style="font-size:9pt; font-weight:bold; color:#1A5276; padding:0;">
+        HAKILI LAB
+      </td>
+      <td style="font-size:8pt; color:#5D6D7E; text-align:center; padding:0;">
+        {{ DOC_TITLE }}
+      </td>
+      <td style="font-size:8pt; color:#5D6D7E; text-align:right; padding:0;">
+        Page <pdf:pagenumber/> / <pdf:pagecount/>
+      </td>
+    </tr>
+  </table>
+  <hr style="border:0; border-top:1.4pt solid #C0392B; margin-top:3pt;"/>
+</div>
+
+<!-- ── PIED DE PAGE ───────────────────────────────────────────── -->
+<div id="page_footer">
+  <hr style="border:0; border-top:0.5pt solid #ccc;"/>
+  <p style="text-align:center; font-size:7.5pt; color:#7f8c8d; margin:2pt 0 0 0;">
+    Hakili Lab &nbsp;&#8226;&nbsp; Document confidentiel &nbsp;&#8226;&nbsp; Usage pédagogique exclusif
+  </p>
+</div>
+
+<!-- ── BANDEAU ────────────────────────────────────────────────── -->
+<div class="banner">
+  <div class="banner-title">{{ STUDENT_NAME }}</div>
+  <div class="banner-sub">{{ DOC_TITLE }} — {{ DATE }}</div>
+</div>
+
+<!-- ── INFO ──────────────────────────────────────────────────── -->
+<div class="info-box">
+{% if is_enrichment %}
+  <strong>{{ total }} exercice{% if total > 1 %}s{% endif %} d'approfondissement</strong>
+  — niveau 2nde / 1ère scientifique.
+  {{ DOC_SUBTITLE }}
+  Résous chaque exercice sans aide extérieure.
+{% else %}
+  <strong>{{ total }} exercice{% if total > 1 %}s{% endif %} de remédiation</strong>
+  répartis en {{ series|length }} série{% if series|length > 1 %}s{% endif %}.
+  Ces exercices ciblent les lacunes identifiées lors de la correction.
+  Travaille chaque série dans l'ordre indiqué.
+{% endif %}
+</div>
+
+<!-- ── SÉRIES D'EXERCICES ─────────────────────────────────────── -->
+{% for serie in series %}
+<div class="serie-header">
+  Série {{ serie.idx }} — {{ serie.topic }}
+</div>
+<div class="serie-rule"></div>
+
+{% for ex in serie.exercises %}
+<div class="exo-box">
+  <div class="exo-header">
+    Exercice {{ ex.number }}
+  </div>
+  <div class="exo-body">
+    <div class="exo-question">{{ ex.question }}</div>
+    {% if ex.has_hint %}
+    <div class="exo-hint">&#128161; Indice : {{ ex.hint }}</div>
+    {% endif %}
+    <div class="answer-space"></div>
+  </div>
+</div>
+{% endfor %}
+
+{% endfor %}
+
+<!-- ── PIED DE DOCUMENT ───────────────────────────────────────── -->
+<div class="doc-footer">
+  <span class="small c-gray italic">
+    Feuille générée par Hakili Lab IA
+    — Utilisée dans le cadre d'un suivi pédagogique personnalisé.
+  </span>
+</div>
+
+</body>
+</html>

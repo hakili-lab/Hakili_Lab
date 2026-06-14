@@ -1,19 +1,27 @@
-# Hakili Lab — Correction IA de copies manuscrites
+# Hakili Lab — Correction Assistée par IA
 
-> Outil d'évaluation et de remédiation assistée par IA pour copies manuscrites de **mathématiques**,
-> conçu pour les **tests de recrutement Hakili Lab** et le programme du secondaire au **Burkina Faso (6e à 3e)**.
+> Outil de **correction assistée par IA** pour copies manuscrites de **mathématiques**,
+> conçu pour les **tests de recrutement Hakili Lab** au **Burkina Faso (6e à 3e)**.
+> L'objectif central : le **diagnostic pédagogique approfondi**.
 
 ---
 
 ## Vue d'ensemble
 
-Hakili Lab automatise la correction de copies manuscrites numérisées pour les **tests standards de recrutement Hakili**. L'enseignant sélectionne le test cible (entrée en 3e ou en 6e), charge la copie de l'élève, et obtient en quelques minutes :
+Hakili Lab assiste l'enseignant dans la correction de copies manuscrites numérisées. **L'IA propose, l'enseignant décide.** Le flux se déroule en deux phases :
 
-- Un **rapport PDF structuré** avec note, commentaires question par question, diagnostic profond des lacunes
-- Un **sujet de remédiation personnalisé** ancré sur les compétences du programme officiel burkinabè
-- Un **diagnostic RAG** qui identifie les leçons non maîtrisées par référence au programme du Ministère
+**Phase A — Correction assistée**
+1. L'enseignant scanne la copie et sélectionne le test (ou charge l'énoncé + barème)
+2. L'IA transcrit la copie et propose une note pour chaque question
+3. L'enseignant valide dans un **tableau de validation** : il accepte ou refuse chaque note IA
+4. Le système calcule le **score final /20** en priorisant les décisions enseignant
 
-Le système repose sur une **architecture multi-provider** : chaque tâche est confiée au modèle offrant le meilleur rapport qualité/coût. Il applique un **barème binaire strict 0/1** et intègre un **système RAG** sur les curricula officiels 6e–3e.
+**Phase B — Diagnostic approfondi** *(l'objectif central du produit)*
+5. Pour chaque question échouée, le système récupère les leçons du programme officiel (RAG)
+6. L'IA produit un diagnostic précis : causes cachées, lacunes par niveau, leçons non maîtrisées
+7. Le rapport final est généré : deux tableaux synthétiques + diagnostic + plan de remédiation
+
+Le système applique un **barème binaire strict 0/1** et intègre un **RAG** sur 121 leçons des curricula officiels 6e–3e.
 
 **Coût en production : ~$0.02/copie.**
 
@@ -21,29 +29,32 @@ Le système repose sur une **architecture multi-provider** : chaque tâche est c
 
 ## Fonctionnalités
 
-### Correction et évaluation
-- **Ingestion flexible** — PDF multi-pages, JPG, PNG
-- **Contrôle qualité image** — détection du flou, luminosité, résolution minimale
+### Phase A — Correction assistée
+- **Ingestion flexible** — PDF multi-pages, JPG, PNG (conversion automatique à 150 DPI)
 - **Transcription multimodale** — texte, formules mathématiques, schémas ; zones `[ILLISIBLE]` avec score de confiance
-- **Ensemble voting** — 3 runs de correction, fusion par vote majoritaire, désaccord → `requires_review=True`
-- **Correction binaire 0/1** — évaluation stricte par question et sous-question
+- **Proposition IA** — note binaire 0/1 par question avec `observed_answer` et commentaire
+- **Tableau de validation enseignant** — N° question · bonne réponse · réponse élève · note IA · Accepter/Refuser
+- **Score final /20** — calculé en priorisant les décisions enseignant sur les propositions IA
+- **Instructions expert** — critères contextuels optionnels injectés dans le prompt de correction
 
 ### Tests Hakili (mode auto-chargé)
-- **Test d'entrée en 3e** — évalue les compétences 6e → 4e (33 questions NUM + GEO)
-- **Test d'entrée en 6e** — évalue les compétences primaires CE1 → CM2 (33 questions NUM + GEO)
+- **Test d'entrée en 3e v1** — 33 questions NUM + GEO (compétences 6e → 4e)
+- **Test d'entrée en 3e v2** — version révisée, barème + corrigé disponibles
+- **Test d'entrée en 6e** — 33 questions NUM + GEO (compétences primaires CE1 → CM2)
 - **Énoncé + barème pré-chargés** — l'enseignant ne charge que la copie de l'élève
 
-### Diagnostic RAG ancré sur le programme officiel
-- **Base de connaissance** — 121 leçons du programme officiel du Burkina Faso (6e, 5e, 4e, 3e)
-- **Mapping question → compétence** — chaque question du test est liée aux leçons concernées
-- **Récupération contextuelle** — les chunks des questions échouées sont injectés dans le prompt diagnostic
-- **Lacunes précises** — ex. `[4e_NUM_Ch4_L3] Identités remarquables` au lieu de "lacune en algèbre"
+### Phase B — Diagnostic approfondi (objectif central)
+- **Base de connaissance** — 121 leçons du programme officiel MEN Burkina Faso (6e, 5e, 4e, 3e)
+- **Diagnostic par question échouée** — causes cachées identifiées, pas de généricité
+- **Ancrage curriculum** — chaque lacune référence une leçon officielle (`[4e_NUM_Ch4_L3]`, etc.)
+- **Causes profondes** — ex. "confond (a+b)² = a²+b² (oubli du terme 2ab)" vs "lacune en algèbre"
 
-### Interface et expérience
-- **Écran d'analyse animé** — logo Hakili pulsant, 7 étapes en temps réel, barre de progression
-- **Mode batch** — session multi-élèves avec synthèse de classe et téléchargement individuel
-- **Instructions expert** — critères contextuels optionnels injectés dans le prompt de correction
-- **Export PDF + JSON** — rapport enseignant + sujet remédiation élève + données brutes
+### Rapport final
+- **Tableau bonnes réponses** — N° question · points attribués
+- **Tableau mauvaises réponses** — N° question · 0 / points possibles
+- **Diagnostic approfondi** — lacunes précises par niveau scolaire + causes profondes
+- **Plan de remédiation** — exercices ciblés en français académique
+- **Export PDF XeLaTeX + JSON** — rapport enseignant + données brutes
 
 ---
 
@@ -53,53 +64,49 @@ Le système repose sur une **architecture multi-provider** : chaque tâche est c
 [Copie PDF/images — scanner 150 DPI ou photos smartphone]
                │
                ▼
-    ┌──────────────────────────────────────────────┐
-    │  1. Ingestion & contrôle qualité image       │  PDF → images · flou · luminosité
-    └────────────────────┬─────────────────────────┘
-                         │
-                         ▼
-    ┌──────────────────────────────────────────────┐
-    │  2. Transcription  (Gemini Flash / Claude)   │  texte + formules + schémas + [ILLISIBLE]
-    └────────────────────┬─────────────────────────┘
-                         │
-                         ▼
-    ┌──────────────────────────────────────────────┐
-    │  3. Correction — ensemble voting × 3         │  DeepSeek V3 / Claude
-    │     vote majoritaire · requires_review       │  MATH-500 ~90%
-    └────────────────────┬─────────────────────────┘
-                         │
-                         ▼
-    ┌──────────────────────────────────────────────┐
-    │  4. RAG — récupération contexte programme    │  CurriculumRetriever
-    │     121 chunks · 6e → 3e programme officiel  │  questions échouées → chunks
-    └────────────────────┬─────────────────────────┘
-                         │
-                         ▼
-    ┌──────────────────────────────────────────────┐
-    │  5. Diagnostic  (DeepSeek R1 / Mistral)      │  causes cachées + CompetencyGaps
-    │     contexte programme injecté dans prompt   │  leçons officielles citées
-    └────────────────────┬─────────────────────────┘
-                         │
-                         ▼
-    ┌──────────────────────────────────────────────┐
-    │  6. Remédiation  (Mistral Small 3.1)         │  5 exercices/lacune · français académique
-    └────────────────────┬─────────────────────────┘
-                         │
-                         ▼
-    ┌──────────────────────────────────────────────┐
-    │  7. Export PDF + JSON                        │  rapport enseignant · sujet élève
-    └──────────────────────────────────────────────┘
+╔══════════════════════════════════════════════════════════╗
+║               PHASE A — CORRECTION ASSISTÉE             ║
+╠══════════════════════════════════════════════════════════╣
+║  1. Ingestion                                            ║  PDF → images 150 DPI
+║     │                                                    ║
+║     ▼                                                    ║
+║  2. Transcription  (Gemini 2.5 Flash / Claude)           ║  texte + formules + [ILLISIBLE]
+║     │                                                    ║
+║     ▼                                                    ║
+║  3. Correction IA  (DeepSeek V3 / Claude)                ║  proposition 0/1 par question
+║     │                                                    ║
+║     ▼                                                    ║
+║  4. Tableau de validation enseignant          ← ARRÊT    ║
+║     N° Q · bonne réponse · réponse élève                 ║
+║     · note IA · [Accepter / Refuser]                     ║
+║     │                                                    ║
+║     ▼ (après validation)                                 ║
+║  5. Score final /20                                      ║  décisions enseignant > IA
+╠══════════════════════════════════════════════════════════╣
+║               PHASE B — DIAGNOSTIC APPROFONDI           ║
+╠══════════════════════════════════════════════════════════╣
+║  6. RAG — récupération contexte programme                ║  leçons des questions échouées
+║     │                                                    ║
+║     ▼                                                    ║
+║  7. Diagnostic  (Claude Opus 4.7)                        ║  causes cachées + CompetencyGaps
+║     │                                                    ║
+║     ▼                                                    ║
+║  8. Remédiation  (Mistral Small / Claude)                ║  exercices ciblés par lacune
+║     │                                                    ║
+║     ▼                                                    ║
+║  9. Rapport final PDF + JSON                             ║  tableaux synthèse + diagnostic
+╚══════════════════════════════════════════════════════════╝
 ```
 
-**Routing automatique :** si une clé API est absente ou si le provider échoue, le pipeline bascule sur Claude. Aucune interruption.
+**Routing automatique :** si une clé API est absente ou si le provider échoue, le pipeline bascule sur Claude.
 
 | Tâche | Provider principal | Fallback | Contrôle |
 |---|---|---|---|
-| Transcription | Gemini Flash | Claude Sonnet | `VISION_PROVIDER` |
-| Correction | DeepSeek V3 | Claude Sonnet | `GRADING_PROVIDER` |
-| Diagnostic | DeepSeek R1 | Claude Haiku | `DIAGNOSTIC_PROVIDER` |
-| Remédiation | Mistral Small | Claude Sonnet | `REMEDIATION_PROVIDER` |
-| Extraction barème/énoncé | Claude Sonnet | — | toujours Claude |
+| Transcription | Gemini 2.5 Flash | Claude Sonnet 4.6 | `VISION_PROVIDER` |
+| Correction (proposition) | DeepSeek V3 | Claude Sonnet 4.6 | `GRADING_PROVIDER` |
+| Diagnostic | Claude Opus 4.7 | — | `DIAGNOSTIC_PROVIDER` |
+| Remédiation | Mistral Small | Claude Sonnet 4.6 | `REMEDIATION_PROVIDER` |
+| Extraction barème/énoncé | Claude Sonnet 4.6 | — | toujours Claude |
 
 ---
 
@@ -108,12 +115,15 @@ Le système repose sur une **architecture multi-provider** : chaque tâche est c
 ### Structure des fichiers
 ```
 data/knowledge/
-├── curriculum_6e.yaml    # 45 leçons : numériques + géométriques (6e)
-├── curriculum_5e.yaml    # 33 leçons : multiples, fractions, triangles…
-├── curriculum_4e.yaml    # 23 leçons : puissances, polynômes, Thalès, vecteurs…
-├── curriculum_3e.yaml    # 20 leçons : Pythagore, trigonométrie, systèmes…
-├── bareme_test_3e.yaml   # Barème enrichi test 3e : 33 questions → chunk_ids
-└── bareme_test_6e.yaml   # Barème enrichi test 6e : 33 questions → chunk_ids
+├── curriculum_6e.yaml        # 45 leçons : numériques + géométriques (6e)
+├── curriculum_5e.yaml        # 33 leçons : multiples, fractions, triangles…
+├── curriculum_4e.yaml        # 23 leçons : puissances, polynômes, Thalès, vecteurs…
+├── curriculum_3e.yaml        # 20 leçons : Pythagore, trigonométrie, systèmes…
+├── bareme_test_3e.yaml       # Barème enrichi test 3e v1 : 33 questions → chunk_ids
+├── bareme_test_3e_v2.yaml    # Barème test 3e v2 (nouveau)
+├── corrige_test_3e.yaml      # Corrigé officiel test 3e v1
+├── corrige_test_3e_v2.yaml   # Corrigé officiel test 3e v2 (nouveau)
+└── bareme_test_6e.yaml       # Barème enrichi test 6e : 33 questions → chunk_ids
 ```
 
 ### Format d'un chunk curriculum
@@ -147,9 +157,9 @@ data/knowledge/
 
 | Tâche | Provider | Modèle | Justification | Coût/copie |
 |---|---|---|---|---|
-| Transcription | **Google Gemini** | gemini-2.0-flash | Vision native, tier gratuit 1M tok/j | $0.00 |
+| Transcription | **Google Gemini** | gemini-2.5-flash | Vision native, tier gratuit 1M tok/j | $0.00 |
 | Correction | **DeepSeek** | deepseek-chat (V3) | MATH-500 ~90%, meilleur score math | $0.005 |
-| Diagnostic | **DeepSeek** | deepseek-reasoner (R1) | Chain-of-thought, causes profondes | $0.008 |
+| Diagnostic | **Claude** | claude-opus-4-7 | Raisonnement profond, causes cachées | $0.008 |
 | Remédiation | **Mistral** | mistral-small-latest | Français académique natif | $0.003 |
 | Barème/Énoncé | **Claude** | claude-sonnet-4-6 | tool_use forcé, extraction fiable | $0.010 |
 | **Total** | | | | **~$0.02** |
@@ -164,14 +174,14 @@ data/knowledge/
 |---|---|
 | Interface | Streamlit 1.36 |
 | Base de connaissance | YAML + pyyaml |
-| IA — Vision | Google Gemini 2.0 Flash |
+| IA — Vision | Google Gemini 2.5 Flash |
 | IA — Raisonnement math | DeepSeek V3 + R1 (API compatible OpenAI) |
 | IA — Génération French | Mistral Small 3.1 |
 | IA — Extraction structurée | Anthropic Claude Sonnet 4.6 |
 | Modèles de données | Pydantic v2 + pydantic-settings |
 | PDF → images | PyMuPDF (fitz) · 150 DPI |
 | Qualité image | OpenCV + Pillow |
-| Génération PDF | ReportLab |
+| Génération PDF | XeLaTeX + Jinja2 (fallback ReportLab) |
 | Retry API | Tenacity |
 | Tests | Pytest |
 | Linting / typage | Ruff + MyPy |
@@ -248,27 +258,27 @@ make run
 ## Configuration (`.env`)
 
 ```env
-# ── Anthropic Claude (obligatoire — fallback + extraction) ───────────────────
+# ── Anthropic Claude (obligatoire — fallback + extraction + diagnostic) ───────
 ANTHROPIC_API_KEY=sk-ant-...
 CLAUDE_MODEL_HEAVY=claude-sonnet-4-6
+CLAUDE_MODEL_OPUS=claude-opus-4-7
 
 # ── Google Gemini — transcription vision (GRATUIT jusqu'à 1M tokens/jour) ────
 GOOGLE_API_KEY=AIza...
+GEMINI_MODEL=gemini-2.5-flash
 VISION_PROVIDER=gemini          # "gemini" | "claude"
 
-# ── DeepSeek — correction (V3) + diagnostic (R1) ─────────────────────────────
+# ── DeepSeek — correction (V3) ───────────────────────────────────────────────
 DEEPSEEK_API_KEY=sk-...
 GRADING_PROVIDER=deepseek       # "deepseek" | "claude"
-DIAGNOSTIC_PROVIDER=deepseek    # "deepseek" | "mistral" | "claude"
+DIAGNOSTIC_PROVIDER=claude      # "claude" | "deepseek" | "mistral"
 
 # ── Mistral — remédiation français académique ─────────────────────────────────
 MISTRAL_API_KEY=...
 REMEDIATION_PROVIDER=mistral    # "mistral" | "deepseek" | "claude"
 
-# ── Seuils qualité image ──────────────────────────────────────────────────────
+# ── Seuils pipeline ───────────────────────────────────────────────────────────
 CONFIDENCE_REVIEW_THRESHOLD=0.75
-IMAGE_MIN_RESOLUTION=1000
-IMAGE_BLUR_THRESHOLD=100.0
 
 # ── Stockage local ────────────────────────────────────────────────────────────
 RUNS_DIR=./runs
@@ -282,20 +292,26 @@ Tous les choix de providers se font **uniquement dans `.env`** — aucune modifi
 
 ### Mode Test Hakili (recommandé)
 
+**Phase A — Correction**
 1. Aller sur l'onglet **Traitement unique**
 2. Sélectionner **"Test Hakili : Test d'entrée en 3e"** (ou en 6e)
 3. Un bandeau confirme : ✓ Énoncé pré-chargé · ✓ Barème 33 questions · ✓ RAG activé
 4. Charger **uniquement la copie de l'élève** (PDF ou photos)
 5. Ajouter des instructions expert si nécessaire (optionnel)
-6. Cliquer **Lancer l'analyse**
-7. Suivre les 7 étapes sur l'écran d'analyse animé
-8. Télécharger le rapport PDF et le sujet de remédiation
+6. Cliquer **Lancer la transcription et la correction**
+7. Accéder au **tableau de validation** — accepter ou refuser chaque note IA
+8. Cliquer **Valider et générer le diagnostic**
+
+**Phase B — Diagnostic et rapport**
+
+9. L'IA produit le diagnostic approfondi ancré sur le programme officiel
+10. Télécharger le **rapport PDF** (tableaux synthèse + diagnostic + remédiation)
 
 ### Mode Libre (devoirs personnalisés)
 
 1. Sélectionner **"Mode libre"**
 2. Charger la copie, l'énoncé (optionnel), et le barème (PDF ou texte)
-3. Le reste est identique
+3. Le reste est identique au mode Hakili
 
 ### Format barème (mode libre, saisie texte)
 
@@ -409,13 +425,16 @@ hakili_ai_correction/
 | D-CEO-02 | Format barème | Binaire 0/1 par question et sous-question |
 | D-CEO-03 | Stratégie IA | **Multi-provider** avec routing automatique + choix `.env` |
 | D-CEO-04 | Instructions expert | Couche optionnelle d'instructions contextuelles |
-| D-CEO-05 | Validation humaine | Hors plateforme (enseignant sur PDF exporté) |
+| D-CEO-05 | Validation humaine | **Dans l'interface** via tableau de validation (Accepter/Refuser) |
 | D-CEO-07 | Identification | Nom réel de l'élève (slug technique pour fichiers) |
 | D-CEO-10 | Format entrée optimal | **PDF scanner 150 DPI** niveaux de gris |
 | D-CEO-11 | Coût cible | ~$0.02/copie · ~$12/an pour 540 copies |
 | D-CEO-12 | Diagnostic RAG | Ancré sur programme officiel MEN Burkina Faso (6e–3e) |
 | D-CEO-13 | Tests Hakili pré-chargés | Énoncé + barème auto · enseignant charge uniquement la copie |
 | D-CEO-14 | UI premium | Écran animé Hakili · 7 étapes en temps réel · instrument marketing |
+| D-CEO-15 | Génération PDF | XeLaTeX + Jinja2 (fallback ReportLab) |
+| **D-CEO-16** | **Mode correction** | **Correction assistée : IA propose, enseignant valide** |
+| **D-CEO-17** | **Diagnostic central** | **Phase B après validation : diagnostic approfondi = valeur principale** |
 
 Registre complet : [docs/decision_register.md](docs/decision_register.md)
 
@@ -436,9 +455,10 @@ Registre complet : [docs/decision_register.md](docs/decision_register.md)
 
 | Objectif | Cible |
 |---|---|
-| Précision correction (IA vs enseignant) | ≤ 1 point d'écart sur barème 10 pts |
-| Taux de révision humaine requise | < 15% des questions |
-| Temps de traitement par copie | < 120 secondes |
+| Taux d'accord IA / enseignant (avant validation) | ≥ 85% des questions |
+| Temps Phase A (transcription + correction IA) | < 90 secondes |
+| Temps Phase B (diagnostic après validation) | < 60 secondes |
+| Qualité diagnostic | Chaque lacune référence une leçon officielle précise |
 | Volume cible de validation | 100 copies réelles avec enseignant référent |
 
 ---

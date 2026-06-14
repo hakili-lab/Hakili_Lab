@@ -25,8 +25,7 @@ Codes d'anomalie (utilisés dans les logs et dans l'UI) :
   LOW_CONFIDENCE             Confiance moyenne de transcription trop faible
   HIGH_ILLISIBLE_RATIO       Trop de zones illisibles dans la transcription
   NO_QUESTIONS               Correction sans aucune question évaluée
-  SCORE_SUM_MISMATCH         total_score ≠ somme des scores individuels → auto-fixé
-  POSSIBLE_COUNT_MISMATCH    total_possible ≠ nombre de questions → auto-fixé
+  POSSIBLE_COUNT_MISMATCH    total_possible ≠ Σ max_score barème → auto-fixé
   LOW_CONF_REVIEW_FORCED     requires_review forcé sur confiance < 60 % → auto-fixé
   DUPLICATE_QUESTION_IDS     Identifiants de questions en doublon
   SUSPICIOUS_ALL_ZERO        Tous les scores à 0 sans barème fourni
@@ -56,6 +55,7 @@ from src.models.domain import (
     QuestionGrade,
     RemediationSubject,
     RootCauseError,
+    Rubric,
     TranscriptionResult,
 )
 
@@ -237,15 +237,17 @@ def validate_grading(
     grade: CopyGrade,
     *,
     rubric_provided: bool = False,
+    rubric: "Rubric | None" = None,
     low_conf_threshold: float = 0.60,
     suspicious_ratio: float = 0.95,
 ) -> ValidationResult[CopyGrade]:
     """
     Valide et corrige automatiquement les incohérences dans la correction.
 
+    Normalisations silencieuses (sans warning) :
+    - total_score toujours recalculé comme Σ des scores individuels.
     Corrections automatiques (severity="warning", auto_fixed=True) :
-    - total_score recalculé si Σ scores individuels ≠ valeur déclarée.
-    - total_possible recalculé si len(questions) ≠ valeur déclarée.
+    - total_possible aligné sur Σ max_score des items du barème (garantit note/20 atteignable à 20).
     - requires_review forcé à True pour toute question avec confidence < seuil.
 
     Erreurs bloquantes :
@@ -280,33 +282,34 @@ def validate_grading(
         ))
         return _done("Correction", grade, issues)
 
-    # ── Correction auto : total_score ─────────────────────────────────────────
-    real_score = sum(q.score for q in questions)
-    if grade.total_score != real_score:
-        issues.append(ValidationIssue(
-            code="SCORE_SUM_MISMATCH",
-            severity="warning",
-            message=(
-                f"total_score déclaré ({grade.total_score}) ≠ somme réelle ({real_score}). "
-                f"Corrigé : {grade.total_score} → {real_score}."
-            ),
-            auto_fixed=True,
-        ))
-        grade = _rebuild_grade(grade, total_score=real_score)
+    # ── Normalisation silencieuse : total_score = somme des scores individuels ──
+    # Les scores par question sont la vérité ; on recalcule toujours le total
+    # sans émettre de warning (l'IA peut se tromper dans son addition).
+    grade = _rebuild_grade(grade, total_score=sum(q.score for q in questions))
 
     # ── Correction auto : total_possible ─────────────────────────────────────
-    if grade.total_possible != len(questions):
+    # total_possible = total officiel du test (meta.total_possible, ex: 20) — pour l'affichage.
+    # rubric_actual_max = somme réelle des max_score — pour la conversion /20 dans compute_final_score().
+    # Les deux peuvent différer si le document source a une incohérence (ex: items somment à 18.5 mais
+    # meta déclare 20). La séparation garantit : affichage /20, ET élève parfait = 20/20.
+    if rubric is not None and rubric.items:
+        actual_max = sum(item.max_score for item in rubric.items)
+        expected_possible = rubric.total_points if rubric.total_points > 0 else float(len(questions))
+    else:
+        actual_max = 0.0
+        expected_possible = float(len(questions))
+    if abs(grade.total_possible - expected_possible) > 1e-9:
         issues.append(ValidationIssue(
             code="POSSIBLE_COUNT_MISMATCH",
             severity="warning",
             message=(
                 f"total_possible déclaré ({grade.total_possible}) ≠ "
-                f"nombre de questions ({len(questions)}). "
-                f"Corrigé : {grade.total_possible} → {len(questions)}."
+                f"attendu ({expected_possible}). "
+                f"Corrigé : {grade.total_possible} → {expected_possible}."
             ),
             auto_fixed=True,
         ))
-        grade = _rebuild_grade(grade, total_possible=len(questions))
+        grade = _rebuild_grade(grade, total_possible=expected_possible)
 
     # ── Correction auto : requires_review sur faible confiance ────────────────
     fixed_qs: list[QuestionGrade] = []
@@ -350,7 +353,7 @@ def validate_grading(
     # ── Avertissement : résultat suspect sans barème ──────────────────────────
     if not rubric_provided and len(grade.questions) >= 3:
         n_zero = sum(1 for q in grade.questions if q.score == 0)
-        n_one = sum(1 for q in grade.questions if q.score == 1)
+        n_positive = sum(1 for q in grade.questions if q.score > 0)
         total = len(grade.questions)
 
         if n_zero == total:
@@ -362,12 +365,12 @@ def validate_grading(
                     "Conseil : fournissez un barème ou vérifiez la qualité du scan."
                 ),
             ))
-        elif n_one == total:
+        elif n_positive == total:
             issues.append(ValidationIssue(
                 code="SUSPICIOUS_ALL_ONE",
                 severity="warning",
                 message=(
-                    f"Tous les {total} scores sont à 1 sans barème fourni — "
+                    f"Tous les {total} scores sont positifs sans barème fourni — "
                     "résultat peut-être trop indulgent. Vérification recommandée."
                 ),
             ))
@@ -377,12 +380,19 @@ def validate_grading(
                 severity="warning",
                 message=f"{n_zero}/{total} scores à 0 sans barème ({n_zero/total:.0%}) — vérification recommandée.",
             ))
-        elif n_one / total >= suspicious_ratio:
+        elif n_positive / total >= suspicious_ratio:
             issues.append(ValidationIssue(
                 code="SUSPICIOUS_HIGH_ONE_RATIO",
                 severity="warning",
-                message=f"{n_one}/{total} scores à 1 sans barème ({n_one/total:.0%}) — vérification recommandée.",
+                message=f"{n_positive}/{total} scores positifs sans barème ({n_positive/total:.0%}) — vérification recommandée.",
             ))
+
+    # Stocker la somme réelle des items du barème pour le calcul /20 dans compute_final_score().
+    # total_possible reste l'officiel (ex: 20) — affichage ; rubric_actual_max sert au dénominateur
+    # de la conversion /20 (garantit qu'un élève parfait obtient 20/20 même si les items ne somment
+    # pas exactement au total officiel déclaré dans meta.total_possible).
+    if actual_max > 0 and abs(actual_max - grade.total_possible) > 1e-9:
+        grade = _rebuild_grade(grade, rubric_actual_max=actual_max)
 
     return _done("Correction", grade, issues)
 
@@ -417,45 +427,59 @@ def validate_diagnostic(
     """
     issues: list[ValidationIssue] = []
 
+    import re as _re
+
     # Table de correspondance id → score
-    score_by_id: dict[str, int] = {q.rubric_item_id: q.score for q in grade.questions}
+    score_by_id: dict[str, float] = {q.rubric_item_id: q.score for q in grade.questions}
     all_ids: set[str] = set(score_by_id)
 
+    def _id_in_text(qid: str, text: str) -> bool:
+        """True si qid apparaît dans text comme mot entier (évite Q1 ⊂ Q10)."""
+        return bool(_re.search(r'(?<![A-Za-z0-9_])' + _re.escape(qid) + r'(?![A-Za-z0-9_])', text))
+
     def _contains_zero_question(text: str) -> bool:
-        """True si le texte mentionne explicitement un ID dont le score est 0."""
-        return any(qid in text and score_by_id.get(qid, 1) == 0 for qid in all_ids)
+        return any(_id_in_text(qid, text) and score_by_id.get(qid, 1.0) == 0 for qid in all_ids)
 
     def _contains_one_question(text: str) -> bool:
-        """True si le texte mentionne explicitement un ID dont le score est 1."""
-        return any(qid in text and score_by_id.get(qid, 0) == 1 for qid in all_ids)
+        return any(_id_in_text(qid, text) and score_by_id.get(qid, 0.0) > 0 for qid in all_ids)
 
     # ── Correction auto : forces incohérentes ─────────────────────────────────
-    clean_strengths = [s for s in diagnostic.strengths if not _contains_zero_question(s)]
-    n_removed_s = len(diagnostic.strengths) - len(clean_strengths)
-    if n_removed_s:
+    # Ne supprimer une force que si elle mentionne explicitement un ID à score=0.
+    # Garder au moins une force pour ne pas décourager l'élève/le parent.
+    candidate_strengths = [s for s in diagnostic.strengths if not _contains_zero_question(s)]
+    n_removed_s = len(diagnostic.strengths) - len(candidate_strengths)
+    if n_removed_s and candidate_strengths:
+        # Des forces ont été nettoyées, et il en reste — on applique le nettoyage
+        clean_strengths = candidate_strengths
         issues.append(ValidationIssue(
             code="STRENGTH_ON_ZERO_SCORE",
             severity="warning",
             message=(
-                f"{n_removed_s} force(s) supprimée(s) : référençaient des questions "
-                f"ayant score=0, ce qui est contradictoire."
+                f"{n_removed_s} force(s) supprimée(s) : mentionnaient explicitement "
+                f"une question ayant score=0."
             ),
             auto_fixed=True,
         ))
+    else:
+        # Soit rien à supprimer, soit supprimer tout laisserait la liste vide → conserver
+        clean_strengths = diagnostic.strengths
 
     # ── Correction auto : lacunes incohérentes ────────────────────────────────
-    clean_weaknesses = [w for w in diagnostic.weaknesses if not _contains_one_question(w)]
-    n_removed_w = len(diagnostic.weaknesses) - len(clean_weaknesses)
-    if n_removed_w:
+    candidate_weaknesses = [w for w in diagnostic.weaknesses if not _contains_one_question(w)]
+    n_removed_w = len(diagnostic.weaknesses) - len(candidate_weaknesses)
+    if n_removed_w and candidate_weaknesses:
+        clean_weaknesses = candidate_weaknesses
         issues.append(ValidationIssue(
             code="WEAKNESS_ON_ONE_SCORE",
             severity="warning",
             message=(
-                f"{n_removed_w} lacune(s) supprimée(s) : référençaient des questions "
-                f"ayant score=1, ce qui est contradictoire."
+                f"{n_removed_w} lacune(s) supprimée(s) : mentionnaient explicitement "
+                f"une question ayant score=1."
             ),
             auto_fixed=True,
         ))
+    else:
+        clean_weaknesses = diagnostic.weaknesses
 
     # ── Correction auto : root_causes avec IDs invalides ─────────────────────
     clean_rc: list[RootCauseError] = []
@@ -620,9 +644,10 @@ def _done(stage: str, data: T, issues: list[ValidationIssue]) -> ValidationResul
 def _rebuild_grade(
     grade: CopyGrade,
     *,
-    total_score: int | None = None,
-    total_possible: int | None = None,
+    total_score: float | None = None,
+    total_possible: float | None = None,
     questions: list[QuestionGrade] | None = None,
+    rubric_actual_max: float | None = None,
 ) -> CopyGrade:
     """Recrée un CopyGrade immuable avec les champs modifiés."""
     return CopyGrade(
@@ -631,4 +656,5 @@ def _rebuild_grade(
         total_possible=total_possible if total_possible is not None else grade.total_possible,
         questions=questions if questions is not None else grade.questions,
         expert_instructions_used=grade.expert_instructions_used,
+        rubric_actual_max=rubric_actual_max if rubric_actual_max is not None else grade.rubric_actual_max,
     )

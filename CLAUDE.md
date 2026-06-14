@@ -1,57 +1,128 @@
-# CLAUDE.md — Hakili Lab AI Copy Correction Assistant
+# CLAUDE.md — Hakili Lab AI Assisted Correction
 
 ## Rôle de Claude Code
-Tu es l'assistant d'ingénierie du projet Hakili Lab : outil d'évaluation et de remédiation assistée par IA pour copies manuscrites de mathématiques et physique-chimie.
+Tu es l'assistant d'ingénierie du projet Hakili Lab : outil de **correction assistée par IA** pour copies manuscrites de mathématiques, conçu pour les tests de recrutement Hakili Lab au Burkina Faso (niveaux 6e à 3e).
 
-Objectif : produire un prototype professionnel, testable, documenté, maintenable, et prêt pour une évaluation sur 100 copies réelles.
+**Objectif central : le diagnostic pédagogique approfondi.** La correction IA n'est qu'une première passe — c'est l'enseignant qui valide, et c'est le diagnostic qui constitue la valeur ajoutée du produit.
 
-## Contraintes non négociables
-- Python comme backend principal.
-- Interface de démonstration légère : priorité à Streamlit si Shiny Python ralentit le projet ; Shiny reste acceptable si imposé.
-- Entrées : JPG, PNG, PDF multi-pages.
-- Sorties : rapport PDF structuré + export JSON.
-- Correction strictement basée sur l'énoncé et le barème fournis.
-- Ne jamais inventer une réponse illisible : signaler l'incertitude.
-- Garder une trace de confiance par page, question et sous-question.
-- Prévoir une validation humaine avant toute restitution officielle.
-- Confidentialité : anonymisation par défaut, stockage local par défaut au stade prototype.
+---
 
-## Architecture cible
-Pipeline recommandé :
-1. Ingestion : upload PDF/images + énoncé + barème.
-2. Prétraitement : conversion PDF -> images, rotation, cadrage, amélioration contraste, découpage page par page.
-3. Contrôle qualité image : flou, luminosité, page manquante, ordre des pages.
-4. Transcription multimodale structurée : texte, calculs, formules, schémas, zones incertaines.
-5. Mapping question -> réponse élève.
-6. Correction selon barème.
-7. Diagnostic compétences.
-8. Remédiation personnalisée.
-9. Génération PDF + JSON.
-10. Interface enseignant : revue, correction manuelle, validation.
+## Vision du produit (état cible)
 
-## Décision stratégique importante
-Ne pas construire un outil qui demande à l'équipe de photographier et envoyer chaque exercice un par un. Le flux recommandé est : scanner ou photographier toute la copie, puis laisser le système découper et organiser les pages. Pour un MVP, accepter aussi plusieurs images dans l'ordre.
+### Flux en deux phases
 
-## Qualité attendue du code
-- Typage Python partout où utile.
-- Pydantic pour les schémas de données.
-- Tests unitaires sur parsing, scoring, génération JSON.
-- Séparation claire entre modèle IA, logique métier et interface.
-- Configuration par `.env`.
-- Logs propres sans données personnelles sensibles.
-- README exploitable par un nouveau développeur.
+**Phase A — Correction assistée**
+1. L'enseignant scanne la copie de l'élève (PDF ou photos)
+2. Le système charge l'énoncé + le barème (auto si test Hakili standard)
+3. L'IA transcrit la copie et propose une note par question
+4. L'enseignant accède au **tableau de validation** : il accepte ou refuse chaque note IA
+5. Le système calcule le **score final /20** en priorisant les décisions enseignant
+
+**Phase B — Diagnostic approfondi** (déclenchée après validation)
+6. Le système interroge les curricula officiels (RAG) pour chaque question échouée
+7. L'IA produit un diagnostic précis : causes cachées, lacunes par niveau, leçons non maîtrisées
+8. Le rapport final est généré
+
+### Tableau de validation enseignant (interface clé)
+| N° question | Bonne réponse | Réponse de l'élève | Note IA | Décision enseignant |
+|---|---|---|---|---|
+| Q1 | 15 | 15 | 1/1 | ✅ Accepter |
+| Q2a | 2x+3 | 2x | 0/1 | ❌ Refuser → saisir note |
+| Q3b | Voir corrigé | [ILLISIBLE] | 0/1 | ✅ Accepter |
+
+L'enseignant coche "Accepter" ou "Refuser" pour chaque ligne. Si refus, il saisit la note corrigée.
+
+### Rapport final
+Deux tableaux brefs en tête :
+- **Bonnes réponses** : N° question | Points attribués
+- **Mauvaises réponses** : N° question | 0 / Points possibles
+
+Puis le corps du rapport : **diagnostic pédagogique approfondi + plan de remédiation**.
+Pas de long listing de commentaires par question — le rapport se concentre sur les lacunes.
+
+---
+
+## Ce qui est implémenté (infrastructure réutilisable)
+
+### Reste intact
+- Ingestion PDF/images (PyMuPDF, 150 DPI)
+- Transcription multimodale (Gemini 2.5 Flash / Claude Sonnet)
+- Correction IA binaire 0/1 (DeepSeek V3 / Claude) — devient une "proposition" soumise à l'enseignant
+- RAG curriculum (121 leçons 6e→3e, `CurriculumRetriever`)
+- Diagnostic (`DiagnosticResult`, `CompetencyGap`)
+- Remédiation (Mistral Small / Claude)
+- Export PDF XeLaTeX + JSON
+- Architecture multi-provider avec fallback automatique
+- TestRegistry (tests Hakili pré-chargés)
+
+### À construire
+- Modèle `TeacherDecision` et champs de validation dans `QuestionGrade`
+- Pipeline en deux phases avec point d'arrêt après la correction
+- Composant Streamlit : tableau de validation enseignant
+- Calcul du score final priorisant les décisions enseignant
+- Rapport reformaté (tableaux synthétiques + diagnostic central)
+
+---
+
+## Architecture multi-provider (inchangée)
+| Tâche | Provider par défaut | Fallback |
+|---|---|---|
+| Transcription | Gemini 2.5 Flash | Claude Sonnet 4.6 |
+| Correction (proposition) | DeepSeek V3 | Claude Sonnet 4.6 |
+| Diagnostic | Claude Opus 4.7 | — |
+| Remédiation | Mistral Small | Claude Sonnet 4.6 |
+| Extraction barème/énoncé | Claude Sonnet 4.6 | — |
+
+---
+
+## Contraintes actives
+- Python + Streamlit uniquement.
+- Barème binaire 0/1 par question et sous-question.
+- L'enseignant a toujours le dernier mot sur le score (priorité décision humaine).
+- Diagnostic ancré sur le programme officiel MEN Burkina Faso — pas de généricité.
+- Stockage local, identification par nom réel de l'élève.
+- Coût cible : ~$0.02/copie (avec Gemini actif).
+
+---
+
+## Qualité du code
+- Pydantic v2 pour tous les schémas.
+- Séparation : `src/api/` | `src/pipeline/` | `src/models/` | `src/ui/` | `src/knowledge/`
+- Configuration par `.env` via `pydantic-settings`.
+
+---
 
 ## Style de travail
 Avant de coder :
-1. Lire `docs/analysis_and_strategy.md`.
-2. Lire `docs/decision_register.md`.
-3. Lire `data/schemas/*.json`.
-4. Proposer un plan court.
-5. Implémenter par petites étapes testables.
+1. Lire `docs/decision_register.md` — décisions actives.
+2. Lire `src/models/domain.py` — schémas de référence.
+3. Proposer un plan si la tâche touche plusieurs modules.
+4. Ne pas recréer ce qui existe — vérifier `src/knowledge/`, `src/pipeline/`, `src/api/`.
 
-## Commandes attendues
-- `make setup` : créer environnement et installer dépendances.
-- `make test` : lancer tests.
-- `make run` : lancer l'interface de démonstration.
-- `make lint` : vérifier format et qualité.
+---
 
+## Commandes
+```powershell
+# Windows
+.\.venv\Scripts\Activate.ps1
+streamlit run src\ui\app.py
+
+# Unix / make
+make setup && make run
+make test
+make lint
+```
+
+---
+
+## Fichiers clés
+| Fichier | Rôle |
+|---|---|
+| `src/pipeline/pipeline.py` | Pipeline principal (à scinder en Phase A + Phase B) |
+| `src/pipeline/orchestrator.py` | Validateurs entre étapes |
+| `src/models/domain.py` | Schémas Pydantic — ajouter `TeacherDecision` ici |
+| `src/ui/app.py` | Interface — ajouter le tableau de validation ici |
+| `src/knowledge/curriculum_retriever.py` | RAG curricula |
+| `src/knowledge/test_registry.py` | Tests Hakili pré-chargés |
+| `docs/decision_register.md` | Toutes les décisions actives |
+| `docs/implementation_plan.md` | Plan de transformation en phases |

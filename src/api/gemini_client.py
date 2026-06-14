@@ -1,13 +1,12 @@
 """
 GeminiTranscriptionClient — transcription via Google Gemini Flash.
 
-Tarifs Gemini 3.1 Flash-Lite (2026) :
+Modèle actif : GEMINI_MODEL dans .env (défaut : gemini-1.5-flash-latest)
   - Tier gratuit : 15 RPM, 1 000 000 tokens/jour  → $0 pour une classe entière
-  - Tier payant  : $0.10 input / $0.40 output par million de tokens
-                   soit ~50× moins cher que Claude Opus 4.7
+  - Tier payant  : ~$0.075 input / $0.30 output par million de tokens
 
 Ce client remplace ClaudeClient.transcribe() quand VISION_PROVIDER=gemini.
-Toutes les autres étapes (correction, diagnostic, remédiation) restent sur Claude.
+Toutes les autres étapes (correction, diagnostic, remédiation) restent sur Claude/DeepSeek/Mistral.
 """
 from __future__ import annotations
 
@@ -33,7 +32,7 @@ from src.models.domain import (
 logger = logging.getLogger(__name__)
 
 _MAX_PAGES_PER_BATCH = 3   # Gemini gère plusieurs pages par appel → moins d'appels
-_MAX_OUTPUT_TOKENS = 4096
+_MAX_OUTPUT_TOKENS = 16384
 
 _JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]*?)```", re.IGNORECASE)
 _TRAILING_COMMA = re.compile(r",\s*([}\]])")
@@ -148,6 +147,17 @@ _retry_gemini = retry(
 
 # ── Client principal ──────────────────────────────────────────────────────────
 
+# Ordre de fallback automatique si le modèle configuré est introuvable (404)
+_GEMINI_FALLBACKS = [
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-preview-05-20",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash-002",
+    "gemini-1.5-flash",
+]
+
+
 class GeminiTranscriptionClient:
     """Transcription multimodale via Gemini Flash — remplace ClaudeClient.transcribe()."""
 
@@ -157,8 +167,38 @@ class GeminiTranscriptionClient:
                 "GOOGLE_API_KEY manquante. Ajoutez-la dans .env pour utiliser Gemini."
             )
         self._client = genai.Client(api_key=settings.google_api_key)
+        self._model = self._probe_model(settings.gemini_model)
         self._transcription_prompt = self._load_prompt("transcription_prompt.md")
-        logger.info("GeminiTranscriptionClient initialisé (modèle=%s)", settings.gemini_model)
+        logger.info("GeminiTranscriptionClient initialisé (modèle=%s)", self._model)
+
+    def _probe_model(self, configured: str) -> str:
+        """Vérifie que le modèle est disponible ; essaie les fallbacks sinon."""
+        candidates = [configured] + [m for m in _GEMINI_FALLBACKS if m != configured]
+        for model in candidates:
+            try:
+                self._client.models.generate_content(
+                    model=model,
+                    contents="test",
+                    config=types.GenerateContentConfig(max_output_tokens=1),
+                )
+                if model != configured:
+                    logger.warning(
+                        "Gemini : modèle '%s' indisponible — fallback automatique → '%s'",
+                        configured, model,
+                    )
+                return model
+            except Exception as e:
+                if "404" in str(e) or "NOT_FOUND" in str(e):
+                    logger.debug("Gemini probe : '%s' introuvable, essai suivant…", model)
+                    continue
+                # Autre erreur (auth, quota…) → on garde le modèle configuré
+                logger.warning("Gemini probe '%s' erreur non-404 : %s — modèle conservé.", model, e)
+                return configured
+        logger.error(
+            "Gemini : aucun modèle disponible parmi %s. Vérifiez votre clé API.",
+            candidates,
+        )
+        return configured
 
     def _load_prompt(self, filename: str) -> str:
         prompt_path = Path(__file__).parent.parent.parent / "prompts" / filename
@@ -242,15 +282,32 @@ class GeminiTranscriptionClient:
     def _transcribe_batch(
         self, copy_id: str, image_paths: list[Path], page_offset: int = 0
     ) -> ClaudeResponse:
+        first_page = page_offset + 1
+        last_page = page_offset + len(image_paths)
         page_hint = (
-            f"\nCes images sont les pages {page_offset + 1} à {page_offset + len(image_paths)}."
-            f" Utilise page_number à partir de {page_offset + 1}."
+            f"\nCes images sont les pages {first_page} à {last_page}."
+            f" Utilise page_number à partir de {first_page}."
             if page_offset > 0 else ""
+        )
+
+        schema_example = (
+            '{\n'
+            f'  "copy_id": "{copy_id}",\n'
+            '  "global_quality": "good",\n'
+            '  "pages": [\n'
+            f'    {{"page_number": {first_page}, "content": "...", "formulas": [], "diagrams": [], "uncertainties": [], "confidence": 0.9}}'
+            + (
+                f',\n    {{"page_number": {first_page + 1}, "content": "...", "formulas": [], "diagrams": [], "uncertainties": [], "confidence": 0.9}}'
+                if len(image_paths) > 1 else ""
+            )
+            + '\n  ]\n}'
         )
 
         prompt = (
             f"{self._transcription_prompt}\n\ncopy_id : {copy_id}{page_hint}\n\n"
-            "Retourne UNIQUEMENT un objet JSON valide sans aucune balise markdown."
+            "Retourne UNIQUEMENT un objet JSON valide sans aucune balise markdown, "
+            "avec cette structure exacte (une entrée dans `pages` par image fournie) :\n"
+            f"{schema_example}"
         )
 
         # Contenu = [texte, image1, image2, ...]
@@ -260,7 +317,7 @@ class GeminiTranscriptionClient:
 
         try:
             response = self._client.models.generate_content(
-                model=settings.gemini_model,
+                model=self._model,
                 contents=contents,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",

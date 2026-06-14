@@ -1,5 +1,5 @@
 # Registre des Décisions — Hakili Lab AI Correction
-**Mis à jour le : 2026-06-08**
+**Mis à jour le : 2026-06-11 (réorientation vers correction assistée)**
 
 ---
 
@@ -230,6 +230,74 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 
 ---
 
+### D-CEO-16 — Réorientation vers la correction assistée par IA *(nouveau 2026-06-11)*
+**Décision :** Le système passe d'une **correction automatique** à une **correction assistée** où l'IA propose et l'enseignant valide.
+
+**Ancien mode :** L'IA corrige, génère un rapport, l'enseignant le consulte hors système.
+**Nouveau mode :** L'IA propose une note par question → l'enseignant accepte ou refuse dans l'interface → le score final est calculé en priorisant les décisions enseignant.
+
+**Justification :**
+- La correction automatique sans validation est inacceptable pour un document officiel
+- L'enseignant doit rester le garant pédagogique — l'IA est un assistant, pas un décideur
+- La validation in-app est plus rapide et traçable que la révision hors plateforme
+- Elle ouvre la voie à l'amélioration continue du système (on mesure les désaccords IA/enseignant)
+
+**Impact sur le pipeline :**
+- Le pipeline se scinde en Phase A (correction IA + validation enseignant) et Phase B (diagnostic)
+- `QuestionGrade` est enrichi : `teacher_decision` (accepted/refused/pending) + `teacher_score`
+- `CopyGrade` est enrichi : `final_score` (basé sur les décisions enseignant)
+- Le diagnostic (Phase B) ne se déclenche qu'après la validation complète de la Phase A
+
+---
+
+### D-CEO-17 — Le diagnostic approfondi comme objectif central *(nouveau 2026-06-11)*
+**Décision :** Le **diagnostic pédagogique approfondi** est positionné comme la **valeur principale** du produit — pas la correction.
+
+**Ce que produit le diagnostic :**
+- Pour chaque question échouée : identification des causes cachées (pas des symptômes)
+- Ancrage sur une leçon précise du programme officiel (chunk_id)
+- Identification de la classe concernée (la lacune vient de quelle année ?)
+- Exemples concrets de l'erreur type pour chaque lacune (depuis `erreurs_frequentes` du curriculum)
+- Le tout organisé par domaine (numérique / géométrique)
+
+**Ce que le diagnostic ne fait plus :**
+- Lister des commentaires par question (supprimé du rapport)
+- Produire une note (rôle de la Phase A)
+
+**Structure du rapport final :**
+1. Tableau bonnes réponses (N° question · points)
+2. Tableau mauvaises réponses (N° question · 0/points)
+3. Corps : diagnostic approfondi par domaine + plan de remédiation ciblé
+
+**Justification :** Un enseignant peut corriger une copie manuellement. Ce qu'il ne peut pas faire facilement : identifier que "la confusion entre (a+b)² et a²+b²" vient d'une lacune de 4e non comblée, ni produire 5 exercices ciblés sur cette lacune en 2 minutes. C'est là la valeur différenciante.
+
+---
+
+### D-CEO-15 — Migration génération PDF vers XeLaTeX *(nouveau 2026-06-11)*
+**Décision :** Remplacer ReportLab par **XeLaTeX + Jinja2** pour la génération des rapports PDF.
+
+**Contexte :** ReportLab impose un layouting manuel (coordonnées pixel par pixel) qui rendait les rapports structurellement rigides et visuellement basiques. Les formules mathématiques et tableaux étaient difficiles à rendre proprement.
+
+**Architecture mise en place :**
+- `src/pipeline/pdf_report_latex.py` — rapport de correction (note, commentaires, diagnostic, compétences)
+- `src/pipeline/pdf_remediation_latex.py` — sujet de remédiation élève
+- `templates/` — templates Jinja2 `.tex` avec commandes LaTeX custom (`\skillbadge`, etc.)
+- Fonction `_le()` — escape automatique des caractères spéciaux LaTeX dans les données élèves
+- **Fallback automatique ReportLab** si `xelatex` n'est pas installé sur la machine
+
+**Avantages :**
+- Rendu typographique professionnel (formules mathématiques natives, tableaux, mise en page)
+- Facilité de modification du template sans toucher au code Python
+- Compatible avec le positionnement premium de l'outil auprès des parents
+
+**Fichiers supprimés :**
+- `src/pipeline/pdf_report.py` (ReportLab)
+- `src/pipeline/image_quality.py` (contrôle qualité image standalone — logique intégrée dans l'ingestion)
+
+**Prérequis :** TeX Live ou MiKTeX installé sur la machine de l'enseignant (optionnel — le fallback ReportLab garantit que le pipeline ne bloque pas si xelatex est absent).
+
+---
+
 ## Tableau de synthèse
 
 | ID | Sujet | Décision finale | Date |
@@ -253,3 +321,6 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 | D-CEO-12 | Diagnostic RAG | Ancré sur programme officiel MEN Burkina Faso (121 leçons 6e→3e) | **2026-06-08** |
 | D-CEO-13 | Tests Hakili pré-chargés | TestRegistry : énoncé + barème auto · enseignant charge uniquement la copie | **2026-06-08** |
 | D-CEO-14 | UI premium · marketing | Écran animé Hakili · 7 étapes en temps réel · logo pulsant · facturable parents | **2026-06-08** |
+| D-CEO-15 | Génération PDF | Migration ReportLab → **XeLaTeX + Jinja2** (fallback ReportLab si xelatex absent) | **2026-06-11** |
+| **D-CEO-16** | **Mode correction** | **Correction assistée : IA propose, enseignant valide dans l'interface** | **2026-06-11** |
+| **D-CEO-17** | **Objectif central** | **Diagnostic approfondi = valeur principale — rapport centré sur les lacunes** | **2026-06-11** |

@@ -17,6 +17,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from mistralai import Mistral
 from PIL import Image
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
@@ -216,13 +218,33 @@ class MistralTranscriptionClient:
             )
 
     def _transcribe_batched(self, copy_id: str, image_paths: list[Path]) -> ClaudeResponse:
+        batches = [
+            (start, image_paths[start : start + _MAX_PAGES_PER_BATCH])
+            for start in range(0, len(image_paths), _MAX_PAGES_PER_BATCH)
+        ]
+
+        batch_results: list[tuple[int, ClaudeResponse]] = []
+        with ThreadPoolExecutor(max_workers=len(batches)) as pool:
+            future_to_offset = {
+                pool.submit(self._transcribe_batch, copy_id, batch, offset): offset
+                for offset, batch in batches
+            }
+            for fut in as_completed(future_to_offset):
+                offset = future_to_offset[fut]
+                try:
+                    resp = fut.result()
+                except Exception as exc:
+                    logger.error("Mistral batch (offset=%d, copy_id=%s) exception : %s", offset, copy_id, exc)
+                    return ClaudeResponse(success=False, data=None, confidence=0.0, raw_response="", error=str(exc))
+                if not resp.success or resp.data is None:
+                    return resp
+                batch_results.append((offset, resp))
+
+        batch_results.sort(key=lambda x: x[0])
+
         all_pages: list[PageTranscription] = []
         qualities: list[str] = []
-        for start in range(0, len(image_paths), _MAX_PAGES_PER_BATCH):
-            batch = image_paths[start:start + _MAX_PAGES_PER_BATCH]
-            resp = self._transcribe_batch(copy_id, batch, page_offset=start)
-            if not resp.success or resp.data is None:
-                return resp
+        for _, resp in batch_results:
             data: TranscriptionResult = resp.data
             all_pages.extend(data.pages)
             qualities.append(data.global_quality)
@@ -236,7 +258,7 @@ class MistralTranscriptionClient:
         avg_conf = sum(p.confidence for p in all_pages) / len(all_pages) if all_pages else 0.5
         return ClaudeResponse(
             success=True, data=merged, confidence=avg_conf,
-            raw_response=f"[mistral batched {len(all_pages)} pages]", error=None,
+            raw_response=f"[mistral batched parallel {len(all_pages)} pages]", error=None,
         )
 
     @_retry_vision

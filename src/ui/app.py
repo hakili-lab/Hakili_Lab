@@ -1,10 +1,18 @@
 import base64
+import logging
 import sys
 import tempfile
 from pathlib import Path
 
 # Assure que la racine du projet est dans le path (nécessaire sur Windows)
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)-8s  %(name)s — %(message)s",
+    datefmt="%H:%M:%S",
+    stream=sys.stdout,
+)
 
 import streamlit as st
 
@@ -66,6 +74,12 @@ section[data-testid="stSidebar"] {
     text-transform: uppercase !important;
     padding: 0 14px !important;
     margin-bottom: 4px !important;
+}
+[data-testid="stSidebar"] .stRadio > label,
+[data-testid="stSidebar"] .stRadio > label p,
+[data-testid="stSidebar"] .stRadio > label span {
+    color: #ffffff !important;
+    opacity: 1 !important;
 }
 .stRadio > div { gap: 1px !important; padding: 0 8px !important; }
 .stRadio > div > label {
@@ -277,6 +291,32 @@ hr {
 
 /* ── Caption / small ───────────────────────────────────────────────── */
 .stCaption, caption { font-size: 11px !important; color: #7090b8 !important; }
+
+/* ── Largeur sidebar réduite ────────────────────────────────────────── */
+section[data-testid="stSidebar"] {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+}
+
+/* ── Diagnostic forces / lacunes ────────────────────────────────────── */
+.diag-section { margin: 8px 0 16px 0; }
+.diag-section-header {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; padding: 7px 14px; border-radius: 4px 4px 0 0;
+    margin-bottom: 0;
+}
+.forces-header { background: #eaf7ef; color: #1a7a42; border-left: 3px solid #27ae60; }
+.lacunes-header { background: #fff3e8; color: #9a4500; border-left: 3px solid #e67e22; }
+.diag-item {
+    padding: 9px 14px 9px 16px;
+    border-left: 3px solid;
+    margin: 2px 0;
+    font-size: 13px; line-height: 1.55; color: #2c3e50;
+}
+.forces-item { border-color: #27ae60; background: #f7fdf9; }
+.lacunes-item { border-color: #e67e22; background: #fffaf5; }
+.diag-item:last-child { border-radius: 0 0 4px 0; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -302,6 +342,11 @@ with st.sidebar:
     page = st.radio(
         "MENU",
         options=["À PROPOS", "TRAITEMENT UNIQUE", "TRAITEMENT BATCH"],
+        format_func=lambda x: {
+            "À PROPOS": "À propos",
+            "TRAITEMENT UNIQUE": "Analyser une copie",
+            "TRAITEMENT BATCH": "Session de classe",
+        }.get(x, x),
     )
 
 
@@ -320,7 +365,7 @@ def _page_header(title: str, subtitle: str = "") -> None:
             <div class="pheader-title">{title}</div>
             {sub}
         </div>
-        <div class="pheader-badge">Maths · 6e → Tle · Barème 0/1</div>
+        <div class="pheader-badge">Mathématiques · 6e à la Terminale</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -351,78 +396,329 @@ def _parse_rubric_text(rubric_text: str):
     return Rubric(subject="mathematics", total_points=len(items), items=items)
 
 
+def _show_failure(technical_detail: str = "") -> None:
+    """Affiche un message d'échec clair, sans jargon technique visible."""
+    st.markdown(
+        """
+        <div style="
+            background:#fff0f0;
+            border:2px solid #c0392b;
+            border-radius:8px;
+            padding:22px 24px;
+            margin:16px 0;
+            text-align:center;
+        ">
+            <div style="font-size:2rem; margin-bottom:8px;">&#9888;</div>
+            <div style="font-size:1.1rem; font-weight:700; color:#c0392b; margin-bottom:6px;">
+                Une erreur est survenue
+            </div>
+            <div style="font-size:0.95rem; color:#555;">
+                Merci de réessayer. Si le problème persiste, vérifiez votre connexion
+                ou contactez le support Hakili Lab.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if technical_detail:
+        with st.expander("Détails techniques", expanded=False):
+            st.code(technical_detail, language=None)
+
+
+def _s(v) -> str:
+    """Formate un float : entier si possible, sinon notation compacte."""
+    try:
+        return str(int(v)) if float(v) == int(float(v)) else f"{float(v):g}"
+    except (TypeError, ValueError):
+        return str(v)
+
+
+# Substitutions pour les symboles mathématiques que Inter/les navigateurs ne rendent pas bien.
+# ⃗ (U+20D7 COMBINING RIGHT ARROW ABOVE) → →  lisible et sémantique pour les vecteurs.
+_UI_SYMBOL_SUBS: list[tuple[str, str]] = [
+    ("⃗", "→"),   # ⃗ vecteur AB⃗ → AB→
+    ("⃖", "←"),   # ⃖ flèche gauche combinante
+    ("⃡", "↔"),   # ⃡ double flèche combinante
+    ("⃑", "⇁"),   # ⃑ harpoon above
+]
+
+
+def _ui_clean(s: str) -> str:
+    """Remplace les caractères combinants mathématiques invisibles/carrés."""
+    for char, repl in _UI_SYMBOL_SUBS:
+        s = s.replace(char, repl)
+    return s
+
+
+def _mh(s: str) -> str:
+    """Convertit x^2 → <sup>2</sup>, nettoie les symboles et humanise les IDs."""
+    from src.pipeline.pdf_report_html import _humanize_ids_in_text, _math_to_html
+    return _math_to_html(_ui_clean(_humanize_ids_in_text(str(s))))
+
+
+def _render_diag_overview(diag) -> str:
+    """Retourne le HTML forces + lacunes pour affichage séquentiel élégant."""
+    parts: list[str] = []
+    if diag.strengths:
+        parts.append('<div class="diag-section">')
+        parts.append('<div class="diag-section-header forces-header">✦&nbsp; Forces identifiées</div>')
+        for s in diag.strengths:
+            parts.append(f'<div class="diag-item forces-item">{_mh(s)}</div>')
+        parts.append('</div>')
+    if diag.weaknesses:
+        parts.append('<div class="diag-section">')
+        parts.append('<div class="diag-section-header lacunes-header">▼&nbsp; Lacunes prioritaires</div>')
+        for w in diag.weaknesses:
+            parts.append(f'<div class="diag-item lacunes-item">{_mh(w)}</div>')
+        parts.append('</div>')
+    return "".join(parts)
+
+
+def render_validation_table(grade, rubric=None) -> None:
+    """
+    Affiche le tableau de validation enseignant et stocke les décisions dans
+    st.session_state["teacher_decisions"] = { rubric_item_id: {"decision": str, "score": float} }.
+    """
+    from src.models.domain import TeacherDecision
+
+    if "teacher_decisions" not in st.session_state:
+        st.session_state["teacher_decisions"] = {}
+
+    # index max_score par question
+    max_scores: dict[str, float] = {}
+    if rubric:
+        for item in rubric.items:
+            max_scores[item.id] = item.max_score
+
+    st.markdown("""
+    <style>
+    .val-table-header {
+        display:grid; grid-template-columns:70px 1fr 1fr 90px 180px;
+        gap:0; background:#001e4a; color:#fff; font-size:11px;
+        font-weight:700; letter-spacing:0.5px; text-transform:uppercase;
+        padding:9px 12px; border-radius:6px 6px 0 0;
+    }
+    .val-row {
+        display:grid; grid-template-columns:70px 1fr 1fr 90px 180px;
+        gap:0; padding:7px 12px; font-size:12.5px; border-bottom:1px solid #e8eef8;
+        align-items:center;
+    }
+    .val-row:hover { background:#f5f8fd; }
+    .val-row-accepted { background:#f0fbf2; }
+    .val-row-refused  { background:#fff8f0; }
+    .val-tag-ok  { color:#2d7a2d; font-weight:600; }
+    .val-tag-err { color:#c0392b; font-weight:600; }
+    .val-tag-rev { color:#e67e22; font-size:10px; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown(
+        '<div class="val-table-header">'
+        '<span>N° Q</span><span>Bonne réponse</span><span>Réponse élève</span>'
+        '<span>Note IA</span><span>Décision enseignant</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    decisions = st.session_state["teacher_decisions"]
+    n_decided = 0
+
+    for q in grade.questions:
+        max_s = max_scores.get(q.rubric_item_id, 1.0)
+        ia_note = f"{_s(q.score)} / {_s(max_s)}"
+
+        prev = decisions.get(q.rubric_item_id, {})
+        prev_decision = prev.get("decision", "Accepter")
+
+        review_tag = " ⚠" if q.requires_review else ""
+        illisible = "[ILLISIBLE]" in q.observed_answer.upper() or q.observed_answer == "—"
+        ans_color = "color:#c0392b;" if illisible else ""
+        correct_display = q.correct_answer if q.correct_answer else "—"
+
+        row_class = ""
+        if prev_decision == "Accepter":
+            row_class = "val-row-accepted"
+            n_decided += 1
+        elif prev_decision == "Refuser":
+            row_class = "val-row-refused"
+            n_decided += 1
+
+        st.markdown(
+            f'<div class="val-row {row_class}">'
+            f'<span style="font-weight:600;color:#001e4a;">{q.rubric_item_id}</span>'
+            f'<span style="color:#2c5f2e;">{correct_display}</span>'
+            f'<span style="{ans_color}">{q.observed_answer}{review_tag}</span>'
+            f'<span style="font-weight:600;">{"🟢" if q.score > 0 else "🔴"} {ia_note}</span>'
+            f'<span></span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+
+        col_dec, col_score = st.columns([1, 1])
+        with col_dec:
+            choice = st.radio(
+                f"_{q.rubric_item_id}",
+                options=["Accepter", "Refuser"],
+                index=0 if prev_decision == "Accepter" else 1,
+                horizontal=True,
+                label_visibility="collapsed",
+                key=f"val_radio_{q.rubric_item_id}",
+            )
+        with col_score:
+            if choice == "Refuser":
+                new_score = st.number_input(
+                    f"Note {q.rubric_item_id}",
+                    min_value=0.0,
+                    max_value=float(max_s),
+                    value=float(prev.get("score", 0.0)),
+                    step=0.25,
+                    label_visibility="collapsed",
+                    key=f"val_score_{q.rubric_item_id}",
+                )
+                decisions[q.rubric_item_id] = {"decision": "Refuser", "score": new_score}
+            else:
+                decisions[q.rubric_item_id] = {"decision": "Accepter", "score": q.score}
+
+    st.session_state["teacher_decisions"] = decisions
+
+    # Compteur et score en temps réel — même formule que compute_final_score() (arrondi au 0.25)
+    n_total = len(grade.questions)
+    _denom_20 = grade.total_possible
+    _raw_sum = sum(d["score"] for d in decisions.values())
+    current_score_20 = (
+        round(round(_raw_sum / _denom_20 * 20 * 4) / 4, 2) if _denom_20 else 0
+    )
+
+    st.markdown(f"""
+    <div style="background:#f0f5fc;border:1px solid #c8d8ee;border-radius:0 0 6px 6px;
+                padding:10px 14px;display:flex;justify-content:space-between;align-items:center;
+                font-size:13px;">
+        <span style="color:#6b87a8;">
+            <strong>{n_decided} / {n_total}</strong> questions validées
+        </span>
+        <span>
+            Score après validation :
+            <strong style="color:#001e4a;font-size:15px;">{current_score_20} / 20</strong>
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def _apply_teacher_decisions(grade, decisions: dict) -> None:
+    """Applique les décisions du tableau au CopyGrade et calcule le score final."""
+    from src.models.domain import TeacherDecision
+    for q in grade.questions:
+        d = decisions.get(q.rubric_item_id, {})
+        if d.get("decision") == "Refuser":
+            q.teacher_decision = TeacherDecision.refused
+            q.teacher_score = d.get("score", 0.0)
+        else:
+            q.teacher_decision = TeacherDecision.accepted
+    grade.compute_final_score()
+
+
 def _display_results(result, key_prefix: str = "") -> None:
     if not result.success:
-        st.error(f"Pipeline échoué : {'; '.join(result.errors)}")
+        _show_failure("; ".join(result.errors))
         return
 
     grade = result.grade
     student_label = result.student_name or result.copy_id
-    st.success(f"Correction terminée — **{student_label}** : **{grade.total_score}/{grade.total_possible}**")
 
-    if result.quality.global_quality == "poor":
-        st.warning("Qualité image insuffisante — vérifiez les pages signalées.")
+    # Score final (validé) ou score IA si pas encore validé
+    score_20   = grade.final_score_on_20
+    score_disp = f"{score_20}/20" if score_20 is not None else f"{_s(grade.final_score or grade.total_score)} / {_s(grade.total_possible)}"
+    st.success(f"Rapport généré — **{student_label}** : **{score_disp}**")
 
     # Alertes orchestrateur
     auto_fixes = [i for i in result.validation_issues if i.auto_fixed]
-    warnings = [i for i in result.validation_issues if not i.auto_fixed and i.severity == "warning"]
+    warnings_  = [i for i in result.validation_issues if not i.auto_fixed and i.severity == "warning"]
     if auto_fixes:
         with st.expander(f"Orchestrateur — {len(auto_fixes)} correction(s) automatique(s)"):
             for issue in auto_fixes:
                 st.caption(f"✓ [{issue.code}] {issue.message}")
-    if warnings:
-        with st.expander(f"Orchestrateur — {len(warnings)} avertissement(s) à vérifier"):
-            for issue in warnings:
+    if warnings_:
+        with st.expander(f"Orchestrateur — {len(warnings_)} avertissement(s) à vérifier"):
+            for issue in warnings_:
                 st.warning(f"[{issue.code}] {issue.message}")
 
     avg_conf = (
         sum(q.confidence for q in grade.questions) / len(grade.questions)
         if grade.questions else 0.0
     )
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Note", f"{grade.total_score} / {grade.total_possible}")
-    col2.metric("Confiance IA", f"{avg_conf:.0%}")
-    col3.metric("Révisions requises", sum(1 for q in grade.questions if q.requires_review))
+    col1, col2 = st.columns(2)
+    col1.metric("Note finale", score_disp)
+    col2.metric("Fiabilité de lecture", f"{avg_conf:.0%}")
 
-    st.markdown("#### Détail par question")
-    for q in grade.questions:
-        icon = "✓" if q.score == 1 else "✗"
-        review_tag = " · Révision requise" if q.requires_review else ""
-        with st.expander(f"{icon}  {q.rubric_item_id} — {q.score}/1  (confiance {q.confidence:.0%}){review_tag}"):
-            st.markdown(f"**Réponse observée :** {q.observed_answer}")
-            st.markdown(f"**Commentaire :** {q.comment}")
+    # ── Tableaux synthèse ─────────────────────────────────────────────────────
+    st.markdown("#### Résultats par question")
+    good_qs = [q for q in grade.questions if (q.teacher_score if q.teacher_score is not None and q.teacher_decision.value == "refused" else q.score) > 0]
+    bad_qs  = [q for q in grade.questions if (q.teacher_score if q.teacher_score is not None and q.teacher_decision.value == "refused" else q.score) == 0]
+
+    col_g, col_b = st.columns(2, gap="large")
+    with col_g:
+        st.markdown(f"**Bonnes réponses ({len(good_qs)})**")
+        for q in good_qs:
+            eff = q.teacher_score if (q.teacher_score is not None and q.teacher_decision.value == "refused") else q.score
+            st.markdown(f"&nbsp;&nbsp;✅ `{q.rubric_item_id}` — {_s(eff)} pt(s)")
+    with col_b:
+        st.markdown(f"**Réponses incorrectes ({len(bad_qs)})**")
+        for q in bad_qs:
+            max_s = q.score  # score IA = 0 → on affiche 0/max_score
+            st.markdown(f"&nbsp;&nbsp;❌ `{q.rubric_item_id}` — 0 pt")
 
     if result.diagnostic:
         diag = result.diagnostic
-        st.markdown("#### Diagnostic pédagogique")
-        c1, c2 = st.columns(2)
-        with c1:
-            if diag.strengths:
-                st.markdown("**Forces**")
-                for s in diag.strengths:
-                    st.markdown(f"- {s}")
-        with c2:
-            if diag.weaknesses:
-                st.markdown("**Lacunes**")
-                for w in diag.weaknesses:
-                    st.markdown(f"- {w}")
+        st.markdown("#### Diagnostic pédagogique approfondi")
+        if diag.strengths or diag.weaknesses:
+            st.markdown(_render_diag_overview(diag), unsafe_allow_html=True)
 
         if diag.root_causes:
-            st.markdown("#### Erreurs cachées identifiées")
+            st.markdown("#### Où se situent les vraies difficultés")
             st.caption(
-                "Ces causes profondes expliquent plusieurs points perdus — "
-                "les corriger améliore la copie sur plusieurs questions à la fois."
+                "Ces points expliquent la majorité des erreurs. "
+                "Les corriger aura le plus grand impact sur les résultats de votre enfant."
             )
             for rc in diag.root_causes:
                 qs = ", ".join(rc.linked_questions) if rc.linked_questions else "—"
                 with st.expander(f"Questions {qs} — {rc.visible_error}"):
-                    st.markdown(f"**Cause cachée :** {rc.hidden_cause}")
+                    st.markdown(f"**Cause cachée :** {_mh(rc.hidden_cause)}", unsafe_allow_html=True)
+
+        if diag.skills:
+            st.markdown("#### Ce que maîtrise l'élève — ce qu'il doit retravailler")
+            _level_icon = {
+                "acquis":      "🟢 Acquis",
+                "part_acquis": "🟡 Part. acquis",
+                "non_acquis":  "🔴 Non acquis",
+                "unknown":     "⚪ Inconnu",
+            }
+            _gap_index = {g.chunk_id: g for g in (diag.competency_gaps or [])}
+            for sk in diag.skills:
+                lbl = _level_icon.get(sk.level, sk.level)
+                # Programme RAG : classe + chapitre si non/part acquis
+                prog_info = ""
+                if sk.level in ("non_acquis", "part_acquis") and sk.chunk_ids:
+                    refs = []
+                    for cid in sk.chunk_ids:
+                        g = _gap_index.get(cid)
+                        refs.append(f"{g.classe} — {g.chapitre}" if g else cid)
+                    prog_info = "  ·  " + " / ".join(refs)
+                with st.expander(f"{lbl}  —  {sk.name}{prog_info}"):
+                    st.markdown(_mh(sk.evidence), unsafe_allow_html=True)
+                    if sk.level in ("non_acquis", "part_acquis") and sk.chunk_ids:
+                        for cid in sk.chunk_ids:
+                            g = _gap_index.get(cid)
+                            if g:
+                                st.markdown(f"**Programme :** {g.classe} · {g.chapitre} — *{g.lecon}*")
+                                if g.savoir_faire:
+                                    for sf in g.savoir_faire:
+                                        st.markdown(f"  - {_mh(sf)}", unsafe_allow_html=True)
 
         if diag.competency_gaps:
-            st.markdown("#### Compétences non maîtrisées (programme officiel)")
+            st.markdown("#### Notions à consolider — Programme officiel MEN Burkina Faso")
             st.caption(
-                "Compétences extraites du programme du Ministère de l'Éducation du Burkina Faso, "
-                "identifiées sur la base des questions échouées et du barème Hakili."
+                "Ces notions figurent dans le programme officiel du Ministère de l'Éducation. "
+                "Elles correspondent aux réponses incorrectes sur ce test."
             )
             for gap in diag.competency_gaps:
                 badge = f"{gap.classe} · {gap.domaine.capitalize()}"
@@ -438,22 +734,22 @@ def _display_results(result, key_prefix: str = "") -> None:
                             st.caption(f"⚠ {ef}")
 
         if diag.remediation_plan:
-            st.markdown("#### Plan de remédiation")
+            st.markdown("#### Comment aider votre enfant à progresser")
             for item in sorted(diag.remediation_plan, key=lambda x: x.priority):
-                st.markdown(f"{item.priority}. **{item.topic}** — {item.action}")
+                st.markdown(f"{item.priority}. **{_mh(item.topic)}** — {_mh(item.action)}", unsafe_allow_html=True)
 
     if result.remediation_subject and result.remediation_subject.exercises:
-        st.markdown("#### Sujet de remédiation (exercices)")
-        st.caption("5 exercices progressifs par lacune identifiée — inclus dans le rapport PDF.")
+        st.markdown("#### Exercices personnalisés pour progresser")
+        st.caption("Des exercices ciblés, du plus simple au plus exigeant, pour combler chaque lacune identifiée.")
         current_topic = None
         for ex in result.remediation_subject.exercises:
             if ex.topic != current_topic:
                 current_topic = ex.topic
-                st.markdown(f"**Série : {ex.topic}**")
+                st.markdown(f"**Série : {_mh(ex.topic)}**", unsafe_allow_html=True)
             with st.expander(f"Exercice {ex.number}"):
-                st.markdown(ex.question)
+                st.markdown(_mh(ex.question), unsafe_allow_html=True)
                 if ex.hint:
-                    st.caption(f"Aide : {ex.hint}")
+                    st.markdown(f'<span style="font-size:11px;color:#7090b8;">Aide : {_mh(ex.hint)}</span>', unsafe_allow_html=True)
 
     # ── Téléchargements ───────────────────────────────────────────────────────
     st.markdown("#### Téléchargements")
@@ -466,7 +762,7 @@ def _display_results(result, key_prefix: str = "") -> None:
     with col_dl1:
         if result.pdf_path and result.pdf_path.exists():
             st.download_button(
-                "Rapport de correction (enseignant)",
+                "Rapport complet — Enseignant",
                 data=result.pdf_path.read_bytes(),
                 file_name=f"rapport_correction_{name_slug}.pdf",
                 mime="application/pdf",
@@ -476,7 +772,7 @@ def _display_results(result, key_prefix: str = "") -> None:
     with col_dl2:
         if result.remediation_pdf_path and result.remediation_pdf_path.exists():
             st.download_button(
-                "Sujet de remédiation (élève)",
+                "Exercices de progression — Élève",
                 data=result.remediation_pdf_path.read_bytes(),
                 file_name=f"sujet_remediation_{name_slug}.pdf",
                 mime="application/pdf",
@@ -484,34 +780,34 @@ def _display_results(result, key_prefix: str = "") -> None:
                 use_container_width=True,
             )
         elif not (result.remediation_subject and result.remediation_subject.exercises):
-            st.caption("Sujet de remédiation non disponible (diagnostic insuffisant)")
+            st.caption("Exercices de progression non disponibles pour cette copie")
 
 
 # ── PAGE : À PROPOS ───────────────────────────────────────────────────────────
 
 if page == "À PROPOS":
-    _page_header("À propos de la plateforme", "Hakili Lab · Correction IA")
+    _page_header("Hakili Lab — Diagnostic mathématiques", "Connaître le niveau réel de votre enfant en quelques minutes")
 
     col_left, col_right = st.columns([3, 2], gap="large")
 
     with col_left:
-        st.markdown("## Objectif")
+        st.markdown("## Pourquoi le test diagnostic ?")
         st.markdown(
-            "**Hakili Lab** est une plateforme d'évaluation et de remédiation assistée par IA "
-            "pour copies manuscrites de **mathématiques**, conçue pour le programme "
-            "du secondaire au Burkina Faso (**6e à la Terminale**). "
-            "Elle fournit aux enseignants une correction fiable, rapide et pédagogique."
+            "Votre enfant a passé un test de mathématiques Hakili Lab. "
+            "Cette plateforme vous permet de **connaître précisément ses forces et ses lacunes**, "
+            "question par question — et de recevoir un **plan d'exercices personnalisés** "
+            "pour l'aider à progresser."
         )
 
         st.divider()
-        st.markdown("## Fonctionnalités")
+        st.markdown("## Ce que fait la plateforme")
 
         items = [
-            ("Transcription multimodale", "Reconnaissance des textes, formules et schémas manuscrits. Signalement des zones ambiguës."),
-            ("Correction intelligente", "Évaluation binaire 0/1 par question et sous-question selon le barème fourni."),
-            ("Barème flexible", "Saisie manuelle, JSON, ou import direct d'un PDF/image du barème — extraction automatique par IA."),
-            ("Instructions expert", "Critères contextuels optionnels injectés dans le prompt pour affiner la précision."),
-            ("Diagnostic pédagogique", "Analyse des forces et lacunes · Plan de remédiation personnalisé."),
+            ("Lecture de la copie manuscrite", "L'IA lit et comprend l'écriture à la main, les calculs et les schémas géométriques — même les copies peu soignées."),
+            ("Correction question par question", "Chaque réponse est évaluée selon le barème officiel du test. Vous voyez ce qui est juste et ce qui ne l'est pas."),
+            ("Diagnostic pédagogique approfondi", "L'IA identifie les causes profondes des erreurs et les notions du programme officiel qui ne sont pas maîtrisées."),
+            ("Exercices de progression personnalisés", "Un sujet d'exercices ciblés est généré automatiquement pour chaque lacune identifiée — du plus simple au plus exigeant."),
+            ("Rapport complet téléchargeable", "Un document PDF prêt à imprimer : diagnostic, exercices et conseils pour l'enseignant et l'élève."),
         ]
         for title, desc in items:
             st.markdown(f"**{title}**")
@@ -519,37 +815,34 @@ if page == "À PROPOS":
             st.markdown("")
 
     with col_right:
-        st.markdown("## Barème")
+        st.markdown("## Comment ça marche ?")
         st.markdown(
-            "Le système applique un **barème binaire strict** :\n\n"
-            "- **1 pt** — réponse correcte complète\n"
-            "- **0 pt** — absente, incomplète ou incorrecte\n\n"
-            "Chaque sous-question est un item indépendant. "
-            "Aucun demi-point."
+            "**1. Scannez ou photographiez** la copie de l'élève.\n\n"
+            "**2. Choisissez le test** passé (Hakili 3e, 6e…) — tout est prêt automatiquement.\n\n"
+            "**3. Lancez l'analyse** — résultats en moins de 2 minutes.\n\n"
+            "**4. L'enseignant valide** les notes proposées et génère le rapport final.\n\n"
+            "**5. Téléchargez** le rapport et les exercices personnalisés."
         )
 
         st.divider()
-        st.markdown("## Modes disponibles")
-
+        st.markdown("## Pour qui ?")
         st.markdown(
-            "**Copie Unique** — Traitement immédiat d'une seule copie, "
-            "résultat affiché et téléchargeable.\n\n"
-            "**Batch** — Session multi-élèves avec synthèse de classe "
-            "et téléchargement individuel par copie."
+            "**Parents d'élèves** — Comprendre où en est votre enfant et comment l'aider.\n\n"
+            "**Enseignants** — Corriger une classe entière rapidement, avec un diagnostic précis par élève.\n\n"
+            "**Élèves** — Recevoir des exercices ciblés sur leurs vraies difficultés."
         )
 
         st.divider()
-        st.markdown("## Validation")
         st.caption(
-            "La validation finale se fait hors plateforme, par l'enseignant "
-            "directement sur le rapport PDF exporté."
+            "Les corrections proposées par l'IA sont toujours vérifiées et validées "
+            "par l'enseignant avant de générer le rapport final."
         )
 
 
 # ── PAGE : TRAITEMENT UNIQUE ──────────────────────────────────────────────────
 
 elif page == "TRAITEMENT UNIQUE":
-    _page_header("Traitement d'une copie unique", "Analyse · Correction · Rapport")
+    _page_header("Analyser une copie", "Diagnostic complet en quelques minutes")
 
     if "single_result" not in st.session_state:
         st.session_state.single_result = None
@@ -560,18 +853,17 @@ elif page == "TRAITEMENT UNIQUE":
     _registry = _get_registry()
     _available = _registry.available_tests()
 
-    _MODE_OPTIONS = ["Mode libre (barème + énoncé manuels)"] + [
-        f"Test Hakili : {t.label}" for t in _available.values()
+    _MODE_OPTIONS = ["Test personnalisé"] + [
+        t.label for t in _available.values()
     ]
     _MODE_IDS = [""] + list(_available.keys())
 
     selected_mode_label = st.selectbox(
-        "Mode de correction",
+        "Quel test a passé l'élève ?",
         options=_MODE_OPTIONS,
         help=(
-            "Mode Hakili : l'énoncé et le barème sont chargés automatiquement. "
-            "Il suffit d'uploader la copie de l'élève. "
-            "Mode libre : chargez votre propre énoncé et barème."
+            "Sélectionnez le test Hakili correspondant — l'énoncé et le barème se chargent automatiquement. "
+            "Si vous utilisez votre propre test, choisissez « Test personnalisé »."
         ),
     )
     selected_mode_idx = _MODE_OPTIONS.index(selected_mode_label)
@@ -595,8 +887,8 @@ elif page == "TRAITEMENT UNIQUE":
             </span><br>
             <span style="color:#2d7a2d;font-size:11.5px;margin-top:4px;display:block;">
                 ✓ Énoncé chargé automatiquement &nbsp;·&nbsp;
-                ✓ Barème {hakili_test.total_questions} questions pré-chargé &nbsp;·&nbsp;
-                ✓ Diagnostic RAG activé
+                ✓ Barème {hakili_test.total_questions} questions prêt &nbsp;·&nbsp;
+                ✓ Diagnostic pédagogique activé
             </span>
             </div>""",
             unsafe_allow_html=True,
@@ -609,11 +901,11 @@ elif page == "TRAITEMENT UNIQUE":
     with col_input:
         st.markdown("#### Copie de l'élève")
         copy_files = st.file_uploader(
-            "Copie de l'élève",
+            "Copie de l'élève (PDF ou photo)",
             type=["pdf", "jpg", "jpeg", "png"],
             accept_multiple_files=True,
             key="single_copy",
-            help="1 PDF multi-pages OU plusieurs photos (JPG/PNG) dans l'ordre des pages — jusqu'à 20 images.",
+            help="Déposez 1 PDF ou plusieurs photos dans l'ordre des pages. Jusqu'à 20 photos.",
         )
         if copy_files:
             n = len(copy_files)
@@ -622,62 +914,56 @@ elif page == "TRAITEMENT UNIQUE":
             else:
                 st.caption(f"{n} photos chargées — vérifiez qu'elles sont dans le bon ordre (page 1, 2…)")
 
-        # Énoncé et barème : affichés seulement en mode libre
+        # Énoncé : affiché seulement en mode personnalisé
         if not hakili_test:
-            st.markdown("#### Fichiers optionnels")
+            st.markdown("#### Documents du test (optionnel)")
             subject_file = st.file_uploader(
-                "Énoncé (optionnel)",
+                "Sujet du test (optionnel)",
                 type=["pdf", "jpg", "jpeg", "png"],
                 key="single_subject",
-                help="PDF ou image de l'énoncé.",
-            )
-            st.markdown("**Barème (optionnel)**")
-            rubric_file = st.file_uploader(
-                "Importer le barème (PDF ou image)",
-                type=["pdf", "jpg", "jpeg", "png"],
-                key="single_rubric_file",
-                help="Joignez le document barème — l'IA en extraira automatiquement les items.",
+                help="PDF ou photo du sujet donné à l'élève.",
             )
         else:
             subject_file = None
-            rubric_file = None
 
     with col_config:
-        st.markdown("#### Instructions expert")
+        st.markdown("#### Consignes spéciales (optionnel)")
         expert_instructions = st.text_area(
-            "Critères d'interprétation spécifiques (optionnel)",
+            "Précisions pour la correction (optionnel)",
             height=130,
             placeholder=(
-                "Ex : Pour Q2b, accepter x = 0 même si la justification est absente. "
+                "Ex : Pour la question 2b, accepter x = 0 même sans justification. "
                 "Ne pas pénaliser les fautes d'orthographe."
             ),
-            help="Injectées dans le prompt de correction.",
+            help="Ces précisions seront prises en compte lors de la correction de la copie.",
         )
         if not hakili_test:
             st.caption(
-                "En mode libre, vous pouvez aussi saisir le barème manuellement ci-dessous."
+                "Sans barème fourni, la plateforme identifie automatiquement les questions et applique une notation 0/1 par défaut."
             )
-            rubric_text = st.text_area(
-                "Barème texte (optionnel — une question par ligne : ID: intitulé)",
-                height=80,
-                placeholder="Q1: Calculer l'expression\nQ2a: Résoudre l'équation\nQ2b: Vérifier la solution",
-            )
-        else:
-            rubric_text = ""
 
     st.divider()
 
-    if st.button("Lancer l'analyse", use_container_width=False):
+    # ── Session state Phase A / B ─────────────────────────────────────────────
+    if "single_phase_a" not in st.session_state:
+        st.session_state.single_phase_a = None   # PipelineResult Phase A
+    if "single_result" not in st.session_state:
+        st.session_state.single_result = None    # PipelineResult Phase B (final)
+
+    # ── Bouton Phase A ────────────────────────────────────────────────────────
+    if st.button("Lancer la correction IA", use_container_width=False):
         if not copy_files:
             st.error("Veuillez charger la copie de l'élève (PDF ou photo(s)).")
         elif len(copy_files) > 1 and any(f.name.lower().endswith(".pdf") for f in copy_files):
             st.error("Impossible de mélanger un PDF avec des images. Chargez soit 1 PDF, soit plusieurs images.")
         else:
-            st.session_state.single_result = None
+            st.session_state.single_phase_a = None
+            st.session_state.single_result  = None
+            st.session_state["teacher_decisions"] = {}
             try:
                 from src.core.anonymizer import make_copy_id
                 from src.core.config import settings
-                from src.pipeline.pipeline import run_single_copy
+                from src.pipeline.pipeline import run_phase_a
                 from src.ui.progress import PipelineProgressUI
 
                 runs_dir = Path(settings.runs_dir)
@@ -686,26 +972,22 @@ elif page == "TRAITEMENT UNIQUE":
                 )
                 copy_id = make_copy_id(student_name)
 
-                # Barème + énoncé : pré-chargés (test Hakili) ou manuels (mode libre)
                 if hakili_test:
                     rubric = hakili_test.rubric
                     subject_text_val = hakili_test.subject_text
-                    rubric_file_path = None
                     subject_file_path = None
                 else:
-                    rubric = _parse_rubric_text(rubric_text)
+                    from src.models.domain import Rubric as _Rubric
+                    rubric = _Rubric(subject="mathematics", total_points=0, items=[])
                     subject_text_val = ""
                     subject_file_path = None
-                    rubric_file_path = None
 
-                # Récupère le logo encodé pour l'affichage de la progression
                 _logo_path = Path(__file__).parent / "hakili_logo.png"
                 _logo_b64 = (
                     base64.b64encode(_logo_path.read_bytes()).decode("utf-8")
                     if _logo_path.exists() else ""
                 )
 
-                st.divider()
                 progress_ui = PipelineProgressUI(
                     logo_b64=_logo_b64,
                     test_label=hakili_test.label if hakili_test else "Correction libre",
@@ -719,22 +1001,17 @@ elif page == "TRAITEMENT UNIQUE":
                         _save_upload(uf, p)
                         saved_paths.append(p)
 
-                    if not hakili_test:
-                        if subject_file:
-                            subject_tmp = Path(tmp) / f"subject_{subject_file.name}"
-                            _save_upload(subject_file, subject_tmp)
-                            subject_file_path = subject_tmp
-                        if rubric_file:
-                            rubric_tmp = Path(tmp) / f"rubric_{rubric_file.name}"
-                            _save_upload(rubric_file, rubric_tmp)
-                            rubric_file_path = rubric_tmp
+                    if not hakili_test and subject_file:
+                        sp = Path(tmp) / f"subject_{subject_file.name}"
+                        _save_upload(subject_file, sp)
+                        subject_file_path = sp
 
-                    result = run_single_copy(
+                    phase_a_result = run_phase_a(
                         copy_id=copy_id,
                         student_name=student_name,
                         file_paths=saved_paths,
                         rubric=rubric,
-                        rubric_file_path=rubric_file_path,
+                        rubric_file_path=None,
                         subject_text=subject_text_val,
                         subject_file_path=subject_file_path,
                         expert_instructions=expert_instructions,
@@ -744,12 +1021,80 @@ elif page == "TRAITEMENT UNIQUE":
                         on_progress=progress_ui.update,
                     )
 
-                progress_ui.finish()
-                st.session_state.single_result = result
+                progress_ui.clear()
+                st.session_state.single_phase_a = phase_a_result
+                st.rerun()
 
             except Exception as e:
-                st.error(f"Erreur inattendue : {e}")
+                if "progress_ui" in dir():
+                    progress_ui.clear()
+                _show_failure(str(e))
 
+    # ── Tableau de validation (après Phase A) ─────────────────────────────────
+    if st.session_state.single_phase_a is not None and st.session_state.single_result is None:
+        phase_a = st.session_state.single_phase_a
+
+        if phase_a.errors:
+            _show_failure("; ".join(phase_a.errors))
+        elif phase_a.grade is not None:
+            st.divider()
+            st.markdown("""
+            <div style="background:#001e4a;color:#fff;padding:12px 16px;border-radius:6px;
+                        margin-bottom:16px;font-size:13px;font-weight:600;">
+                Étape 2 — Validation enseignant
+                <span style="font-size:11px;font-weight:400;margin-left:10px;color:#a0c0e8;">
+                    Acceptez ou corrigez chaque note proposée par l'IA
+                </span>
+            </div>
+            """, unsafe_allow_html=True)
+
+            render_validation_table(
+                phase_a.grade,
+                rubric=phase_a.rubric,
+            )
+
+            st.markdown("")
+            if st.button(
+                "Valider et générer le diagnostic →",
+                use_container_width=False,
+                type="primary",
+            ):
+                from src.pipeline.pipeline import run_phase_b
+                from src.ui.progress import PipelineProgressUI
+
+                decisions = st.session_state.get("teacher_decisions", {})
+                _apply_teacher_decisions(phase_a.grade, decisions)
+
+                _logo_path = Path(__file__).parent / "hakili_logo.png"
+                _logo_b64 = (
+                    base64.b64encode(_logo_path.read_bytes()).decode("utf-8")
+                    if _logo_path.exists() else ""
+                )
+                progress_ui = PipelineProgressUI(
+                    logo_b64=_logo_b64,
+                    test_label=hakili_test.label if hakili_test else "Correction libre",
+                    student_name=phase_a.student_name,
+                )
+
+                try:
+                    final_result = run_phase_b(
+                        result=phase_a,
+                        on_progress=progress_ui.update,
+                    )
+                except Exception as _e_b:
+                    progress_ui.clear()
+                    _show_failure(str(_e_b))
+                    st.stop()
+
+                progress_ui.clear()
+                if final_result.errors:
+                    _show_failure("; ".join(final_result.errors))
+                    st.stop()
+                st.session_state.single_result  = final_result
+                st.session_state.single_phase_a = None
+                st.rerun()
+
+    # ── Résultats finaux (après Phase B) ─────────────────────────────────────
     if st.session_state.single_result is not None:
         st.divider()
         _display_results(st.session_state.single_result)
@@ -758,7 +1103,7 @@ elif page == "TRAITEMENT UNIQUE":
 # ── PAGE : TRAITEMENT BATCH ───────────────────────────────────────────────────
 
 elif page == "TRAITEMENT BATCH":
-    _page_header("Traitement batch", "Session multi-élèves · Synthèse de classe")
+    _page_header("Session de classe", "Analyser toute une classe d'un coup")
 
     if "batch_results" not in st.session_state:
         st.session_state.batch_results = None
@@ -770,16 +1115,16 @@ elif page == "TRAITEMENT BATCH":
     _available_batch = _registry_batch.available_tests()
 
     # ── Sélection du mode batch ───────────────────────────────────────────────
-    _MODE_OPTIONS_BATCH = ["Mode libre (barème + énoncé manuels)"] + [
-        f"Test Hakili : {t.label}" for t in _available_batch.values()
+    _MODE_OPTIONS_BATCH = ["Test personnalisé"] + [
+        t.label for t in _available_batch.values()
     ]
     _MODE_IDS_BATCH = [""] + list(_available_batch.keys())
 
     selected_mode_label_batch = st.selectbox(
-        "Mode de correction",
+        "Quel test a passé la classe ?",
         options=_MODE_OPTIONS_BATCH,
         key="batch_mode_select",
-        help="Mode Hakili : énoncé et barème chargés automatiquement pour toutes les copies.",
+        help="Sélectionnez le test Hakili correspondant — énoncé et barème chargés automatiquement pour toutes les copies.",
     )
     selected_mode_idx_batch = _MODE_OPTIONS_BATCH.index(selected_mode_label_batch)
     bareme_id_batch = _MODE_IDS_BATCH[selected_mode_idx_batch]
@@ -796,8 +1141,8 @@ elif page == "TRAITEMENT BATCH":
             <strong>{hakili_test_batch.label}</strong> · {hakili_test_batch.niveaux}
             · <strong>{hakili_test_batch.total_questions} questions</strong><br>
             <span style="color:#2d7a2d;font-size:11.5px;">
-                ✓ Énoncé pré-chargé &nbsp;·&nbsp; ✓ Barème pré-chargé &nbsp;·&nbsp;
-                ✓ Diagnostic RAG activé pour toutes les copies
+                ✓ Énoncé prêt &nbsp;·&nbsp; ✓ Barème prêt &nbsp;·&nbsp;
+                ✓ Diagnostic pédagogique activé pour chaque copie
             </span>
             </div>""",
             unsafe_allow_html=True,
@@ -823,40 +1168,33 @@ elif page == "TRAITEMENT BATCH":
 
     # Fichiers communs : seulement en mode libre
     if not hakili_test_batch:
-        st.markdown("#### Fichiers communs (mode libre)")
+        st.markdown("#### Documents du test")
         col_x, col_y = st.columns(2, gap="large")
         with col_x:
             subject_file_batch = st.file_uploader(
-                "Énoncé (optionnel)",
+                "Sujet du test (optionnel)",
                 type=["pdf", "jpg", "jpeg", "png"],
                 key="batch_subject",
-                help="PDF ou image de l'énoncé commun à toutes les copies.",
-            )
-            rubric_file_batch = st.file_uploader(
-                "Barème (optionnel)",
-                type=["pdf", "jpg", "jpeg", "png"],
-                key="batch_rubric_file",
-                help="Joignez le document barème.",
+                help="PDF ou photo du sujet commun à toutes les copies.",
             )
         with col_y:
             expert_instructions_batch = st.text_area(
-                "Instructions expert (optionnel)",
+                "Consignes spéciales (optionnel)",
                 height=120,
-                placeholder="Critères d'interprétation spécifiques à ce devoir…",
+                placeholder="Précisions pour la correction de ce devoir…",
             )
         st.divider()
     else:
         subject_file_batch = None
-        rubric_file_batch = None
         expert_instructions_batch = st.text_area(
-            "Instructions expert (optionnel)",
+            "Consignes spéciales (optionnel)",
             height=80,
-            placeholder="Critères d'interprétation spécifiques à ce devoir…",
+            placeholder="Précisions pour la correction de ce devoir…",
         )
         st.divider()
 
     st.markdown("#### Copies des élèves")
-    st.caption("Un fichier par élève, nommé avec le nom de l'élève (ex : `sawadogo_aminata.pdf`).")
+    st.caption("Un fichier PDF ou photo par élève, nommé avec le prénom et nom de l'élève (ex : `sawadogo_aminata.pdf`).")
     copies_folder = st.file_uploader(
         "PDFs ou images",
         type=["pdf", "jpg", "jpeg", "png"],
@@ -867,7 +1205,7 @@ elif page == "TRAITEMENT BATCH":
 
     st.divider()
 
-    if st.button("Lancer le traitement batch", use_container_width=False):
+    if st.button("Analyser toutes les copies", use_container_width=False):
         if not copies_folder:
             st.error("Veuillez charger au moins une copie.")
         elif not exam_name:
@@ -890,7 +1228,8 @@ elif page == "TRAITEMENT BATCH":
                 rubric_batch = hakili_test_batch.rubric
                 subject_text_batch = hakili_test_batch.subject_text
             else:
-                rubric_batch = _parse_rubric_text("")
+                from src.models.domain import Rubric as _RubricB
+                rubric_batch = _RubricB(subject="mathematics", total_points=0, items=[])
                 subject_text_batch = ""
 
             # Logo pour la progression
@@ -909,17 +1248,11 @@ elif page == "TRAITEMENT BATCH":
 
             with tempfile.TemporaryDirectory() as tmp:
                 subject_file_path_batch = None
-                rubric_file_path_batch = None
 
-                if not hakili_test_batch:
-                    if subject_file_batch:
-                        subject_tmp_batch = Path(tmp) / f"subject_{subject_file_batch.name}"
-                        _save_upload(subject_file_batch, subject_tmp_batch)
-                        subject_file_path_batch = subject_tmp_batch
-                    if rubric_file_batch:
-                        rubric_tmp_batch = Path(tmp) / f"rubric_{rubric_file_batch.name}"
-                        _save_upload(rubric_file_batch, rubric_tmp_batch)
-                        rubric_file_path_batch = rubric_tmp_batch
+                if not hakili_test_batch and subject_file_batch:
+                    subject_tmp_batch = Path(tmp) / f"subject_{subject_file_batch.name}"
+                    _save_upload(subject_file_batch, subject_tmp_batch)
+                    subject_file_path_batch = subject_tmp_batch
 
                 for i, uploaded in enumerate(copies_folder):
                     student_name_raw = (
@@ -928,7 +1261,7 @@ elif page == "TRAITEMENT BATCH":
                     copy_id = make_copy_id(student_name_raw, str(i + 1))
 
                     batch_header.markdown(
-                        f"**Session batch** — Copie {i + 1} / {total} : **{student_name_raw}**"
+                        f"**Traitement en cours** — Copie {i + 1} / {total} : **{student_name_raw}**"
                     )
                     global_bar.progress((i) / total)
 
@@ -948,7 +1281,7 @@ elif page == "TRAITEMENT BATCH":
                             student_name=student_name_raw,
                             file_paths=[tmp_path],
                             rubric=rubric_batch,
-                            rubric_file_path=rubric_file_path_batch,
+                            rubric_file_path=None,
                             subject_text=subject_text_batch,
                             subject_file_path=subject_file_path_batch,
                             expert_instructions=expert_instructions_batch,
@@ -957,16 +1290,16 @@ elif page == "TRAITEMENT BATCH":
                             runs_dir=runs_dir,
                             on_progress=copy_ui.update,
                         )
-                        copy_ui.finish()
+                        copy_ui.clear()
                         results.append(result)
                     except Exception as e:
+                        copy_ui.clear()
                         errors.append(f"{student_name_raw} : {e}")
 
             global_bar.progress(1.0)
-            batch_header.markdown(f"**Session batch terminée** — {len(results)}/{total} copies traitées")
+            batch_header.markdown(f"**Session terminée** — {len(results)}/{total} copies analysées")
             copy_progress_slot.empty()
 
-            progress.empty()
             st.session_state.batch_results = results
             st.session_state.batch_errors = errors
 
@@ -976,7 +1309,7 @@ elif page == "TRAITEMENT BATCH":
         errors = st.session_state.batch_errors
 
         for err in errors:
-            st.error(err)
+            _show_failure(err)
 
         if results:
             total = len(results) + len(errors)
@@ -984,7 +1317,7 @@ elif page == "TRAITEMENT BATCH":
             st.success(f"{len(success_results)}/{total} copies traitées avec succès.")
 
             # ── Synthèse de classe ───────────────────────────────────────
-            st.markdown("#### Synthèse de classe")
+            st.markdown("#### Vue d'ensemble de la classe")
             if success_results:
                 scores = [
                     (r.student_name or r.copy_id, r.grade.total_score, r.grade.total_possible)
@@ -1014,33 +1347,27 @@ elif page == "TRAITEMENT BATCH":
                 has_review = any(q.requires_review for q in r.grade.questions)
                 flag = "!" if has_review else "✓"
                 display_name = r.student_name or r.copy_id
+                _sf = lambda v: str(int(v)) if float(v) == int(float(v)) else f"{float(v):g}"
                 label = (
                     f"{flag}  {display_name} — "
-                    f"{r.grade.total_score}/{r.grade.total_possible} pt(s)  "
-                    f"· confiance {avg_conf:.0%}"
-                    + ("  · Révision requise" if has_review else "")
+                    f"{_sf(r.grade.total_score)}/{_sf(r.grade.total_possible)} pt(s)"
+                    + ("  · À vérifier" if has_review else "")
                 )
                 with st.expander(label):
                     for q in r.grade.questions:
-                        q_icon = "✓" if q.score == 1 else "✗"
-                        rtag = " · révision" if q.requires_review else ""
-                        st.markdown(
-                            f"{q_icon} **{q.rubric_item_id}** — {q.score}/1 "
-                            f"(confiance {q.confidence:.0%}){rtag}"
-                        )
-                        st.caption(f"{q.observed_answer} — {q.comment}")
+                        q_icon = "✓" if q.score > 0 else "✗"
+                        rtag = " · à vérifier" if q.requires_review else ""
+                        st.markdown(f"{q_icon} **{q.rubric_item_id}** — {q.score}/1{rtag}")
+                        st.caption(f"Réponse : {q.observed_answer}")
 
                     if r.diagnostic:
                         if r.diagnostic.strengths:
-                            st.markdown("**Forces :** " + " · ".join(r.diagnostic.strengths))
+                            st.markdown("**Points forts :** " + " · ".join(r.diagnostic.strengths))
                         if r.diagnostic.weaknesses:
-                            st.markdown("**Lacunes :** " + " · ".join(r.diagnostic.weaknesses))
+                            st.markdown("**À retravailler :** " + " · ".join(r.diagnostic.weaknesses))
                         if r.diagnostic.competency_gaps:
-                            gap_labels = [
-                                f"[{g.chunk_id}] {g.lecon}"
-                                for g in r.diagnostic.competency_gaps
-                            ]
-                            st.caption("Compétences non maîtrisées : " + " · ".join(gap_labels))
+                            gap_labels = [g.lecon for g in r.diagnostic.competency_gaps]
+                            st.caption("Notions à consolider : " + " · ".join(gap_labels))
 
                     bc1, bc2 = st.columns(2)
                     r_slug = (
@@ -1050,7 +1377,7 @@ elif page == "TRAITEMENT BATCH":
                     with bc1:
                         if r.pdf_path and r.pdf_path.exists():
                             st.download_button(
-                                "Rapport correction",
+                                "Rapport — Enseignant",
                                 data=r.pdf_path.read_bytes(),
                                 file_name=f"rapport_correction_{r_slug}.pdf",
                                 mime="application/pdf",
@@ -1060,7 +1387,7 @@ elif page == "TRAITEMENT BATCH":
                     with bc2:
                         if r.remediation_pdf_path and r.remediation_pdf_path.exists():
                             st.download_button(
-                                "Sujet remédiation",
+                                "Exercices — Élève",
                                 data=r.remediation_pdf_path.read_bytes(),
                                 file_name=f"sujet_remediation_{r_slug}.pdf",
                                 mime="application/pdf",

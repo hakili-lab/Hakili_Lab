@@ -1,7 +1,7 @@
 # Analyse comparative des fournisseurs IA — Choix par tâche
 
 **Hakili Lab — Document technique**
-**Date : 2026-06-05**
+**Date : 2026-06-05 (mis à jour 2026-06-11)**
 
 ---
 
@@ -38,8 +38,8 @@ Pour un déploiement sur 3 classes × 6 évaluations × 30 élèves = 540 copies
 | Claude Opus 4.7 | $5.00 | $25.00 | ✅ | ❌ |
 | Claude Sonnet 4.6 | $3.00 | $15.00 | ✅ | ❌ |
 | Claude Haiku 4.5 | $1.00 | $5.00 | ✅ | ❌ |
-| **Gemini 2.0 Flash** | **$0.10** | **$0.40** | **✅** | **✅ 1M tok/j** |
-| Gemini 1.5 Flash | $0.075 | $0.30 | ✅ | ✅ 1M tok/j |
+| **Gemini 2.5 Flash** | **$0.10** | **$0.40** | **✅** | **✅ 1M tok/j** |
+| Gemini 2.0 Flash | $0.10 | $0.40 | ✅ | ✅ 1M tok/j |
 | GPT-4o | $2.50 | $10.00 | ✅ | ❌ |
 | GPT-4o mini | $0.15 | $0.60 | ✅ | ❌ |
 | Mistral Small 3.1 | $0.10 | $0.30 | ✅ | ❌ |
@@ -66,7 +66,7 @@ Pour un déploiement sur 3 classes × 6 évaluations × 30 élèves = 540 copies
 
 ### Tâche 1 — Transcription *(vision multimodale, critique)*
 
-**Gagnant : Gemini 2.0 Flash**
+**Gagnant : Gemini 2.5 Flash**
 
 Gemini a été conçu comme un modèle multimodal natif — vision et texte sont traités conjointement depuis la pré-entraînement, contrairement aux modèles texte auxquels la vision a été ajoutée ultérieurement. Cette architecture native confère une meilleure compréhension des mises en page mathématiques complexes (fractions, exposants, tableaux).
 
@@ -81,7 +81,7 @@ Candidats écartés :
 - **OCR local (Tesseract, EasyOCR)** : ~60% CER sur formules manuscrites vs ~10-15% pour LLM — rejeté définitivement
 
 ```
-Décision : Gemini 2.0 Flash  →  $0/copie (tier gratuit)
+Décision : Gemini 2.5 Flash  →  $0/copie (tier gratuit)
 ```
 
 ---
@@ -111,25 +111,17 @@ Décision : DeepSeek V3  →  ~$0.005/copie
 
 ### Tâche 3 — Diagnostic des causes cachées *(analyse multi-étapes)*
 
-**Gagnant : DeepSeek R1**
+**Gagnant : Claude Opus 4.7** *(décision révisée 2026-06-11)*
 
-DeepSeek R1 est un **modèle de raisonnement** : il génère une chaîne de pensée explicite (chain-of-thought) avant de répondre, visible dans `reasoning_content`. Cette architecture est structurellement adaptée à la tâche diagnostic qui requiert :
+**Décision initiale (2026-06-05) :** DeepSeek R1.
+**Décision révisée (2026-06-11) :** **Claude Opus 4.7** — configuré comme `DIAGNOSTIC_PROVIDER=claude` dans `.env`.
 
-1. Analyser chaque erreur dans son contexte
-2. Chercher des patterns entre questions échouées
-3. Formuler une hypothèse sur la lacune sous-jacente
-4. Distinguer la cause de surface de la cause profonde
+**Justification de la révision :** Le diagnostic est la tâche la plus complexe du pipeline — elle requiert de raisonner sur plusieurs erreurs simultanément, d'identifier des causes cachées (ex. confusion de signe lors du transposement), et de produire un JSON structuré précis incluant `CompetencyGap` avec des `chunk_ids` ancrés sur le curriculum RAG. Claude Opus 4.7 produit une meilleure fidélité de structure JSON et un meilleur ancrage sur les données RAG injectées dans le contexte.
 
-Un modèle standard répond directement — un modèle de raisonnement *réfléchit* avant de répondre. Pour identifier que "l'élève qui échoue en Q3 et Q4b confond le changement de signe lors du transposement" (et non "il ne sait pas résoudre les équations"), la chaîne de pensée fait la différence.
-
-Comparaison directe sur ce type de tâche :
-- **DeepSeek V3** (standard) : diagnostique le symptôme (~"lacune en algèbre")
-- **DeepSeek R1** (raisonnement) : remonte à la cause cachée (~"confond -3x → +3x lors du transposement")
-
-Contraintes R1 : pas de system message, pas de temperature, pas de response_format → prompting direct.
+DeepSeek R1 reste une option valide via `DIAGNOSTIC_PROVIDER=deepseek` mais nécessite un prompting plus défensif (pas de system message, pas de response_format JSON forcé).
 
 ```
-Décision : DeepSeek R1  →  ~$0.008/copie
+Décision : Claude Opus 4.7  →  ~$0.008/copie
 ```
 
 ---
@@ -182,8 +174,8 @@ Décision : Claude Sonnet 4.6 (barème/énoncé)  →  ~$0.01/copie
 │          │          (MATH-500 ~90%, json_object forcé)              │
 │          │                                                          │
 │          ▼                                                          │
-│  DIAGNOSTIC ─────── DeepSeek R1 ──────────── $0.008/copie          │
-│          │          (chain-of-thought, causes cachées)              │
+│  DIAGNOSTIC ─────── Claude Opus 4.7 ──────── $0.008/copie          │
+│          │          (raisonnement profond, causes cachées + RAG)    │
 │          │                                                          │
 │          ▼                                                          │
 │  REMÉDIATION ────── Mistral Small 3.1 ─────── $0.003/copie         │
@@ -336,15 +328,17 @@ Le fallback se déclenche sur **toute erreur** (429, 402, timeout, erreur résea
 
 ---
 
-### 8.4 Tableau de disponibilité des providers (état 2026-06-05)
+### 8.4 Tableau de disponibilité des providers (état 2026-06-11)
 
 | Provider | Statut | Condition de blocage | Action requise |
 |---|---|---|---|
 | **Claude Sonnet 4.6** | ✅ Opérationnel | — | Aucune |
-| **Gemini 2.0 Flash** | ⚠️ Bloqué (région) | `limit: 0` sur compte BF | Activer facturation Google Cloud |
-| **DeepSeek V3/R1** | ⚠️ Bloqué (solde) | `402 Insufficient Balance` | Recharger ~$5 sur platform.deepseek.com |
-| **Mistral Small 3.1** | ❓ Non testé | — | Tester après déblocage des étapes amont |
+| **Claude Opus 4.7** | ✅ Opérationnel | — | Aucune (diagnostic provider actuel) |
+| **Gemini 2.5 Flash** | ⚠️ Bloqué (région) | `limit: 0` sur compte BF | Activer facturation Google Cloud |
+| **DeepSeek V3** | ⚠️ Bloqué (solde) | `402 Insufficient Balance` | Recharger ~$5 sur platform.deepseek.com |
+| **DeepSeek R1** | ⚠️ Bloqué (solde) | `402 Insufficient Balance` | Idem DeepSeek V3 (même compte) |
+| **Mistral Small** | ❓ Non testé | — | Tester avec clé valide |
 
 ---
 
-*Hakili Lab — Document d'analyse interne · 2026-06-05*
+*Hakili Lab — Document d'analyse interne · 2026-06-05 (mis à jour 2026-06-11)*

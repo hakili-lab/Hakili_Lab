@@ -10,12 +10,13 @@ class Settings(BaseSettings):
 
     # Anthropic Claude
     anthropic_api_key: str
-    claude_model_heavy: str = "claude-sonnet-4-6"   # Sonnet 4.6 : 1.7× moins cher qu'Opus
-    claude_model_light: str = "claude-sonnet-4-6"
+    claude_model_heavy: str = "claude-sonnet-4-6"   # Sonnet 4.6 — transcription, correction, remédiation
+    claude_model_light: str = "claude-sonnet-4-6"   # tâches légères (nom, JSON repair)
+    claude_model_opus: str = "claude-opus-4-7"      # Opus 4.7 — diagnostic (raisonnement approfondi)
 
     # Google Gemini (vision — gratuit jusqu'à 1 M tokens/jour)
     google_api_key: str = ""
-    gemini_model: str = "gemini-3.1-flash-lite"
+    gemini_model: str = "gemini-2.5-flash"
     # "gemini" | "claude" — provider utilisé pour la transcription
     vision_provider: str = "claude"
 
@@ -24,7 +25,7 @@ class Settings(BaseSettings):
     # diagnostic_provider : "deepseek" | "mistral" | "claude"
     # remediation_provider: "mistral"  | "deepseek" | "claude"
     grading_provider: str = "deepseek"
-    diagnostic_provider: str = "deepseek"
+    diagnostic_provider: str = "claude"
     remediation_provider: str = "mistral"
 
     # DeepSeek (correction V3 + diagnostic R1)
@@ -39,8 +40,6 @@ class Settings(BaseSettings):
 
     # Seuils pipeline
     confidence_review_threshold: float = 0.75
-    image_min_resolution: int = 1000
-    image_blur_threshold: float = 100.0
 
     # Stockage
     runs_dir: str = "./runs"

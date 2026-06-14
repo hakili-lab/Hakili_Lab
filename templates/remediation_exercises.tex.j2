@@ -1,0 +1,203 @@
+% ===========================================================
+%  HAKILI LAB - Feuille d'exercices personnalisee
+%  Compilateur : XeLaTeX  -  Template : Jinja2
+% ===========================================================
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{fontspec}
+\setmainfont{Georgia}
+\setsansfont[Scale=0.96]{Calibri}
+\setmonofont[Scale=0.88]{Courier New}
+
+\usepackage[
+  a4paper,
+  top=28mm, bottom=22mm,
+  left=18mm, right=18mm,
+  headheight=24mm, headsep=5mm,
+  footskip=10mm
+]{geometry}
+
+\usepackage[table,dvipsnames]{xcolor}
+\definecolor{HakiliRed}        {HTML}{C0392B}
+\definecolor{HakiliRedDark}    {HTML}{922B21}
+\definecolor{HakiliGray}       {HTML}{5D6D7E}
+\definecolor{HakiliLightGray}  {HTML}{F4F6F7}
+\definecolor{HakiliGreen}      {HTML}{1E8449}
+\definecolor{HakiliGreenLight} {HTML}{EAFAF1}
+\definecolor{HakiliBlue}       {HTML}{1A5276}
+\definecolor{HakiliAccent}     {HTML}{F39C12}
+\definecolor{HakiliSeriesBg}   {HTML}{EAF2FF}
+\definecolor{HakiliSeriesBord} {HTML}{2E86C1}
+
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{colortbl}
+
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{mdframed}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{amsmath,amssymb}
+\usepackage{unicode-math}
+\setmathfont{Latin Modern Math}
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\HakiliRule}{\noindent\textcolor{HakiliRed}{\rule{\linewidth}{1.5pt}}}
+
+% ══════════════════════════════════════════════════════════
+%  EN-TETE & PIED DE PAGE
+% ══════════════════════════════════════════════════════════
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead[L]{
+{% if LOGO_EXISTS %}
+  \raisebox{2pt}{\includegraphics[height=16mm,keepaspectratio]{ {{- LOGO_PATH -}} }}\hspace{5pt}%
+{% else %}
+  \raisebox{1pt}{
+    \fcolorbox{HakiliBlue}{HakiliBlue}{
+      \textcolor{white}{\sffamily\bfseries\small~HL~}
+    }
+  }\hspace{5pt}%
+{% endif %}
+  \begin{minipage}[c]{70mm}
+    {\sffamily\bfseries\large\textcolor{HakiliBlue}{HAKILI LAB}}\\[-2pt]
+    {\sffamily\small\textcolor{HakiliGray}{Feuille d'exercices personnalisée}}
+  \end{minipage}
+}
+
+\fancyhead[R]{
+  \sffamily\small\textcolor{HakiliGray}{Page~\thepage~/~\pageref{LastPage}}
+}
+
+\fancyhead[C]{
+  \begin{tikzpicture}[remember picture,overlay]
+    \draw[HakiliRed,line width=1.5pt]
+      ([xshift=18mm,yshift=-29mm]current page.north west)
+      -- ([xshift=-18mm,yshift=-29mm]current page.north east);
+  \end{tikzpicture}
+}
+
+\renewcommand{\headrulewidth}{0pt}
+
+\fancyfoot[C]{
+  \sffamily\footnotesize\textcolor{HakiliGray}{
+    Hakili Lab\enspace\textbullet\enspace
+    Feuille personnalisée\enspace\textbullet\enspace
+    Usage pédagogique exclusif
+  }
+}
+\renewcommand{\footrulewidth}{0.6pt}
+
+% ══════════════════════════════════════════════════════════
+%  DOCUMENT
+% ══════════════════════════════════════════════════════════
+\begin{document}
+\thispagestyle{fancy}
+
+%% ── TITRE ────────────────────────────────────────────────
+\begin{center}
+  {\sffamily\bfseries\LARGE\textcolor{HakiliBlue}{Feuille d'exercices personnalisée}}\\[4pt]
+  {\sffamily\small\textcolor{HakiliGray}{ {{ DATE }} }}
+\end{center}
+
+\vspace{4pt}
+\HakiliRule
+\vspace{8pt}
+
+%% ── TABLEAU IDENTITÉ ÉLÈVE ───────────────────────────────
+\begin{tabularx}{\linewidth}{XXX}
+\rowcolor{HakiliLightGray}
+{\sffamily\small\textcolor{HakiliGray}{Élève}} &
+{\sffamily\small\textcolor{HakiliGray}{Établissement}} &
+{\sffamily\small\textcolor{HakiliGray}{Date}} \\
+\rule{0pt}{14pt}
+{\sffamily\underline{\hspace{52mm}}} &
+{\sffamily\underline{\hspace{52mm}}} &
+{\sffamily\underline{\hspace{38mm}}} \\
+\end{tabularx}
+
+\vspace{10pt}
+
+%% ── INTRODUCTION ─────────────────────────────────────────
+\begin{tcolorbox}[
+  enhanced, arc=3pt,
+  colback=HakiliGreenLight, colframe=HakiliGreen,
+  boxrule=0.8pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt
+]
+  {\sffamily\small\textcolor{HakiliGreen}{\bfseries Cher(e) élève,}}\\[3pt]
+  {\sffamily\small Cette feuille a été préparée spécialement pour toi à partir de l'analyse
+  de ta copie. Chaque exercice cible un point précis à travailler. Lis bien l'énoncé,
+  utilise les aides si besoin --- bon courage~!}
+\end{tcolorbox}
+
+\vspace{10pt}
+
+%% ══════════════════════════════════════════════════════════
+%%  SÉRIES D'EXERCICES (générées dynamiquement)
+%% ══════════════════════════════════════════════════════════
+{% for serie in series %}
+
+\begin{tcolorbox}[
+  enhanced, arc=2pt,
+  colback=HakiliSeriesBg, colframe=HakiliSeriesBord,
+  boxrule=1pt,
+  left=6pt, right=6pt, top=4pt, bottom=4pt,
+  before skip=10pt, after skip=6pt
+]
+  {\sffamily\bfseries\textcolor{HakiliSeriesBord}{Série~{{ serie.idx }}~---~{{ serie.topic }} }}
+\end{tcolorbox}
+
+{% for ex in serie.exercises %}
+\begin{mdframed}[
+  linecolor=HakiliGray, linewidth=0.5pt,
+  roundcorner=3pt,
+  innerleftmargin=9pt, innerrightmargin=9pt,
+  innertopmargin=7pt, innerbottommargin=7pt,
+  skipabove=5pt, skipbelow=4pt
+]
+\noindent
+{\sffamily\bfseries\textcolor{HakiliBlue}{Exercice~{{ ex.number }}}}\hfill
+{\sffamily\small\textcolor{HakiliGray}{\textit{ {{ ex.topic }} }}}
+
+\vspace{5pt}
+
+\noindent {{ ex.question }}
+
+{% if ex.has_hint %}
+\vspace{4pt}
+\noindent\colorbox{HakiliAccent!15}{
+  \begin{minipage}{\dimexpr\linewidth-2\fboxsep\relax}
+    {\sffamily\small\textcolor{HakiliAccent!80!black}{\bfseries Aide~:}\enspace {{ ex.hint }} }
+  \end{minipage}
+}
+{% endif %}
+
+\vspace{22pt}
+\noindent\textcolor{HakiliLightGray!80!HakiliGray}{\dotfill}\\[16pt]
+\noindent\textcolor{HakiliLightGray!80!HakiliGray}{\dotfill}\\[16pt]
+\noindent\textcolor{HakiliLightGray!80!HakiliGray}{\dotfill}
+\end{mdframed}
+
+{% endfor %}
+{% endfor %}
+
+\vspace{14pt}
+\HakiliRule
+\begin{center}
+  {\sffamily\footnotesize\textcolor{HakiliGray}{
+    Bon courage~!\quad
+    Hakili Lab\enspace---\enspace
+    \textit{L'intelligence au service de ta réussite.}
+  }}
+\end{center}
+
+\end{document}

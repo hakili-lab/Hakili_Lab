@@ -40,16 +40,17 @@ def test_question_grade_zero_score():
     assert q.requires_review is True
 
 
-def test_question_grade_rejects_partial_score():
-    with pytest.raises(Exception):
-        QuestionGrade(
-            rubric_item_id="Q3",
-            score=0.5,  # type: ignore[arg-type]  # doit être rejeté : Literal[0, 1]
-            confidence=0.8,
-            comment="Partiel.",
-            observed_answer="...",
-            requires_review=False,
-        )
+def test_question_grade_partial_score_allowed():
+    # Le barème accepte des scores fractionnaires (ex: 0.25, 0.5) pour les sous-questions
+    q = QuestionGrade(
+        rubric_item_id="Q3",
+        score=0.5,
+        confidence=0.8,
+        comment="Partiel.",
+        observed_answer="...",
+        requires_review=False,
+    )
+    assert q.score == 0.5
 
 
 def test_copy_grade_totals():
@@ -151,5 +152,5 @@ def test_diagnostic_result():
             RemediationItem(priority=1, topic="Rédaction mathématique", action="Revoir la structure des démonstrations."),
         ],
     )
-    assert diag.skills[0].level == "mastered"
+    assert diag.skills[0].level == "acquis"  # "mastered" normalisé → "acquis"
     assert diag.remediation_plan[0].priority == 1

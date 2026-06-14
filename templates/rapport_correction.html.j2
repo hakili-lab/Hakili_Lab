@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Rapport de correction — {{ STUDENT_NAME }}</title>
+  <style>
+    /* ===== PAGE ===== */
+    @page {
+      size: A4;
+      margin-top: 26mm;
+      margin-left: 18mm;
+      margin-right: 18mm;
+      margin-bottom: 20mm;
+
+      @frame header_frame {
+        -pdf-frame-content: page_header;
+        left: 18mm; width: 174mm; top: 7mm; height: 15mm;
+      }
+      @frame footer_frame {
+        -pdf-frame-content: page_footer;
+        left: 18mm; width: 174mm; bottom: 5mm; height: 10mm;
+      }
+    }
+
+    /* ===== BASE ===== */
+    * { box-sizing: border-box; }
+    body {
+      font-family: {{ FONT_NAME }}, Helvetica, sans-serif;
+      font-size: 10pt;
+      color: #1a1a1a;
+      line-height: 1.45;
+    }
+    p { margin: 0 0 4pt 0; }
+
+    /* ===== COULEURS ===== */
+    .c-blue   { color: #1A5276; }
+    .c-green  { color: #1E8449; }
+    .c-red    { color: #C0392B; }
+    .c-orange { color: #D35400; }
+    .c-gray   { color: #5D6D7E; }
+    .bold     { font-weight: bold; }
+    .small    { font-size: 8.5pt; }
+    .italic   { font-style: italic; }
+    .mono     { font-family: Courier, monospace; font-size: 9pt; }
+
+    /* ===== EN-TÊTE SECTION ===== */
+    .sec-head {
+      background-color: #1A5276;
+      color: white;
+      font-weight: bold;
+      font-size: 9.5pt;
+      text-transform: uppercase;
+      padding: 6pt 10pt;
+      margin-top: 22pt;
+      margin-bottom: 0;
+      letter-spacing: 0.3pt;
+    }
+    .sec-rule { border-top: 1.5pt solid #C0392B; margin-bottom: 12pt; }
+
+    /* ===== BANDEAU ÉLÈVE ===== */
+    .banner {
+      background-color: #1A5276;
+      border: 2pt solid #C0392B;
+      padding: 14pt;
+      text-align: center;
+      margin-bottom: 14pt;
+    }
+    .banner-name {
+      font-size: 18pt; font-weight: bold; color: white; margin-bottom: 3pt;
+    }
+    .banner-id { font-size: 8pt; color: #aad4f5; font-family: Courier, monospace; }
+
+    /* ===== SCORE HERO ===== */
+    .score-box {
+      background-color: #F4F6F7;
+      border: 0.8pt solid #ccc;
+      padding: 10pt;
+      margin-bottom: 16pt;
+    }
+    .score-table { width: 100%; border-collapse: collapse; text-align: center; }
+    .score-cell  { padding: 4pt 6pt; vertical-align: middle; }
+    .score-sep   { border-left: 1pt solid #ddd; }
+    .score-label { font-size: 7.5pt; color: #5D6D7E; margin-bottom: 3pt; }
+    .score-big   { font-size: 22pt; font-weight: bold; line-height: 1; }
+    .score-unit  { font-size: 10pt; color: #5D6D7E; }
+
+    /* ===== BARRE DE STATISTIQUES ===== */
+    .stat-bar {
+      background-color: #EBF5FB;
+      border: 0.5pt solid #AED6F1;
+      padding: 7pt 12pt;
+      margin-bottom: 12pt;
+      font-size: 9pt;
+    }
+    .stat-good { color: #1E8449; font-weight: bold; }
+    .stat-bad  { color: #C0392B; font-weight: bold; }
+
+    /* ===== TABLEAUX RÉSUMÉ ===== */
+    table.sum {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+      margin-bottom: 16pt;
+      border: 0.5pt solid #ccc;
+    }
+    table.sum th {
+      background-color: #1E4D7B;
+      color: white;
+      font-weight: bold;
+      padding: 4pt 8pt;
+      text-align: left;
+      font-size: 8.5pt;
+      letter-spacing: 0.2pt;
+    }
+    table.sum th.right { text-align: right; }
+    table.sum td {
+      padding: 3pt 8pt;
+      border-bottom: 0.3pt solid #e8e8e8;
+      vertical-align: middle;
+    }
+    table.sum tr:nth-child(even) td { background-color: #F9FAFB; }
+    .pts-good { color: #1E8449; font-weight: bold; text-align: right; }
+    .pts-bad  { color: #C0392B; font-weight: bold; text-align: right; }
+    .pts-part { color: #D35400; font-weight: bold; text-align: right; }
+
+    /* ===== TABLEAUX DIAGNOSTIC ===== */
+    table.dt {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9pt;
+      margin-bottom: 16pt;
+    }
+    table.dt th {
+      background-color: #1A5276;
+      color: white;
+      font-weight: bold;
+      padding: 6pt 8pt;
+      text-align: left;
+      font-size: 8.5pt;
+    }
+    table.dt td {
+      padding: 6pt 8pt;
+      vertical-align: top;
+      border-bottom: 0.5pt solid #e0e0e0;
+    }
+
+    /* ===== BADGES NIVEAU ===== */
+    .b-acquis  { background-color: #D5F5E3; color: #1E8449; font-weight: bold;
+                 padding: 1pt 5pt; font-size: 8pt; }
+    .b-partial { background-color: #FDEBD0; color: #D35400; font-weight: bold;
+                 padding: 1pt 5pt; font-size: 8pt; }
+    .b-weak    { background-color: #FDECEA; color: #C0392B; font-weight: bold;
+                 padding: 1pt 5pt; font-size: 8pt; }
+    .b-unknown { background-color: #F4F6F7; color: #5D6D7E; font-weight: bold;
+                 padding: 1pt 5pt; font-size: 8pt; }
+
+    /* ===== DIVERS ===== */
+    .two-col { width: 100%; border-collapse: collapse; margin-bottom: 18pt; }
+    .two-col td { vertical-align: top; padding: 0; }
+
+    .strengths-box {
+      background-color: #EAFAF1;
+      border-left: 3pt solid #1E8449;
+      padding: 10pt 11pt;
+      margin-bottom: 0;
+    }
+    .weaknesses-box {
+      background-color: #FDECEA;
+      border-left: 3pt solid #C0392B;
+      padding: 10pt 11pt;
+      margin-bottom: 0;
+    }
+    .swlabel {
+      font-weight: bold; font-size: 9pt;
+      border-bottom: 0.5pt solid #ccc;
+      padding-bottom: 4pt; margin-bottom: 7pt;
+    }
+    .switem { font-size: 9pt; padding: 3pt 0 3pt 8pt; }
+
+    .root-box {
+      border: 0.5pt solid #d0d0d0;
+      margin-bottom: 10pt;
+      page-break-inside: avoid;
+    }
+    .root-head {
+      background-color: #F4F6F7;
+      border-bottom: 0.5pt solid #ccc;
+      padding: 5pt 10pt;
+      font-size: 8.5pt;
+      font-weight: bold;
+      color: #1A5276;
+    }
+    .root-body { padding: 8pt 10pt; }
+    .root-cause { font-size: 9pt; color: #C0392B; margin-bottom: 5pt; }
+    .root-qs { font-size: 8pt; color: #5D6D7E; font-family: Courier, monospace; }
+
+    .remed-item {
+      border-left: 3pt solid #1A5276;
+      background-color: #F4F6F7;
+      padding: 8pt 11pt;
+      margin-bottom: 10pt;
+      page-break-inside: avoid;
+    }
+    .remed-title { font-weight: bold; color: #1A5276; font-size: 9.5pt; }
+    .remed-action { font-size: 9pt; color: #333; margin-top: 5pt; }
+
+    .doc-footer {
+      margin-top: 28pt;
+      border-top: 1pt solid #ddd;
+      padding-top: 7pt;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── EN-TÊTE DE PAGE ──────────────────────────────────────── -->
+<div id="page_header">
+  <table style="width:100%; border-collapse:collapse;">
+    <tr>
+      <td style="font-size:9pt; font-weight:bold; color:#1A5276; padding:0;">HAKILI LAB</td>
+      <td style="font-size:8pt; color:#5D6D7E; text-align:center; padding:0;">Rapport de correction IA</td>
+      <td style="font-size:8pt; color:#5D6D7E; text-align:right; padding:0;">
+        Page <pdf:pagenumber/> / <pdf:pagecount/>
+      </td>
+    </tr>
+  </table>
+  <hr style="border:0; border-top:1.4pt solid #C0392B; margin-top:3pt;"/>
+</div>
+
+<!-- ── PIED DE PAGE ─────────────────────────────────────────── -->
+<div id="page_footer">
+  <hr style="border:0; border-top:0.5pt solid #ccc;"/>
+  <p style="text-align:center; font-size:7.5pt; color:#7f8c8d; margin:2pt 0 0 0;">
+    Hakili Lab &nbsp;&#8226;&nbsp; Document confidentiel &nbsp;&#8226;&nbsp; Usage pédagogique exclusif
+  </p>
+</div>
+
+<!-- ── BANDEAU ÉLÈVE ────────────────────────────────────────── -->
+<div class="banner">
+  <div class="banner-name">{{ STUDENT_NAME }}</div>
+  <div class="banner-id">Identifiant copie&nbsp;: {{ COPY_ID }}</div>
+</div>
+
+<!-- ── SCORE HÉRO ───────────────────────────────────────────── -->
+<div class="score-box">
+  <table class="score-table">
+    <tr>
+      <td class="score-cell" style="width:100%;">
+        <div class="score-label">Note finale</div>
+        {% if SCORE_PCT >= 0.5 %}
+        <span class="score-big c-green">{{ FINAL_SCORE_20 }}</span>
+        {% elif SCORE_PCT >= 0.3 %}
+        <span class="score-big c-orange">{{ FINAL_SCORE_20 }}</span>
+        {% else %}
+        <span class="score-big c-red">{{ FINAL_SCORE_20 }}</span>
+        {% endif %}
+        <span class="score-unit">&nbsp;/&nbsp;20</span>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     RÉSUMÉ DE CORRECTION
+     ══════════════════════════════════════════════════════ -->
+<div class="sec-head">Résumé de correction</div>
+<div class="sec-rule"></div>
+
+<!-- Barre statistiques -->
+<div class="stat-bar">
+  <span class="stat-good">{{ good_questions|length }} question(s) réussie(s)</span>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  <span class="stat-bad">{{ bad_questions|length }} question(s) échouée(s)</span>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  Total barème&nbsp;: <strong>{{ TOTAL_POSSIBLE }}</strong> pts
+</div>
+
+<!-- Tableau bonnes réponses -->
+{% if good_questions %}
+<table class="sum">
+  <thead>
+    <tr>
+      <th colspan="3" style="background-color:#145A32; text-align:center; font-size:8.5pt;">
+        &#10003;&nbsp;&nbsp;BONNES RÉPONSES
+      </th>
+    </tr>
+    <tr>
+      <th style="width:40%;">Question</th>
+      <th style="width:35%;">Points obtenus</th>
+      <th style="width:25%; text-align:right;">/ Max</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for q in good_questions %}
+    <tr>
+      <td class="mono bold">{{ q.id }}</td>
+      <td class="pts-good">{{ q.score_fmt }}</td>
+      <td style="text-align:right; color:#888; font-size:8.5pt;">/ {{ q.max_fmt }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<!-- Tableau mauvaises réponses -->
+{% if bad_questions %}
+<table class="sum">
+  <thead>
+    <tr>
+      <th colspan="3" style="background-color:#922B21; text-align:center; font-size:8.5pt;">
+        &#10007;&nbsp;&nbsp;MAUVAISES RÉPONSES
+      </th>
+    </tr>
+    <tr>
+      <th style="width:40%;">Question</th>
+      <th style="width:35%;">Points obtenus</th>
+      <th style="width:25%; text-align:right;">/ Max</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for q in bad_questions %}
+    <tr>
+      <td class="mono bold">{{ q.id }}</td>
+      <td class="pts-bad">{{ q.score_fmt }}</td>
+      <td style="text-align:right; color:#888; font-size:8.5pt;">/ {{ q.max_fmt }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if not good_questions and not bad_questions %}
+<p class="small italic c-gray" style="text-align:center; padding:10pt;">
+  Aucune question évaluée.
+</p>
+{% endif %}
+
+
+{% if is_perfect_score %}
+<!-- ══════════════════════════════════════════════════════════
+     SCORE PARFAIT — FÉLICITATIONS
+     ══════════════════════════════════════════════════════ -->
+<div class="sec-head" style="background-color:#1E8449;">&#9733; Score parfait — Félicitations !</div>
+<div class="sec-rule" style="border-color:#1E8449;"></div>
+
+<div style="background-color:#EAFAF1; border-left:4pt solid #1E8449; padding:14pt 16pt; margin-bottom:18pt;">
+  <p style="font-size:11pt; font-weight:bold; color:#1E8449; margin-bottom:6pt;">
+    &#10003;&nbsp;&nbsp;{{ STUDENT_NAME }} a obtenu la note maximale : {{ FINAL_SCORE_20 }}/20
+  </p>
+  <p style="font-size:9.5pt; color:#1a1a1a; margin-bottom:4pt;">
+    Toutes les compétences du programme de 3e évaluées dans ce test sont <strong>pleinement maîtrisées</strong>.
+    Ce résultat exceptionnel confirme la capacité de l'élève à accéder aux apprentissages de niveau lycée scientifique.
+  </p>
+  <p style="font-size:9pt; color:#5D6D7E; margin:0;">
+    Un <strong>sujet d'enrichissement</strong> niveau 2nde/1ère a été généré pour aller plus loin.
+    Il est joint à ce rapport.
+  </p>
+</div>
+
+{% elif has_diagnostic %}
+<!-- ══════════════════════════════════════════════════════════
+     DIAGNOSTIC
+     ══════════════════════════════════════════════════════ -->
+<div class="sec-head">Diagnostic des compétences</div>
+<div class="sec-rule"></div>
+
+<!-- Points forts / Points à renforcer -->
+<table class="two-col">
+  <tr>
+    <td style="width:49%; padding-right:5pt;">
+      <div class="strengths-box">
+        <div class="swlabel c-green">&#10003; Points forts</div>
+        {% if strengths %}
+          {% for s in strengths %}
+          <div class="switem">&#8211;&nbsp;{{ s }}</div>
+          {% endfor %}
+        {% else %}
+          <div class="small italic c-gray">Aucun point fort identifié.</div>
+        {% endif %}
+      </div>
+    </td>
+    <td style="width:49%; padding-left:5pt;">
+      <div class="weaknesses-box">
+        <div class="swlabel c-red">&#10007; Points à renforcer</div>
+        {% if weaknesses %}
+          {% for w in weaknesses %}
+          <div class="switem">&#8211;&nbsp;{{ w }}</div>
+          {% endfor %}
+        {% else %}
+          <div class="small italic c-gray">Aucun point faible identifié.</div>
+        {% endif %}
+      </div>
+    </td>
+  </tr>
+</table>
+
+<!-- Compétences -->
+{% if skills %}
+<p style="font-weight:bold; font-size:9pt; color:#1A5276; margin:16pt 0 8pt 0;">
+  Évaluation par compétence
+</p>
+<table class="dt">
+  <thead>
+    <tr>
+      <th style="width:38%;">Compétence</th>
+      <th style="width:16%;">Niveau</th>
+      <th>Observation détaillée</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for sk in skills %}
+    <tr>
+      <td class="small bold">{{ sk.name }}</td>
+      <td>
+        {% if sk.level == "acquis" %}
+          <span class="b-acquis">Acquis</span>
+        {% elif sk.level == "part_acquis" %}
+          <span class="b-partial">Part. acquis</span>
+        {% elif sk.level == "non_acquis" %}
+          <span class="b-weak">Non acquis</span>
+        {% else %}
+          <span class="b-unknown">—</span>
+        {% endif %}
+      </td>
+      <td class="small">{{ sk.evidence }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<!-- Causes profondes -->
+{% if root_causes %}
+<div class="sec-head">Erreurs cachées — Causes profondes</div>
+<div class="sec-rule"></div>
+<p class="small c-gray" style="margin-bottom:12pt;">
+  Ces mécanismes mal maîtrisés expliquent plusieurs points perdus.
+  Une remédiation ciblée sur les causes est plus efficace que de retravailler chaque erreur isolément.
+</p>
+{% for rc in root_causes %}
+<div class="root-box">
+  <div class="root-head">{{ rc.visible }}</div>
+  <div class="root-body">
+    <div class="root-cause">{{ rc.hidden }}</div>
+    <div class="root-qs">Questions&nbsp;: {{ rc.qs }}</div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Plan de remédiation -->
+{% if remediation %}
+<div class="sec-head">Plan de remédiation personnalisé</div>
+<div class="sec-rule"></div>
+{% for item in remediation %}
+<div class="remed-item">
+  <div class="remed-title">{{ item.priority }}. {{ item.topic }}</div>
+  <div class="remed-action">{{ item.action }}</div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% endif %}
+
+<!-- ── PIED DE DOCUMENT ──────────────────────────────────────── -->
+<div class="doc-footer">
+  <span class="small c-gray italic">
+    Document généré automatiquement par Hakili Lab IA
+    — L'enseignant reste seul responsable de l'évaluation finale.
+  </span>
+</div>
+
+</body>
+</html>
