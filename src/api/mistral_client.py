@@ -19,7 +19,6 @@ from typing import Any
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from mistralai import Mistral
 from PIL import Image
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
@@ -202,6 +201,10 @@ class MistralTranscriptionClient:
             raise ValueError(
                 "MISTRAL_API_KEY manquante. Ajoutez-la dans .env pour utiliser Mistral vision."
             )
+        try:
+            from mistralai import Mistral
+        except ImportError as e:
+            raise ImportError(f"Package mistralai non disponible : {e}") from e
         self._client = Mistral(api_key=settings.mistral_api_key)
         self._transcription_prompt = _load_prompt("transcription_prompt.md")
         logger.info("MistralTranscriptionClient initialisé (modèle=%s)", settings.mistral_vision_model)
@@ -385,6 +388,10 @@ class MistralRemediationClient:
             raise ValueError(
                 "MISTRAL_API_KEY manquante. Ajoutez-la dans .env pour utiliser Mistral."
             )
+        try:
+            from mistralai import Mistral
+        except ImportError as e:
+            raise ImportError(f"Package mistralai non disponible : {e}") from e
         self._client = Mistral(api_key=settings.mistral_api_key)
         self._remediation_prompt = _load_prompt("remediation_subject_prompt.md")
         self._diagnostic_prompt = _load_prompt("diagnostic_prompt.md")
