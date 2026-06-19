@@ -64,6 +64,22 @@ _TEST_CATALOG: dict[str, dict] = {
         "bareme_yaml": "bareme_test_2ndeC.yaml",
         "corrige_yaml": "corrige_test_2ndeC.yaml",
     },
+    "hakili_4e_v1": {
+        "label": "Évaluation de Mathématiques 4ème v1",
+        "description": "Évalue les compétences 6e → 4e (ensembles, calculs, équations, géométrie)",
+        "niveaux": "6e · 5e · 4e",
+        "docx_filename": "",   # Pas de DOCX — seul le corrigé PDF est disponible
+        "bareme_yaml": "bareme_test_4e.yaml",
+        "corrige_yaml": "corrige_test_4e.yaml",
+    },
+    "hakili_tle_v1": {
+        "label": "Devoir de Mathématiques Terminale v1",
+        "description": "Évalue les compétences 4e → Tle (puissances, racines, factorisation, vecteurs, trigo)",
+        "niveaux": "4e · 3e · Tle",
+        "docx_filename": "",   # Pas de DOCX — seul le corrigé PDF est disponible
+        "bareme_yaml": "bareme_test_tle.yaml",
+        "corrige_yaml": "corrige_test_tle.yaml",
+    },
 }
 
 
@@ -152,10 +168,13 @@ class TestRegistry:
 
     def _load_all(self) -> None:
         for test_id, cfg in _TEST_CATALOG.items():
-            docx_path = _DOCS_DIR / cfg["docx_filename"]
+            docx_filename = cfg.get("docx_filename", "")
+            docx_path = (_DOCS_DIR / docx_filename) if docx_filename else None
             yaml_path = _KB_DIR / cfg["bareme_yaml"]
 
-            if not docx_path.exists():
+            if docx_path is None:
+                logger.info("Test '%s' — pas de DOCX (énoncé absent).", test_id)
+            elif not docx_path.exists():
                 logger.warning(
                     "Test '%s' — DOCX introuvable : %s", test_id, docx_path
                 )
@@ -165,7 +184,11 @@ class TestRegistry:
                 )
                 continue
 
-            subject_text = _extract_docx_text(docx_path) if docx_path.exists() else ""
+            subject_text = (
+                _extract_docx_text(docx_path)
+                if docx_path is not None and docx_path.exists()
+                else ""
+            )
             rubric, total = _build_rubric_from_yaml(yaml_path)
 
             # Chargement du corrigé officiel

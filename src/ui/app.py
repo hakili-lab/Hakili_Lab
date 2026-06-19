@@ -877,6 +877,11 @@ elif page == "TRAITEMENT UNIQUE":
 
     # Bandeau d'info quand un test Hakili est sélectionné
     if hakili_test:
+        _enonce_status = (
+            "✓ Énoncé chargé automatiquement"
+            if hakili_test.subject_text
+            else "⚠ Énoncé non disponible (PDF uniquement)"
+        )
         st.markdown(
             f"""<div style="background:#eef6ff;border:1px solid #b8d4f5;border-radius:6px;
                 padding:12px 16px;margin-bottom:16px;font-size:13px;color:#1a3a5c;">
@@ -886,7 +891,7 @@ elif page == "TRAITEMENT UNIQUE":
                 <strong>{hakili_test.total_questions} questions</strong>
             </span><br>
             <span style="color:#2d7a2d;font-size:11.5px;margin-top:4px;display:block;">
-                ✓ Énoncé chargé automatiquement &nbsp;·&nbsp;
+                {_enonce_status} &nbsp;·&nbsp;
                 ✓ Barème {hakili_test.total_questions} questions prêt &nbsp;·&nbsp;
                 ✓ Diagnostic pédagogique activé
             </span>
