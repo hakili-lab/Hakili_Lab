@@ -210,18 +210,14 @@ questions_geometriques:
       La somme des angles intérieurs d'un triangle est toujours égale à 180°.
 
   - id: Q_GEO_04a
-    reponse: "B' tel que G soit le milieu du segment [BB'] — construire B' symétriquement à B par rapport à G"
+    reponse: "L"
     solution: >
-      La symétrie centrale de centre G envoie B sur B' tel que G est le milieu de [BB'].
-      Méthode : tracer le segment de B passant par G, puis reporter BG de l'autre côté de G
-      pour obtenir B' avec BG = GB'.
+      Confère figure
 
   - id: Q_GEO_04b
-    reponse: "E' tel que la droite (OC) soit la médiatrice de [EE'] — (OC) ⊥ [EE'] en son milieu"
+    reponse: "G"
     solution: >
-      La symétrie axiale d'axe (OC) envoie E sur E' tel que (OC) est la médiatrice de [EE'].
-      Méthode : abaisser la perpendiculaire de E sur (OC), noter le pied H, puis reporter
-      EH de l'autre côté pour obtenir E' avec EH = HE'.
+      Confère figure
 
   - id: Q_GEO_05a
     reponse: "V = (Aire de la base × Hauteur) / 3"

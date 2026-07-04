@@ -193,7 +193,7 @@ Commence directement par { et termine par }. Aucune balise Markdown. Aucun texte
     {
       "priority": 1,
       "topic": "Addition de relatifs : règle addition vs multiplication",
-      "action": "Séquence en 3 temps : 1) ancrage concret sur la métaphore financière — l'élève verbalise avant tout calcul ; 2) dérivation de la règle abstraite avec l'élève (ne pas la dicter) ; 3) exercices de confirmation en deux étapes séparées (calculer la différence des VA, puis attribuer le signe du dominant). Commencer simple avant les expressions composées.",
+      "action": "Séquence en 3 temps :\n1. ancrage concret sur la métaphore financière — l'élève verbalise avant tout calcul\n2. dérivation de la règle abstraite avec l'élève (ne pas la dicter)\n3. exercices de confirmation en deux étapes séparées (calculer la différence des VA, puis attribuer le signe du dominant). Commencer simple avant les expressions composées.",
       "pedagogical_trigger": "Ne pas commencer par la règle abstraite. L'élève doit 'voir' le résultat dans une situation concrète avant de le formaliser — sinon il mémorise sans comprendre et confond à nouveau."
     },
     {
@@ -216,8 +216,11 @@ Commence directement par { et termine par }. Aucune balise Markdown. Aucun texte
 - `root_causes` : regrouper par mécanisme commun — pas de limite artificielle si l'élève a de nombreuses lacunes
 - `skills` : compétences avec impact direct sur le score — pas de limite si nécessaire
 - `remediation_plan` : dettes de cycle en priorité, lacunes contemporaines ensuite — pas de limite artificielle
-- **Format obligatoire de `action` — contrat de rendu PDF** : si la remédiation comporte plusieurs étapes séquentielles, rédige d'abord une phrase d'intro courte terminée par `:`, puis numérote chaque étape avec `N)` séparée par ` ; ` — jamais de tiret ni de retour à la ligne : `"Intro courte : 1) première étape ; 2) deuxième étape ; 3) troisième étape."` Le renderer PDF découpe automatiquement sur ce motif `N)` précédé de `:`/`;` pour produire une liste numérotée propre. Si l'action tient en une seule idée (pas de séquence), une phrase simple suffit — pas besoin de numéroter.
-  Exemple correct : `"Reprendre Num. 4a (5537 + 319). Faire poser l'addition en colonnes : 1) écrire les deux nombres alignés à droite ; 2) additionner colonne par colonne en notant chaque retenue ; 3) vérifier le résultat par une estimation arrondie."`
+- **Format obligatoire de `action` — contrat de rendu PDF** : si la remédiation comporte plusieurs étapes séquentielles, rédige d'abord une phrase d'intro courte terminée par `:`, puis va **à la ligne** (`\n` dans la chaîne JSON) et numérote chaque étape sur sa propre ligne : `1. ...\n2. ...\n3. ...`. Jamais de tiret, jamais tout sur une seule ligne. Le renderer PDF découpe automatiquement sur ce motif pour produire une liste numérotée propre. Si l'action tient en une seule idée (pas de séquence), une phrase simple suffit — pas besoin de numéroter.
+  Exemple correct (valeur du champ JSON `action`, avec vrais retours à la ligne) :
+  ```
+  "Reprendre Num. 4a (5537 + 319). Faire poser l'addition en colonnes :\n1. écrire les deux nombres alignés à droite\n2. additionner colonne par colonne en notant chaque retenue\n3. vérifier le résultat par une estimation arrondie."
+  ```
 - `hidden_cause` : mécanisme précis — jamais "ne comprend pas la leçon" ou "lacune en algèbre"
 - `pedagogical_trigger` : stratégie concrète (analogie, représentation, contre-exemple) — jamais "faire des exercices" ou "revoir le chapitre"
 - Les erreurs d'inattention (`nature: "erreur_inattention"`) n'apparaissent PAS dans `remediation_plan`

@@ -18,11 +18,11 @@ _TEMPLATE_DIR = Path(__file__).resolve().parent.parent.parent / "templates"
 # Séparation sur ". " suivi d'une majuscule (ponctuation de fin de phrase)
 _SENT_SPLIT = re.compile(r'(?<=[.!?])\s+(?=[A-ZÁÉÈÊËÀÂÙÛÎÏÙÛÜ])')
 
-# Sous-questions numérotées entre parenthèses : "... . (1) ... (2) ... (3) ..."
-# -- c'est le style dominant généré par l'IA, bien plus fréquent que des phrases
-# capitalisées séparées. Le marqueur "(2)" ne suit jamais une majuscule (il
-# commence par une parenthèse), donc _SENT_SPLIT seul ne le détecte jamais.
-_PAREN_STEP = re.compile(r'(?<=[.!?])\s*\((\d+)\)\s+')
+# Sous-questions numérotées : "(1) ... (2) ..." entre parenthèses en ligne, OU
+# "1. ...\n2. ..." avec retours à la ligne (les deux styles sont produits par l'IA
+# selon le provider). Le marqueur ne suit jamais une majuscule (il commence par
+# "(" ou un chiffre en début de ligne), donc _SENT_SPLIT seul ne le détecte jamais.
+_STEP_MARKER = re.compile(r'(?:\A|(?<=[.!?])|(?<=\n))[ \t]*\(?(\d+)[.)]\s+')
 
 # Verbes d'action français (infinitif) qui introduisent une tâche
 _TASK_VERBS = re.compile(
@@ -38,10 +38,11 @@ _TASK_VERBS = re.compile(
 )
 
 
-def _split_by_paren_markers(text: str) -> tuple[str, list[str]] | None:
-    """Détecte une séquence "(1) ... (2) ... (3) ..." et la sépare en
-    (énoncé_intro, [tâche1, tâche2, …]). None si aucune séquence 1, 2, 3, … valide."""
-    matches = list(_PAREN_STEP.finditer(text))
+def _split_by_step_markers(text: str) -> tuple[str, list[str]] | None:
+    """Détecte une séquence numérotée "(1) ... (2) ..." ou "1. ...\n2. ..." et la
+    sépare en (énoncé_intro, [tâche1, tâche2, …]). None si aucune séquence
+    1, 2, 3, … valide n'est trouvée (évite les faux positifs isolés)."""
+    matches = list(_STEP_MARKER.finditer(text))
     nums = [int(m.group(1)) for m in matches]
     if len(nums) < 2 or nums != list(range(1, len(nums) + 1)):
         return None
@@ -58,19 +59,19 @@ def _split_question(text: str) -> tuple[str, list[str]]:
     """
     Découpe le texte d'un exercice en (énoncé_contexte, [tâche1, tâche2, …]).
 
-    Priorité 1 : séquence "(1) ... (2) ... (3) ..." entre parenthèses (style dominant).
+    Priorité 1 : séquence numérotée "(1) ... (2) ..." ou "1. ...\\n2. ..." (styles dominants).
     Priorité 2 : phrases débutant par un verbe d'action → tâches numérotées.
     Les phrases contextuelles (ex: "Un père a 3 fois…") → énoncé.
     Si aucun marqueur détecté, première phrase = énoncé, reste = tâches.
     """
     text = text.strip()
 
-    by_parens = _split_by_paren_markers(text)
-    if by_parens is not None:
-        intro, tasks = by_parens
+    by_markers = _split_by_step_markers(text)
+    if by_markers is not None:
+        intro, tasks = by_markers
         if intro:
             return intro, tasks
-        # Pas de contexte avant "(1)" -- le texte démarre directement par la liste
+        # Pas de contexte avant le marqueur "1" -- le texte démarre directement par la liste
         return tasks[0], tasks[1:]
 
     sentences = [s.strip() for s in _SENT_SPLIT.split(text) if s.strip()]

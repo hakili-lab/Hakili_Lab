@@ -119,7 +119,7 @@ Exemple pour 2 faiblesses — `weaknesses[0]` = "Règle d'inversion du sens dans
     {
       "number": 10,
       "topic": "Addition de nombres relatifs de signes différents",
-      "question": "La température à midi est de -3°C. Elle monte de 8°C l'après-midi puis descend de 11°C la nuit. (1) Calcule la température en fin d'après-midi. (2) Calcule la température finale après la nuit. (3) Modélise l'ensemble par une seule addition de relatifs et vérifie ton résultat.",
+      "question": "La température à midi est de -3°C. Elle monte de 8°C l'après-midi puis descend de 11°C la nuit.\n1. Calcule la température en fin d'après-midi.\n2. Calcule la température finale après la nuit.\n3. Modélise l'ensemble par une seule addition de relatifs et vérifie ton résultat.",
       "hint": null
     }
   ]
@@ -131,9 +131,12 @@ Exemple pour 2 faiblesses — `weaknesses[0]` = "Règle d'inversion du sens dans
 - `number` : numéro global continu (commence à 1, **jamais remis à zéro** entre les séries)
 - `topic` : reprise **textuelle** du libellé de la faiblesse (`weaknesses[i]`) — les 5 exercices d'une même série ont **exactement le même `topic`**, et deux séries différentes ont **obligatoirement deux `topic` différents**
 - `question` : énoncé complet, sans ambiguïté, autonome
-- **Format obligatoire de `question` — contrat de rendu PDF** : si l'exercice comporte plusieurs sous-questions, rédige d'abord le **contexte** (une ou deux phrases plantant le problème, avec les données numériques), puis numérote **chaque** sous-question entre parenthèses collées au texte : `(1) ... (2) ... (3) ...` — jamais de tiret, de lettre (a/b/c) ni de simple phrase capitalisée pour introduire une sous-question. Le renderer PDF découpe automatiquement sur ce motif `(N)` pour produire un encadré de contexte suivi d'une liste numérotée propre ; toute autre présentation (phrases libres, énumération par lettres) s'affiche comme un bloc de texte compact et illisible.
-  Exemple correct : `"On donne le nombre D = 58,307. (1) Identifie la partie entière de D. (2) Identifie la partie décimale de D. (3) Vérifie ta décomposition par addition."`
-  Exemple incorrect : `"Identifie la partie entière de D. Puis identifie la partie décimale. Enfin vérifie par addition."` (aucun marqueur `(N)` → pas de découpage fiable)
+- **Format obligatoire de `question` — contrat de rendu PDF** : si l'exercice comporte plusieurs sous-questions, rédige d'abord le **contexte** (une ou deux phrases plantant le problème, avec les données numériques), puis va **à la ligne** (`\n` dans la chaîne JSON) et numérote **chaque** sous-question sur sa propre ligne : `1. ...\n2. ...\n3. ...`. Jamais de tiret, de lettre (a/b/c), de numérotation collée sans retour à la ligne, ni de simple phrase capitalisée pour introduire une sous-question. Le renderer PDF découpe automatiquement sur ce motif pour produire un encadré de contexte suivi d'une liste numérotée propre ; toute autre présentation (phrases libres, énumération par lettres, tout sur une seule ligne) s'affiche comme un bloc de texte compact et illisible.
+  Exemple correct (valeur du champ JSON `question`, avec vrais retours à la ligne) :
+  ```
+  "On donne le nombre D = 58,307.\n1. Identifie et écris la partie entière de D.\n2. Identifie et écris la partie décimale de D.\n3. Vérifie ta décomposition en calculant la somme partie entière + partie décimale."
+  ```
+  Exemple incorrect : `"Identifie la partie entière de D. Puis identifie la partie décimale. Enfin vérifie par addition."` (aucune numérotation ni retour à la ligne → pas de découpage fiable)
 - `hint` : **null pour les exercices 3, 4, 5** de chaque série — une phrase courte seulement pour les exercices 1 et 2 de chaque série
 - **Puissances — règle absolue** : toujours écrire `a^n` avec le caret — JAMAIS `an` sans caret. Exposants composés : parenthèses obligatoires → `a^(n+m)`, `a^(-n)`, `a^(n×m)`. Exemple de règle correcte : `a^n × a^m = a^(n+m)` (PAS `an * am = a^(n+m)`).
 - Multiplication : symbole `×` uniquement — JAMAIS `*` dans les énoncés

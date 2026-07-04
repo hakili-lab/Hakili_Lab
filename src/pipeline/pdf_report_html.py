@@ -214,10 +214,11 @@ def _cm(s: str) -> str:
 
 _SENT_SPLIT = re.compile(r'(?<=[.!?])\s+(?=[A-ZÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ])')
 
-# Étape numérotée inline ("... : 1) ... ; 2) ... ; 3) ...") -- uniquement reconnue
-# quand le marqueur "N)" est précédé d'un ':' ou ';' pour éviter les faux positifs
-# du type "(Geo. 4)" (référence de question entre parenthèses).
-_STEP_SPLIT = re.compile(r'(?<=[:;])\s*(\d+)\)\s+')
+# Étape numérotée : "... : 1) ... ; 2) ..." en ligne, OU "...:\n1. ...\n2. ..."
+# avec retours à la ligne -- uniquement reconnu quand le marqueur est précédé de
+# ':', ';' ou d'un retour à la ligne, pour éviter les faux positifs du type
+# "(Geo. 4)" (référence de question entre parenthèses, précédée d'un espace).
+_STEP_SPLIT = re.compile(r'(?:(?<=[:;])|(?<=\n))\s*\(?(\d+)[.)]\s+')
 
 
 def _split_steps(text: str) -> tuple[str, list[str]]:
