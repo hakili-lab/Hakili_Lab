@@ -18,7 +18,7 @@
       }
       @frame footer_frame {
         -pdf-frame-content: page_footer;
-        left: 20mm; width: 172mm; bottom: 5mm; height: 10mm;
+        left: 20mm; width: 172mm; bottom: 5mm; height: 14mm;
       }
     }
 
@@ -37,16 +37,19 @@
     .hdr-center { font-size: 8pt; color: #5D6D7E; text-align: center; padding: 0; }
     .hdr-right  { font-size: 8pt; color: #5D6D7E; text-align: right; padding: 0; }
 
-    /* ===== BANDEAU ÉLÈVE ===== */
-    .banner {
-      background-color: #1A5276;
-      border-bottom: 3pt solid #C0392B;
-      padding: 12pt 16pt;
-      text-align: center;
+    /* ===== EN-TÊTE INFO (encadré, sobre) ===== */
+    .info-box-bordered {
+      width: 100%;
+      border: 1pt solid #1A5276;
+      border-collapse: collapse;
       margin-bottom: 12pt;
     }
-    .banner-name { font-size: 17pt; font-weight: bold; color: white; margin-bottom: 3pt; }
-    .banner-sub  { font-size: 9pt; color: #aad4f5; }
+    .info-box-bordered td { padding: 7pt 12pt; vertical-align: middle; }
+    .info-name { font-size: 12.5pt; font-weight: bold; color: #1A5276; }
+    .info-meta {
+      font-size: 8.5pt; color: #333; text-align: right; line-height: 1.5;
+      border-left: 1pt solid #1A5276;
+    }
 
     /* ===== INFO BOX ===== */
     .info-box {
@@ -57,75 +60,61 @@
       font-size: 9pt;
     }
 
-    /* ===== SÉRIE ===== */
-    .serie-title {
-      background-color: #1A5276;
-      color: white;
+    /* ===== SÉRIE (titre encadré, sobre) ===== */
+    .title-box {
+      border: 1pt solid #1A5276;
+      color: #1A5276;
       font-weight: bold;
-      font-size: 10pt;
-      padding: 5pt 10pt;
-      margin-top: 20pt;
-      margin-bottom: 0;
-      letter-spacing: 0.2pt;
-    }
-    .serie-rule {
-      border-top: 2pt solid #C0392B;
-      margin-bottom: 12pt;
+      font-size: 10.5pt;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.3pt;
+      padding: 6pt 10pt;
+      margin-top: 18pt;
+      margin-bottom: 10pt;
     }
 
     /* ===== EXERCICE ===== */
     .exo-block {
-      margin-bottom: 18pt;
+      margin-bottom: 12pt;
       page-break-inside: avoid;
     }
     .exo-title {
-      font-size: 11pt;
-      font-weight: bold;
-      font-style: italic;
+      display: inline-block;
+      background-color: #D6EAF8;
       color: #1A5276;
-      border-bottom: 0.8pt solid #AED6F1;
-      padding-bottom: 3pt;
-      margin-bottom: 8pt;
+      font-weight: bold;
+      font-size: 10.5pt;
+      text-decoration: underline;
+      padding: 2pt 8pt;
+      margin-bottom: 6pt;
     }
 
     /* ===== ÉNONCÉ (contexte du problème) ===== */
     .enonce-block {
       background: #F4F6F7;
       border-left: 3pt solid #808B96;
-      padding: 7pt 12pt;
-      margin-bottom: 9pt;
+      padding: 5pt 10pt;
+      margin-bottom: 5pt;
       font-size: 10.5pt;
+      line-height: 1.4;
     }
 
     /* ===== TÂCHES NUMÉROTÉES ===== */
-    .tasks-wrap { margin-bottom: 9pt; }
-    .task-row { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+    .tasks-wrap { width: 100%; border-collapse: collapse; margin-bottom: 5pt; }
     .task-num  {
-      width: 22pt;
+      width: 20pt;
       vertical-align: top;
       font-weight: bold;
       color: #1A5276;
       font-size: 10.5pt;
-      padding: 4pt 6pt 4pt 0;
+      padding: 1.5pt 5pt 1.5pt 0;
     }
     .task-text {
       vertical-align: top;
       font-size: 10.5pt;
-      padding: 4pt 0;
-      border-top: 0.3pt solid #E5E8EA;
-    }
-    .task-text-first {
-      vertical-align: top;
-      font-size: 10.5pt;
-      padding: 0 0 4pt 0;
-    }
-    .task-num-first {
-      width: 22pt;
-      vertical-align: top;
-      font-weight: bold;
-      color: #1A5276;
-      font-size: 10.5pt;
-      padding: 0 6pt 4pt 0;
+      line-height: 1.4;
+      padding: 1.5pt 0;
     }
 
     /* ===== INDICE ===== */
@@ -133,7 +122,7 @@
       border: 0.5pt dashed #D4AC0D;
       background: #FEFAF2;
       padding: 5pt 9pt;
-      margin-top: 6pt;
+      margin-top: 4pt;
       font-size: 8.5pt;
       font-style: italic;
       color: #7D6608;
@@ -143,8 +132,8 @@
     .answer-space {
       border: 0.5pt solid #C8CBD0;
       background: #FAFAFA;
-      height: 32mm;
-      margin-top: 8pt;
+      height: 22mm;
+      margin-top: 6pt;
     }
 
     /* ===== PIED DE DOCUMENT ===== */
@@ -166,8 +155,7 @@
   <table style="width:100%; border-collapse:collapse;">
     <tr>
       <td class="hdr-left">HAKILI LAB</td>
-      <td class="hdr-center">{{ DOC_TITLE }}</td>
-      <td class="hdr-right">Page <pdf:pagenumber/> / <pdf:pagecount/></td>
+      <td class="hdr-right">{{ DOC_TITLE }}</td>
     </tr>
   </table>
   <hr style="border:0; border-top:1.4pt solid #C0392B; margin-top:3pt;"/>
@@ -175,17 +163,22 @@
 
 <!-- ── PIED DE PAGE ─────────────────────────────────────────────── -->
 <div id="page_footer">
-  <hr style="border:0; border-top:0.5pt solid #ccc;"/>
-  <p style="text-align:center; font-size:7.5pt; color:#7f8c8d; margin:2pt 0 0 0;">
-    Hakili Lab &nbsp;&#8226;&nbsp; Document confidentiel &nbsp;&#8226;&nbsp; Usage pédagogique exclusif
+  <hr style="border:0; border-top:0.8pt solid #1A5276; margin-bottom:3pt;"/>
+  <p style="text-align:center; font-size:8pt; font-weight:bold; color:#1A5276; margin:0; letter-spacing:0.2pt;">
+    HAKILI LAB &nbsp;&#8226;&nbsp; L'EXIGENCE AU SERVICE DE L'EXCELLENCE
+  </p>
+  <p style="text-align:center; font-size:7.5pt; color:#5D6D7E; margin:2pt 0 0 0;">
+    Page <pdf:pagenumber/> / <pdf:pagecount/>
   </p>
 </div>
 
-<!-- ── BANDEAU ──────────────────────────────────────────────────── -->
-<div class="banner">
-  <div class="banner-name">{{ STUDENT_NAME }}</div>
-  <div class="banner-sub">{{ DOC_TITLE }} — {{ DATE }}</div>
-</div>
+<!-- ── EN-TÊTE INFO (encadré) ───────────────────────────────────── -->
+<table class="info-box-bordered">
+  <tr>
+    <td class="info-name">{{ STUDENT_NAME }}</td>
+    <td class="info-meta">{{ DOC_TITLE }}<br/>{{ DATE }}</td>
+  </tr>
+</table>
 
 <!-- ── INFO ─────────────────────────────────────────────────────── -->
 <div class="info-box">
@@ -204,14 +197,13 @@
 <!-- ── SÉRIES D'EXERCICES ────────────────────────────────────────── -->
 {% for serie in series %}
 
-<div class="serie-title">Série {{ serie.idx }} — {{ serie.topic }}</div>
-<div class="serie-rule"></div>
+<div class="title-box">Série {{ serie.idx }} — {{ serie.topic }}</div>
 
 {% for ex in serie.exercises %}
 <div class="exo-block">
 
   <!-- Titre de l'exercice -->
-  <div class="exo-title">Exercice {{ ex.number }}</div>
+  <div class="exo-title">Exercice N°{{ ex.number }} :</div>
 
   <!-- Énoncé (contexte du problème) — affiché si non vide -->
   {% if ex.enonce %}
@@ -220,26 +212,19 @@
 
   <!-- Questions numérotées -->
   {% if ex.has_tasks %}
-  <div class="tasks-wrap">
+  <table class="tasks-wrap">
     {% for task in ex.tasks %}
-    <table class="task-row">
-      <tr>
-        {% if loop.first %}
-        <td class="task-num-first">{{ loop.index }}.</td>
-        <td class="task-text-first">{{ task }}</td>
-        {% else %}
-        <td class="task-num">{{ loop.index }}.</td>
-        <td class="task-text">{{ task }}</td>
-        {% endif %}
-      </tr>
-    </table>
+    <tr>
+      <td class="task-num">{{ loop.index }}.</td>
+      <td class="task-text">{{ task }}</td>
+    </tr>
     {% endfor %}
-  </div>
+  </table>
   {% endif %}
 
   <!-- Indice -->
   {% if ex.has_hint %}
-  <div class="hint-box">&#128161;&nbsp; <em>Indice : {{ ex.hint }}</em></div>
+  <div class="hint-box"><strong>Indice</strong> — <em>{{ ex.hint }}</em></div>
   {% endif %}
 
   <!-- Espace réponse -->

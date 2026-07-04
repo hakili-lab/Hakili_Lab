@@ -18,7 +18,7 @@
       }
       @frame footer_frame {
         -pdf-frame-content: page_footer;
-        left: 18mm; width: 174mm; bottom: 5mm; height: 10mm;
+        left: 18mm; width: 174mm; bottom: 5mm; height: 14mm;
       }
     }
 
@@ -43,32 +43,34 @@
     .italic   { font-style: italic; }
     .mono     { font-family: Courier, monospace; font-size: 9pt; }
 
-    /* ===== EN-TÊTE SECTION ===== */
+    /* ===== EN-TÊTE SECTION (encadré, sobre) ===== */
     .sec-head {
-      background-color: #1A5276;
-      color: white;
+      border: 1pt solid #1A5276;
+      background-color: white;
+      color: #1A5276;
       font-weight: bold;
-      font-size: 9.5pt;
+      font-size: 10pt;
+      text-align: center;
       text-transform: uppercase;
       padding: 6pt 10pt;
-      margin-top: 22pt;
-      margin-bottom: 0;
+      margin-top: 20pt;
+      margin-bottom: 10pt;
       letter-spacing: 0.3pt;
     }
-    .sec-rule { border-top: 1.5pt solid #C0392B; margin-bottom: 12pt; }
 
-    /* ===== BANDEAU ÉLÈVE ===== */
-    .banner {
-      background-color: #1A5276;
-      border: 2pt solid #C0392B;
-      padding: 14pt;
-      text-align: center;
-      margin-bottom: 14pt;
+    /* ===== EN-TÊTE INFO (encadré, sobre) ===== */
+    .info-box-bordered {
+      width: 100%;
+      border: 1pt solid #1A5276;
+      border-collapse: collapse;
+      margin-bottom: 12pt;
     }
-    .banner-name {
-      font-size: 18pt; font-weight: bold; color: white; margin-bottom: 3pt;
+    .info-box-bordered td { padding: 8pt 12pt; vertical-align: middle; }
+    .info-name { font-size: 13pt; font-weight: bold; color: #1A5276; }
+    .info-meta {
+      font-size: 8pt; color: #5D6D7E; font-family: Courier, monospace;
+      text-align: right; line-height: 1.5; border-left: 1pt solid #1A5276;
     }
-    .banner-id { font-size: 8pt; color: #aad4f5; font-family: Courier, monospace; }
 
     /* ===== SCORE HERO ===== */
     .score-box {
@@ -219,10 +221,7 @@
   <table style="width:100%; border-collapse:collapse;">
     <tr>
       <td style="font-size:9pt; font-weight:bold; color:#1A5276; padding:0;">HAKILI LAB</td>
-      <td style="font-size:8pt; color:#5D6D7E; text-align:center; padding:0;">Rapport de correction IA</td>
-      <td style="font-size:8pt; color:#5D6D7E; text-align:right; padding:0;">
-        Page <pdf:pagenumber/> / <pdf:pagecount/>
-      </td>
+      <td style="font-size:8pt; color:#5D6D7E; text-align:right; padding:0;">Rapport de correction IA</td>
     </tr>
   </table>
   <hr style="border:0; border-top:1.4pt solid #C0392B; margin-top:3pt;"/>
@@ -230,17 +229,22 @@
 
 <!-- ── PIED DE PAGE ─────────────────────────────────────────── -->
 <div id="page_footer">
-  <hr style="border:0; border-top:0.5pt solid #ccc;"/>
-  <p style="text-align:center; font-size:7.5pt; color:#7f8c8d; margin:2pt 0 0 0;">
-    Hakili Lab &nbsp;&#8226;&nbsp; Document confidentiel &nbsp;&#8226;&nbsp; Usage pédagogique exclusif
+  <hr style="border:0; border-top:0.8pt solid #1A5276; margin-bottom:3pt;"/>
+  <p style="text-align:center; font-size:8pt; font-weight:bold; color:#1A5276; margin:0; letter-spacing:0.2pt;">
+    HAKILI LAB &nbsp;&#8226;&nbsp; L'EXIGENCE AU SERVICE DE L'EXCELLENCE
+  </p>
+  <p style="text-align:center; font-size:7.5pt; color:#5D6D7E; margin:2pt 0 0 0;">
+    Page <pdf:pagenumber/> / <pdf:pagecount/>
   </p>
 </div>
 
-<!-- ── BANDEAU ÉLÈVE ────────────────────────────────────────── -->
-<div class="banner">
-  <div class="banner-name">{{ STUDENT_NAME }}</div>
-  <div class="banner-id">Identifiant copie&nbsp;: {{ COPY_ID }}</div>
-</div>
+<!-- ── EN-TÊTE INFO (encadré) ──────────────────────────────────── -->
+<table class="info-box-bordered">
+  <tr>
+    <td class="info-name">{{ STUDENT_NAME }}</td>
+    <td class="info-meta">Copie n°&nbsp;: {{ COPY_ID }}<br/>{{ DATE }}</td>
+  </tr>
+</table>
 
 <!-- ── SCORE HÉRO ───────────────────────────────────────────── -->
 <div class="score-box">
@@ -265,7 +269,6 @@
      RÉSUMÉ DE CORRECTION
      ══════════════════════════════════════════════════════ -->
 <div class="sec-head">Résumé de correction</div>
-<div class="sec-rule"></div>
 
 <!-- Barre statistiques -->
 <div class="stat-bar">
@@ -341,8 +344,7 @@
 <!-- ══════════════════════════════════════════════════════════
      SCORE PARFAIT — FÉLICITATIONS
      ══════════════════════════════════════════════════════ -->
-<div class="sec-head" style="background-color:#1E8449;">&#9733; Score parfait — Félicitations !</div>
-<div class="sec-rule" style="border-color:#1E8449;"></div>
+<div class="sec-head" style="border-color:#1E8449; color:#1E8449;">&#9733; Score parfait — Félicitations !</div>
 
 <div style="background-color:#EAFAF1; border-left:4pt solid #1E8449; padding:14pt 16pt; margin-bottom:18pt;">
   <p style="font-size:11pt; font-weight:bold; color:#1E8449; margin-bottom:6pt;">
@@ -362,7 +364,6 @@
 <!-- Causes profondes -->
 {% if root_causes %}
 <div class="sec-head">Erreurs cachées — Causes profondes</div>
-<div class="sec-rule"></div>
 <p class="small c-gray" style="margin-bottom:12pt;">
   Ces mécanismes mal maîtrisés expliquent plusieurs points perdus.
   Une remédiation ciblée sur les causes est plus efficace que de retravailler chaque erreur isolément.
@@ -381,7 +382,6 @@
 <!-- Plan de remédiation -->
 {% if remediation %}
 <div class="sec-head">Plan de remédiation personnalisé</div>
-<div class="sec-rule"></div>
 {% for item in remediation %}
 <div class="remed-item">
   <div class="remed-title">{{ item.priority }}. {{ item.topic }}</div>

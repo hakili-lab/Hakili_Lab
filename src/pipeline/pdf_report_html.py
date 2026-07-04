@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import re
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,16 @@ from markupsafe import Markup
 logger = logging.getLogger(__name__)
 
 _TEMPLATE_DIR = Path(__file__).resolve().parent.parent.parent / "templates"
+
+_MONTHS_FR = [
+    "", "janvier", "février", "mars", "avril", "mai", "juin",
+    "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+]
+
+
+def _today_fr() -> str:
+    d = date.today()
+    return f"{d.day} {_MONTHS_FR[d.month]} {d.year}"
 
 # ── Police Unicode ─────────────────────────────────────────────────────────────
 # Priorite : Arial Unicode MS (Office), Segoe UI Symbol (Win10+), Arial standard
@@ -285,6 +296,7 @@ def _build_context(
     return {
         "STUDENT_NAME":      student_name or copy_id,
         "COPY_ID":           copy_id,
+        "DATE":              _today_fr(),
         "FINAL_SCORE":       _fmt(final_score),
         "FINAL_SCORE_20":    _fmt(final_score_20) if final_score_20 is not None else "--",
         "TOTAL_POSSIBLE":    _fmt(grade.total_possible),

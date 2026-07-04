@@ -6,7 +6,6 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-import anthropic
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pydantic import BaseModel
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
@@ -212,9 +211,10 @@ def _close_json(text: str) -> str:
 
 
 def _is_retryable(exc: BaseException) -> bool:
-    if isinstance(exc, anthropic.APIStatusError):
+    import anthropic as _anthropic
+    if isinstance(exc, _anthropic.APIStatusError):
         return exc.status_code in (429, 529)
-    return isinstance(exc, (anthropic.APIConnectionError, anthropic.APITimeoutError))
+    return isinstance(exc, (_anthropic.APIConnectionError, _anthropic.APITimeoutError))
 
 
 _retry = retry(
@@ -227,6 +227,7 @@ _retry = retry(
 
 class ClaudeClient:
     def __init__(self) -> None:
+        import anthropic
         self.client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
         self._transcription_prompt = self._load_prompt("transcription_prompt.md")
         self._grading_prompt = self._load_prompt("grading_prompt.md")
@@ -481,9 +482,10 @@ class ClaudeClient:
                 ],
             )
 
+        import anthropic as _anthropic
         try:
             response = _call_diagnose(settings.claude_model_opus)
-        except anthropic.BadRequestError:
+        except _anthropic.BadRequestError:
             logger.warning(
                 "[%s] claude_model_opus '%s' invalide (400) — fallback diagnostic → %s",
                 grades.copy_id, settings.claude_model_opus, settings.claude_model_heavy,
