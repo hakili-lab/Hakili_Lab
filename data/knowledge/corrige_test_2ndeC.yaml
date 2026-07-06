@@ -74,7 +74,7 @@ questions_numeriques:
       Chiffre des centièmes = 5. Chiffre suivant (millièmes) = 4.
       Par défaut (troncature au centième) : 2,85.
       Par excès : 2,85 + 0,01 = 2,86.
-      Encadrement : 2,85 ≤ X < 2,86.
+      Encadrement : 2,85 ≤ X ≤  2,86.
 
   - id: Q_NUM_05
     reponse: "572 = 2² × 11 × 13 | 127 est un nombre premier"
@@ -286,14 +286,14 @@ questions_geometriques:
       C(0 ; −4) : sur l'axe des ordonnées, 4 cm sous l'origine.
 
   - id: Q_GEO_03a
-    reponse: "Angles opposés par le sommet : leurs côtés sont les prolongements l'un de l'autre — ils sont égaux"
+    reponse: "ils sont égaux"
     solution: >
       Définition : deux angles sont opposés par le sommet si leurs côtés sont
       les prolongements l'un de l'autre (sommet commun, pas de côté commun).
       Propriété : deux angles opposés par le sommet sont égaux.
 
   - id: Q_GEO_03b
-    reponse: "Angles alternes-internes : formés par deux droites coupées par une sécante, à l'intérieur, de part et d'autre — égaux si les droites sont parallèles"
+    reponse: "mêmes mesures"
     solution: >
       Définition : formés par deux droites (D1) et (D2) coupées par une sécante (S) ;
       situés entre les deux droites, de part et d'autre de (S).
@@ -307,78 +307,78 @@ questions_geometriques:
   - id: Q_GEO_04
     reponse: "ABCD est un parallélogramme"
     solution: >
-      AB⃗ = DC⃗ signifie que AB⃗ et DC⃗ ont même direction, même sens et même norme.
+      AB = DC signifie que AB et DC ont même direction, même sens et même norme.
       Par définition vectorielle, ABCD est un parallélogramme
       (les côtés [AB] et [DC] sont parallèles, de même longueur et de même sens).
 
   - id: Q_GEO_05a
-    reponse: "AB⃗ + BC⃗ = AC⃗"
+    reponse: "AB + BC = AC"
     solution: >
-      Relation de Chasles : AB⃗ + BC⃗ = AC⃗.
+      Relation de Chasles : AB+ BC = AC.
 
   - id: Q_GEO_05b
-    reponse: "AB⃗ + AD⃗ = AC⃗"
+    reponse: "AB + AD = AC"
     solution: >
-      Dans le parallélogramme ABCD : AD⃗ = BC⃗ (côtés opposés égaux et parallèles).
-      Donc AB⃗ + AD⃗ = AB⃗ + BC⃗ = AC⃗ (relation de Chasles).
+      Dans le parallélogramme ABCD : AD = BC (côtés opposés égaux et parallèles).
+      Donc AB + AD = AB + BC = AC (relation de Chasles).
 
   - id: Q_GEO_06a
-    reponse: "2 × EF⃗ = AB⃗"
+    reponse: "2 × EF = AC"
     solution: >
-      Lecture sur le quadrillage : AB est deux fois EF en longueur, même direction et même sens.
-      Donc 2 × EF⃗ = AB⃗.
+      Lecture sur le quadrillage : AC est deux fois EF en longueur, même direction et même sens.
+      Donc 2 × EF = AC.
 
   - id: Q_GEO_06b
-    reponse: "−3 × GH⃗ = LK⃗"
+    reponse: "−3 × GH = LI"
     solution: >
-      Lecture sur le quadrillage : LK est trois fois GH en longueur, sens opposé.
-      Donc −3 × GH⃗ = LK⃗.
+      Lecture sur le quadrillage : LI est trois fois GH en longueur, sens opposé.
+      Donc −3 × GH = LI.
 
   - id: Q_GEO_06c
-    reponse: "NP⃗ = 2 × MO⃗"
+    reponse: "NP = 2 × MN"
     solution: >
-      Lecture sur le quadrillage : NP est deux fois MO en longueur, même direction et même sens.
-      Donc NP⃗ = 2 × MO⃗.
+      Lecture sur le quadrillage : NP est deux fois MN en longueur, même direction et même sens.
+      Donc NP = 2 × MN.
 
   - id: Q_GEO_06d
-    reponse: "MP⃗ = −3 × CD⃗"
+    reponse: "MP = −3 × CB"
     solution: >
-      Lecture sur le quadrillage : MP est trois fois CD en longueur, sens opposé.
-      Donc MP⃗ = −3 × CD⃗.
+      Lecture sur le quadrillage : MP est trois fois CB en longueur, sens opposé.
+      Donc MP = −3 × CB.
 
   - id: Q_GEO_07a
-    reponse: "A' = intersection de la droite parallèle à (L) passant par A avec la droite (D)"
+    reponse: " voir figure : A' est le projeté de A sur (D) parallèlement à (L)"
     solution: >
       Construction :
       1. Tracer par A la droite parallèle à (L).
       2. A' est le point d'intersection de cette droite avec (D).
 
   - id: Q_GEO_07b
-    reponse: "B' = pied de la perpendiculaire à (D) passant par B"
+    reponse: " voir figure : B' est le projeté orthogonal de B sur (D)"
     solution: >
       Construction :
       1. Tracer par B la droite perpendiculaire à (D).
       2. B' est l'intersection de cette perpendiculaire avec (D).
 
   - id: Q_GEO_08a
-    reponse: "Symétrique de B par rapport à G = D"
+    reponse: "Symétrique de B par rapport à G est L"
     solution: >
       Symétrie centrale de centre G :
       G est le milieu de [B, sym(B)].
-      D'après la figure, le symétrique de B par rapport à G est le point D.
+      D'après la figure, le symétrique de B par rapport à G est le point L.
 
   - id: Q_GEO_08b
-    reponse: "Symétrique de E par rapport à (OC) = B"
+    reponse: "Symétrique de E par rapport à (OC) est G"
     solution: >
       Symétrie axiale d'axe (OC) :
       Le symétrique de E est le point situé de l'autre côté de (OC),
       à la même distance perpendiculaire.
-      D'après la figure, le symétrique de E par rapport à (OC) est B.
+      D'après la figure, le symétrique de E par rapport à (OC) est G.
 
   - id: Q_GEO_08c
-    reponse: "I est le projeté de L sur (AM) parallèlement à (BF)"
+    reponse: "I est le projeté de L sur (AM) parallèlement à (DP)"
     solution: >
-      Projection parallèle : tracer par L la droite parallèle à (BF).
+      Projection parallèle : tracer par L la droite parallèle à (DP).
       L'intersection de cette droite avec (AM) est le point I.
 
   - id: Q_GEO_09a
