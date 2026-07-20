@@ -582,6 +582,23 @@ def _render_diag_overview(diag) -> str:
     return "".join(parts)
 
 
+def _text_area_height_for_image(img_path: Path, col_width_px: int = 600,
+                                 min_h: int = 480, max_h: int = 1100) -> int:
+    """Estime la hauteur (px) du champ éditable pour qu'elle se rapproche de la
+    hauteur affichée de l'image de la page (même ratio hauteur/largeur), afin
+    d'éviter le scroll interne du text_area à côté d'une copie pleine page."""
+    try:
+        from PIL import Image
+        with Image.open(img_path) as im:
+            w, h = im.size
+        if w <= 0:
+            return col_width_px
+        height = int(col_width_px * h / w)
+        return max(min_h, min(max_h, height))
+    except Exception:
+        return col_width_px
+
+
 def render_transcription_review(transcription, ingestion, key_prefix: str = "") -> None:
     """
     Écran de relecture transcription — étape 1 de la Phase A.
@@ -607,19 +624,22 @@ def render_transcription_review(transcription, ingestion, key_prefix: str = "") 
         st.markdown(f"##### Page {idx}")
         col_img, col_txt = st.columns([1, 1], gap="large")
 
+        img_path = page_images.get(idx)
+        img_exists = bool(img_path) and Path(img_path).exists()
+
         with col_img:
-            img_path = page_images.get(idx)
-            if img_path and Path(img_path).exists():
+            if img_exists:
                 st.image(str(img_path), width="stretch")
             else:
                 st.caption("Image indisponible")
 
         with col_txt:
+            text_height = _text_area_height_for_image(img_path) if img_exists else 600
             default_text = edits.get(idx, page.content)
             edited = st.text_area(
                 f"Transcription page {idx}",
                 value=default_text,
-                height=280,
+                height=text_height,
                 key=f"{key_prefix}trans_edit_{idx}",
                 label_visibility="collapsed",
                 help="Corrigez directement le texte si la transcription IA s'est trompée.",
