@@ -38,6 +38,13 @@ class Settings(BaseSettings):
     mistral_model: str = "mistral-small-latest"
     mistral_vision_model: str = "pixtral-12b-2409"
 
+    # OpenAI (filet de secours GPT-5 — remplace Claude comme fallback partout
+    # où un fallback existe : transcription, nom élève, correction, diagnostic,
+    # remédiation. Claude reste seul utilisé là où il n'y a pas d'alternative :
+    # extraction sujet/barème, barème virtuel, enrichissement 20/20.)
+    openai_api_key: str = ""
+    openai_model: str = "gpt-5"
+
     # Seuils pipeline
     confidence_review_threshold: float = 0.75
 
@@ -57,21 +64,6 @@ class Settings(BaseSettings):
     google_service_account_file: str = ""
     google_sheet_eleves_id: str = ""
     google_sheet_personnel_id: str = ""
-
-    # DORMANT depuis le chantier connexion nom+PIN : l'administrateur est
-    # désormais une ligne du Sheet personnel comme les autres (role=
-    # administrateur + PIN), authentifiée par src.services.auth_service au
-    # même titre qu'un enseignant ou un responsable — ce champ n'est plus lu
-    # nulle part dans le code actif. Conservé (non supprimé) en config comme
-    # RECOMMANDATION d'accès de secours si les Sheets deviennent injoignables
-    # (aucun autre chemin de connexion n'existe plus dans ce cas) ; décision
-    # à trancher explicitement par le docteur — le retirer si jugé inutile,
-    # ou le re-brancher dans auth_service si l'accès de secours est voulu.
-    admin_emails: str = ""
-
-    @property
-    def admin_emails_list(self) -> list[str]:
-        return [e.strip().lower() for e in self.admin_emails.split(",") if e.strip()]
 
 
 settings = Settings()

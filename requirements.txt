@@ -28,7 +28,7 @@ openpyxl>=3.1.0        # Lecture .xlsx (import élèves en masse)
 # --- Fournisseurs IA ---
 anthropic>=0.40.0
 google-genai>=1.0.0    # SDK unifié — gemini_client.py utilise `from google import genai`
-openai>=1.30.0        # DeepSeek (API compatible OpenAI)
+openai>=1.30.0        # DeepSeek (API compatible OpenAI) + GPT-5 (fallback)
 mistralai>=1.0.0,<2.0.0   # Mistral Small 3.1 — v2.x a changé l'API
 
 # --- Réseau & Robustesse ---
