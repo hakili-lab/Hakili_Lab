@@ -37,4 +37,5 @@ jobs:
       - name: Run tests
         env:
           ANTHROPIC_API_KEY: test-fake-key-not-real
+          DATABASE_URL: postgresql://test-fake-user:test-fake-pass@localhost:5432/test_fake_db
         run: pytest tests/ -v --tb=short
