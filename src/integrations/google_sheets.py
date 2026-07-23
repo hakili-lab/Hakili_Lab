@@ -11,6 +11,11 @@ change.
 
 Configuration (voir src/core/config.py, jamais codée en dur ici) :
     GOOGLE_SERVICE_ACCOUNT_FILE   chemin vers la clé JSON du compte de service
+                                  (usage local, fichier présent sur disque)
+    GOOGLE_SERVICE_ACCOUNT_JSON   contenu JSON complet de la clé, en une
+                                  seule ligne (usage Streamlit Cloud, pas de
+                                  fichier local disponible) — voir
+                                  _resoudre_fichier_compte_service()
     GOOGLE_SHEET_ELEVES_ID        identifiant du Sheet élèves
     GOOGLE_SHEET_PERSONNEL_ID     identifiant du Sheet personnel (unique)
 
@@ -44,8 +49,10 @@ usage interne est légitime. Même règle pour identifiant_hakili côté écran.
 from __future__ import annotations
 
 import logging
+import os
 import re
 import socket
+import tempfile
 import time
 import unicodedata
 from datetime import datetime
@@ -133,6 +140,11 @@ _cache: dict[str, tuple[float, Any]] = {}
 # pour le bandeau "hors ligne" côté UI (voir get_statut_lecture).
 _cache_repli: dict[str, tuple[datetime, Any]] = {}
 _dernier_mode: dict[str, str] = {}
+
+# Chemin du fichier temporaire écrit à partir de GOOGLE_SERVICE_ACCOUNT_JSON
+# (voir _resoudre_fichier_compte_service) — écrit une seule fois, réutilisé
+# ensuite tant que le fichier existe encore sur disque.
+_service_account_json_tmp_path: str | None = None
 
 
 class GoogleSheetsError(RuntimeError):
@@ -287,19 +299,50 @@ def get_statut_lecture(cache_key: str) -> dict:
     }
 
 
+def _resoudre_fichier_compte_service() -> str:
+    """Résout le chemin du fichier de clé JSON du compte de service Google.
+
+    En local, GOOGLE_SERVICE_ACCOUNT_FILE pointe vers un fichier présent sur
+    disque : utilisé tel quel, comportement inchangé. Sur Streamlit Cloud
+    (pas de fichier local disponible), GOOGLE_SERVICE_ACCOUNT_JSON contient
+    le JSON complet de la clé (une seule ligne) : il est alors écrit une
+    seule fois dans un fichier temporaire (chemin mis en cache dans
+    _service_account_json_tmp_path, réutilisé aux appels suivants) et ce
+    chemin temporaire est retourné à la place."""
+    global _service_account_json_tmp_path
+
+    fichier = settings.google_service_account_file
+    if fichier and os.path.isfile(fichier):
+        return fichier
+
+    if settings.google_service_account_json:
+        if _service_account_json_tmp_path is None or not os.path.isfile(_service_account_json_tmp_path):
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".json", delete=False, encoding="utf-8"
+            ) as tmp:
+                tmp.write(settings.google_service_account_json)
+                _service_account_json_tmp_path = tmp.name
+        return _service_account_json_tmp_path
+
+    if fichier:
+        # Chemin configuré mais fichier introuvable — retourné tel quel pour
+        # que Credentials.from_service_account_file lève le FileNotFoundError
+        # explicite déjà géré ci-dessous.
+        return fichier
+
+    raise GoogleSheetsConfigError(
+        "GOOGLE_SERVICE_ACCOUNT_FILE ou GOOGLE_SERVICE_ACCOUNT_JSON doit être configuré (.env)."
+    )
+
+
 def _get_client() -> gspread.Client:
-    if not settings.google_service_account_file:
-        raise GoogleSheetsConfigError(
-            "GOOGLE_SERVICE_ACCOUNT_FILE n'est pas configuré (.env)."
-        )
+    fichier = _resoudre_fichier_compte_service()
     try:
-        creds = Credentials.from_service_account_file(
-            settings.google_service_account_file, scopes=_SCOPES
-        )
+        creds = Credentials.from_service_account_file(fichier, scopes=_SCOPES)
         return gspread.authorize(creds)
     except FileNotFoundError as exc:
         raise GoogleSheetsConfigError(
-            f"Fichier de clé Google introuvable : {settings.google_service_account_file}"
+            f"Fichier de clé Google introuvable : {fichier}"
         ) from exc
     except Exception as exc:
         if _est_erreur_connectivite(exc):

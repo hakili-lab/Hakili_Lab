@@ -61,7 +61,13 @@ class Settings(BaseSettings):
     # vit dans un SEUL Sheet fusionné — le rôle de chaque personne vient de
     # sa colonne "role", plus d'un fichier séparé par rôle (voir
     # src/integrations/google_sheets.py).
+    # google_service_account_file : chemin vers la clé JSON (usage local, un
+    # fichier existe sur disque).
+    # google_service_account_json : contenu JSON complet de la clé, en une
+    # seule ligne (usage Streamlit Cloud, pas de fichier local disponible) —
+    # écrit dans un fichier temporaire au premier usage.
     google_service_account_file: str = ""
+    google_service_account_json: str = ""
     google_sheet_eleves_id: str = ""
     google_sheet_personnel_id: str = ""
 
