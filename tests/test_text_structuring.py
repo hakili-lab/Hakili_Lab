@@ -14,7 +14,6 @@ Invariants vérifiés :
 """
 import re
 
-import pytest
 
 from src.pipeline.pdf_remediation_html import _split_question
 from src.pipeline.pdf_report_html import _action_html
