@@ -209,16 +209,20 @@ class CurriculumRetriever:
         self,
         failed_question_ids: list[str],
         bareme_id: str,
-    ) -> list[dict[str, str]]:
+    ) -> list[dict[str, str | list[str]]]:
         """
         Retourne la liste des lacunes de compétence (chunk_id + texte court)
         pour les questions échouées — utilisé pour enrichir DiagnosticResult.
+
+        Dict hétérogène assumé (pas juste dict[str, str]) : savoir_faire et
+        erreurs_frequentes sont des list[str] — c'est aussi ce qu'attend
+        CompetencyGap (src/models/domain.py) pour ces deux champs.
         """
         if bareme_id not in self._baremes:
             return []
 
         seen: set[str] = set()
-        gaps: list[dict[str, str]] = []
+        gaps: list[dict[str, str | list[str]]] = []
 
         for q_id in failed_question_ids:
             chunks = self.get_chunks_for_question(q_id, bareme_id)

@@ -52,7 +52,10 @@ def _configure_logging() -> None:
     if "console" not in existing_ids:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(formatter)
-        console_handler._hakili_handler_id = "console"
+        # Marqueur interne pour détecter ce handler au prochain rerun (voir
+        # docstring) — StreamHandler n'a pas cet attribut dans son stub,
+        # mais Python autorise l'attribut dynamique sur n'importe quel objet.
+        console_handler._hakili_handler_id = "console"  # type: ignore[attr-defined]
         root.addHandler(console_handler)
 
     if "file" not in existing_ids:
@@ -65,7 +68,7 @@ def _configure_logging() -> None:
             encoding="utf-8",
         )
         file_handler.setFormatter(formatter)
-        file_handler._hakili_handler_id = "file"
+        file_handler._hakili_handler_id = "file"  # type: ignore[attr-defined]
         root.addHandler(file_handler)
 
 
@@ -79,7 +82,7 @@ _configure_logging()
 # que ce soit. Ordre volontaire, non déplaçable en haut de fichier.
 import streamlit as st  # noqa: E402
 
-from src.core.tendance import calculer_tendance  # noqa: E402
+from src.core.tendance import Tendance, calculer_tendance  # noqa: E402
 from src.db.database import SessionLocal  # noqa: E402
 from src.db.models import Copie, UserRole  # noqa: E402
 from src.integrations.google_sheets import get_eleve_by_identifiant  # noqa: E402
@@ -1353,7 +1356,7 @@ def _render_tableau_responsable(db, eleves: list[dict]) -> None:
     identifiants = [e["identifiant_hakili"] for e in eleves]
     copies_par_identifiant = get_copies_pour_identifiants(db, identifiants)
 
-    lignes: list[tuple[dict, str]] = []
+    lignes: list[tuple[dict, Tendance]] = []
     nb_en_baisse = 0
     for eleve in eleves:
         copies = copies_par_identifiant.get(eleve["identifiant_hakili"], [])
@@ -2570,19 +2573,22 @@ elif page == "TRAITEMENT BATCH":
 
                     bc1, bc2 = st.columns(2)
                     r_eleve = st.session_state.batch_eleves_par_copy_id.get(r.copy_id)
-                    if r_eleve:
-                        def _r_stem(doc_type: str, _eleve=r_eleve) -> str:
+                    r_slug = (
+                        r.student_name.lower().replace(" ", "_").replace("'", "").replace("/", "")
+                        if r.student_name else r.copy_id
+                    )
+
+                    # Une seule définition (pas une par branche) : mypy exige
+                    # des signatures identiques pour toute redéfinition
+                    # conditionnelle — la branche vit désormais à l'intérieur
+                    # de la fonction plutôt qu'entre deux def distinctes.
+                    def _r_stem(doc_type: str, _eleve=r_eleve, _slug=r_slug) -> str:
+                        if _eleve:
                             return nom_fichier_document(
                                 nom=_eleve.get("nom", ""), prenom=_eleve.get("prenom", ""),
                                 doc_type=doc_type, date=datetime.now().date(),
                             )
-                    else:
-                        r_slug = (
-                            r.student_name.lower().replace(" ", "_").replace("'", "").replace("/", "")
-                            if r.student_name else r.copy_id
-                        )
-                        def _r_stem(doc_type: str, _slug=r_slug) -> str:
-                            return f"{doc_type}_{_slug}"
+                        return f"{doc_type}_{_slug}"
                     with bc1:
                         if r.pdf_path and r.pdf_path.exists():
                             st.download_button(

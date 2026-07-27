@@ -8,7 +8,7 @@ pour le précédent déjà établi dans ce projet.
 """
 from __future__ import annotations
 
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol, Sequence
 
 # Écart minimal (en points sur 20) entre les deux dernières notes pour
 # considérer qu'un élève progresse ou régresse plutôt que stagne. SEUL
@@ -18,14 +18,28 @@ SEUIL_TENDANCE: float = 1.0
 Tendance = Literal["progresse", "stagne", "regresse", "insuffisant"]
 
 
+class _Comparable(Protocol):
+    """N'importe quel type ordonnable (date, datetime, ou un objet de test) —
+    seul l'ordre relatif compte pour trier les copies par date_soumission."""
+    def __lt__(self, other: Any) -> bool: ...
+
+
 class _CopieNotee(Protocol):
     """Ce dont calculer_tendance a besoin — n'importe quel objet avec ces
-    deux attributs convient (Copie de src.db.models, ou un objet de test)."""
+    deux attributs convient (Copie de src.db.models, ou un objet de test).
+
+    date_soumission déclaré comme propriété (pas un attribut simple) :
+    la correspondance de Protocol sur un attribut de donnée est invariante
+    (le type doit matcher exactement), alors qu'une propriété est covariante
+    sur son type de retour — seule façon d'accepter aussi bien `date` que
+    `datetime` ou un objet de test sans dupliquer le Protocol par type."""
     notes_finales: float | None
-    date_soumission: object  # comparable (date) — seul l'ordre relatif compte
+
+    @property
+    def date_soumission(self) -> _Comparable: ...
 
 
-def calculer_tendance(copies: list[_CopieNotee]) -> Tendance:
+def calculer_tendance(copies: Sequence[_CopieNotee]) -> Tendance:
     """Détermine la tendance d'un élève à partir de l'historique de ses
     copies (ordre quelconque en entrée).
 
@@ -40,13 +54,20 @@ def calculer_tendance(copies: list[_CopieNotee]) -> Tendance:
     - "regresse"    : écart <= -SEUIL_TENDANCE
     - "stagne"      : écart strictement entre les deux (dont écart nul)
     """
-    notees = [c for c in copies if c.notes_finales is not None]
+    # Extrait (date, note) dès le filtrage : la garde "notes_finales is not
+    # None" ne porte alors que sur des float, ce que mypy propage jusqu'à la
+    # soustraction plus bas — contrairement à un filtre sur les objets Copie
+    # eux-mêmes, où le narrowing ne survivrait pas à la sortie de la liste.
+    notees = [
+        (c.date_soumission, c.notes_finales)
+        for c in copies if c.notes_finales is not None
+    ]
     if len(notees) < 2:
         return "insuffisant"
 
-    notees_triees = sorted(notees, key=lambda c: c.date_soumission)
-    avant_derniere, derniere = notees_triees[-2], notees_triees[-1]
-    ecart = derniere.notes_finales - avant_derniere.notes_finales
+    notees_triees = sorted(notees, key=lambda paire: paire[0])
+    (_, note_avant_derniere), (_, note_derniere) = notees_triees[-2], notees_triees[-1]
+    ecart = note_derniere - note_avant_derniere
 
     if ecart >= SEUIL_TENDANCE:
         return "progresse"

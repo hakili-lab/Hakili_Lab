@@ -632,7 +632,11 @@ def _load_personnel() -> list[dict[str, Any]]:
         ]
         if classes_normalisees:
             for classe in classes_normalisees:
-                affectation = (centre, classe)
+                # Annotation explicite : la même variable reçoit aussi une
+                # classe None dans la branche ci-dessous (responsable sans
+                # classe) — sans elle, mypy figerait le type sur la première
+                # affectation vue (tuple[str, str]) et rejetterait la seconde.
+                affectation: tuple[str, str | None] = (centre, classe)
                 if affectation not in entree["affectations"]:
                     entree["affectations"].append(affectation)
         else:
