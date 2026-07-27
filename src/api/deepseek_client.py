@@ -259,10 +259,11 @@ class DeepSeekClient:
             if result.success and result.data is not None and expert_instructions.strip():
                 result.data.expert_instructions_used = True
             if result.success and result.data is not None:
-                logger.warning(
-                    "DeepSeek V3 grading OK — tokens: %d in / %d out",
-                    response.usage.prompt_tokens, response.usage.completion_tokens,
-                )
+                if response.usage:
+                    logger.warning(
+                        "DeepSeek V3 grading OK — tokens: %d in / %d out",
+                        response.usage.prompt_tokens, response.usage.completion_tokens,
+                    )
                 for q in result.data.questions:
                     logger.warning(
                         "  %s → score=%g conf=%.0f%% | observed='%s' | comment='%s'",
@@ -313,10 +314,11 @@ class DeepSeekClient:
                 getattr(usage, "completion_tokens_details", None),
                 "reasoning_tokens", "N/A"
             )
-            logger.info(
-                "DeepSeek R1 diagnostic OK — tokens: %d in / %d out (reasoning: %s)",
-                usage.prompt_tokens, usage.completion_tokens, reasoning_tokens,
-            )
+            if usage:
+                logger.info(
+                    "DeepSeek R1 diagnostic OK — tokens: %d in / %d out (reasoning: %s)",
+                    usage.prompt_tokens, usage.completion_tokens, reasoning_tokens,
+                )
             return _parse_json_response(raw, DiagnosticResult)
         except Exception as e:
             logger.error("DeepSeek R1 diagnose erreur : %s", e)
@@ -350,10 +352,11 @@ class DeepSeekClient:
                 temperature=0.4,
             )
             raw = response.choices[0].message.content or ""
-            logger.info(
-                "DeepSeek V3 remédiation OK — tokens: %d in / %d out",
-                response.usage.prompt_tokens, response.usage.completion_tokens,
-            )
+            if response.usage:
+                logger.info(
+                    "DeepSeek V3 remédiation OK — tokens: %d in / %d out",
+                    response.usage.prompt_tokens, response.usage.completion_tokens,
+                )
             return _parse_json_response(raw, RemediationSubject)
         except Exception as e:
             logger.error("DeepSeek V3 generate_remediation_subject erreur : %s", e)

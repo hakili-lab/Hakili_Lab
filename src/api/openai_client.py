@@ -337,7 +337,7 @@ class OpenAIClient:
             result = _parse_json_response(raw, CopyGrade)
             if result.success and result.data is not None and expert_instructions.strip():
                 result.data.expert_instructions_used = True
-            if result.success and result.data is not None:
+            if result.success and result.data is not None and response.usage:
                 logger.info("GPT-5 grading OK — tokens: %d in / %d out",
                             response.usage.prompt_tokens, response.usage.completion_tokens)
             return result
@@ -368,8 +368,9 @@ class OpenAIClient:
                 max_completion_tokens=4096,
             )
             raw = response.choices[0].message.content or ""
-            logger.info("GPT-5 diagnostic OK — tokens: %d in / %d out",
-                        response.usage.prompt_tokens, response.usage.completion_tokens)
+            if response.usage:
+                logger.info("GPT-5 diagnostic OK — tokens: %d in / %d out",
+                            response.usage.prompt_tokens, response.usage.completion_tokens)
             return _parse_json_response(raw, DiagnosticResult)
         except Exception as e:
             logger.error("GPT-5 diagnose erreur : %s", e)
@@ -400,8 +401,9 @@ class OpenAIClient:
                 max_completion_tokens=8192,
             )
             raw = response.choices[0].message.content or ""
-            logger.info("GPT-5 remédiation OK — tokens: %d in / %d out",
-                        response.usage.prompt_tokens, response.usage.completion_tokens)
+            if response.usage:
+                logger.info("GPT-5 remédiation OK — tokens: %d in / %d out",
+                            response.usage.prompt_tokens, response.usage.completion_tokens)
             return _parse_json_response(raw, RemediationSubject)
         except Exception as e:
             logger.error("GPT-5 generate_remediation_subject erreur : %s", e)

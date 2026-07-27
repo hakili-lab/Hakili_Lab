@@ -357,7 +357,7 @@ class GeminiTranscriptionClient:
                 ),
             )
 
-            raw = response.text.strip()
+            raw = (response.text or "").strip()
 
             # Nettoyer les balises markdown si le modèle les ajoute quand même
             m = _JSON_FENCE.search(raw)
