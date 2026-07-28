@@ -86,6 +86,7 @@ from src.core.tendance import Tendance, calculer_tendance  # noqa: E402
 from src.db.database import SessionLocal  # noqa: E402
 from src.db.models import Copie, UserRole  # noqa: E402
 from src.integrations.google_sheets import get_eleve_by_identifiant  # noqa: E402
+from src.models.domain import IngestionResult  # noqa: E402
 from src.pipeline.math_format import (  # noqa: E402
     ascii_math_upgrade,
     humanize_ids_in_text,
@@ -721,7 +722,9 @@ def _text_area_height_for_image(img_path: Path, col_width_px: int = 600,
         return col_width_px
 
 
-def render_transcription_review(transcription, ingestion, key_prefix: str = "") -> None:
+def render_transcription_review(
+    transcription, ingestion: IngestionResult | None, key_prefix: str = "",
+) -> None:
     """
     Écran de relecture transcription — étape 1 de la Phase A.
     Pour chaque page : image de la copie à gauche, transcription éditable à
@@ -747,7 +750,7 @@ def render_transcription_review(transcription, ingestion, key_prefix: str = "") 
         col_img, col_txt = st.columns([1, 1], gap="large")
 
         img_path = page_images.get(idx)
-        img_exists = bool(img_path) and Path(img_path).exists()
+        img_exists = img_path is not None and Path(img_path).exists()
 
         with col_img:
             if img_exists:
@@ -756,7 +759,10 @@ def render_transcription_review(transcription, ingestion, key_prefix: str = "") 
                 st.caption("Image indisponible")
 
         with col_txt:
-            text_height = _text_area_height_for_image(img_path) if img_exists else 600
+            text_height = (
+                _text_area_height_for_image(img_path)
+                if img_exists and img_path is not None else 600
+            )
             default_text = edits.get(idx, page.content)
             edited = st.text_area(
                 f"Transcription page {idx}",
@@ -2666,6 +2672,10 @@ elif page == "GESTION":
                 elif resultat.status == "pin_incorrect":
                     st.error("Code incorrect.")
                 else:
+                    # garanti par le controle status ci-dessus : personne n'est
+                    # renseigne que quand status == "ok" (cf. docstring
+                    # AuthResult dans src/services/auth_service.py)
+                    assert resultat.personne is not None
                     personne = dict(resultat.personne)
                     if not _roles_valides_de(personne):
                         st.error(
