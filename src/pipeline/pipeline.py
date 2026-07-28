@@ -533,6 +533,9 @@ def _run_transcription(
     need_rubric  = not rubric.items and rubric_file_path is not None
 
     if need_subject and need_rubric:
+        # garanti par need_subject/need_rubric, cf. lignes 532-533
+        assert subject_file_path is not None
+        assert rubric_file_path is not None
         with ThreadPoolExecutor(max_workers=2) as pool:
             fut_s = pool.submit(claude_client.extract_subject, subject_file_path)
             fut_r = pool.submit(claude_client.extract_rubric, rubric_file_path)
@@ -541,8 +544,12 @@ def _run_transcription(
         if rubric_resp.success and rubric_resp.data is not None:
             rubric = rubric_resp.data
     elif need_subject:
+        # garanti par need_subject, cf. ligne 532
+        assert subject_file_path is not None
         subject_text = claude_client.extract_subject(subject_file_path)
     elif need_rubric:
+        # garanti par need_rubric, cf. ligne 533
+        assert rubric_file_path is not None
         rubric_resp = claude_client.extract_rubric(rubric_file_path)
         if rubric_resp.success and rubric_resp.data is not None:
             rubric = rubric_resp.data
