@@ -654,6 +654,13 @@ def _run_grading(
     result: PipelineResult,
     on_progress: Callable[[str, int], None] | None,
 ) -> PipelineResult:
+    # run_grading() a déjà vérifié result.transcription avant d'appeler cette
+    # fonction privée — invariant jusqu'ici protégé par convention, rendu
+    # vérifiable par mypy sans changer le comportement d'un appel déjà correct.
+    assert result.transcription is not None, (
+        "_run_grading() suppose result.transcription déjà vérifié par "
+        "run_grading() — ne jamais appeler cette fonction privée directement."
+    )
 
     def _progress(step: str, pct: int) -> None:
         if on_progress:
@@ -819,6 +826,13 @@ def _run_phase_b(
     result: PipelineResult,
     on_progress: Callable[[str, int], None] | None,
 ) -> PipelineResult:
+    # run_phase_b() a déjà vérifié result.grade avant d'appeler cette
+    # fonction privée — invariant jusqu'ici protégé par convention, rendu
+    # vérifiable par mypy sans changer le comportement d'un appel déjà correct.
+    assert result.grade is not None, (
+        "_run_phase_b() suppose result.grade déjà vérifié par run_phase_b() "
+        "— ne jamais appeler cette fonction privée directement."
+    )
 
     def _progress(step: str, pct: int) -> None:
         if on_progress:
