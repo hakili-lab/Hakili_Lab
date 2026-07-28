@@ -1,12 +1,14 @@
 import uuid
-from datetime import datetime
+from datetime import date
 from enum import Enum as PyEnum
 
-from sqlalchemy import Column, Date, Float, ForeignKey, String
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import BYTEA, UUID
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class UserRole(str, PyEnum):
@@ -28,23 +30,25 @@ class Copie(Base):
     Sheets) relie la copie à un élève sans dupliquer son identité en base."""
     __tablename__ = "copie"
 
-    copy_id = Column(String(255), primary_key=True, nullable=False)
-    identifiant_hakili = Column(String(255), nullable=False)
-    classe = Column(String(50), nullable=False)
-    annee_scolaire = Column(String(50), nullable=False)
-    date_soumission = Column(Date, default=datetime.now, nullable=False)
-    notes_finales = Column(Float, nullable=True)
+    copy_id: Mapped[str] = mapped_column(String(255), primary_key=True)
+    identifiant_hakili: Mapped[str] = mapped_column(String(255))
+    classe: Mapped[str] = mapped_column(String(50))
+    annee_scolaire: Mapped[str] = mapped_column(String(50))
+    date_soumission: Mapped[date] = mapped_column(default=date.today)
+    notes_finales: Mapped[float | None] = mapped_column()
 
-    documents = relationship("Document", back_populates="copie")
+    documents: Mapped[list["Document"]] = relationship(back_populates="copie")
 
 
 class Document(Base):
     __tablename__ = "document"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    copy_id = Column(String(255), ForeignKey("copie.copy_id"), nullable=False)
-    type = Column(String(50), nullable=False)  # "scan", "rapport", "remediation"
-    fichier = Column(BYTEA, nullable=False)
-    date_creation = Column(Date, default=datetime.now, nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    copy_id: Mapped[str] = mapped_column(String(255), ForeignKey("copie.copy_id"))
+    type: Mapped[str] = mapped_column(String(50))  # "scan", "rapport", "remediation"
+    fichier: Mapped[bytes] = mapped_column(BYTEA)
+    date_creation: Mapped[date] = mapped_column(default=date.today)
 
-    copie = relationship("Copie", back_populates="documents")
+    copie: Mapped["Copie"] = relationship(back_populates="documents")
