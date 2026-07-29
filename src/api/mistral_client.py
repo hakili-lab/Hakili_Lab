@@ -15,10 +15,11 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from mistralai.models import MessagesTypedDict
 from PIL import Image
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
@@ -292,7 +293,7 @@ class MistralTranscriptionClient:
         try:
             response = self._client.chat.complete(
                 model=settings.mistral_vision_model,
-                messages=[{"role": "user", "content": content}],
+                messages=cast(list[MessagesTypedDict], [{"role": "user", "content": content}]),
                 temperature=0.1,
                 max_tokens=4096,
             )
@@ -418,7 +419,7 @@ class MistralRemediationClient:
         try:
             response = self._client.chat.complete(
                 model=settings.mistral_model,
-                messages=[{"role": "user", "content": user_content}],
+                messages=cast(list[MessagesTypedDict], [{"role": "user", "content": user_content}]),
                 response_format={"type": "json_object"},
                 max_tokens=4096,
                 temperature=0.1,
@@ -466,7 +467,7 @@ class MistralRemediationClient:
         try:
             response = self._client.chat.complete(
                 model=settings.mistral_model,
-                messages=[{"role": "user", "content": user_content}],
+                messages=cast(list[MessagesTypedDict], [{"role": "user", "content": user_content}]),
                 response_format={"type": "json_object"},
                 max_tokens=8192,
                 temperature=0.4,   # Légère créativité pour varier les exercices
