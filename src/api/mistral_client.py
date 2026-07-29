@@ -296,7 +296,12 @@ class MistralTranscriptionClient:
                 temperature=0.1,
                 max_tokens=4096,
             )
-            raw = (response.choices[0].message.content or "").strip()
+            content_raw = response.choices[0].message.content
+            if content_raw is not None and not isinstance(content_raw, str):
+                raise ValueError(
+                    f"Contenu de réponse inattendu (type={type(content_raw).__name__}), str attendu."
+                )
+            raw = (content_raw or "").strip()
 
             m = _JSON_FENCE.search(raw)
             if m:
@@ -418,7 +423,12 @@ class MistralRemediationClient:
                 max_tokens=4096,
                 temperature=0.1,
             )
-            raw = response.choices[0].message.content or ""
+            content_raw = response.choices[0].message.content
+            if content_raw is not None and not isinstance(content_raw, str):
+                raise ValueError(
+                    f"Contenu de réponse inattendu (type={type(content_raw).__name__}), str attendu."
+                )
+            raw = content_raw or ""
             logger.info(
                 "Mistral diagnostic OK — tokens: %d in / %d out",
                 response.usage.prompt_tokens, response.usage.completion_tokens,
@@ -461,7 +471,12 @@ class MistralRemediationClient:
                 max_tokens=8192,
                 temperature=0.4,   # Légère créativité pour varier les exercices
             )
-            raw = response.choices[0].message.content or ""
+            content_raw = response.choices[0].message.content
+            if content_raw is not None and not isinstance(content_raw, str):
+                raise ValueError(
+                    f"Contenu de réponse inattendu (type={type(content_raw).__name__}), str attendu."
+                )
+            raw = content_raw or ""
             logger.info(
                 "Mistral remédiation OK — tokens: %d in / %d out",
                 response.usage.prompt_tokens, response.usage.completion_tokens,

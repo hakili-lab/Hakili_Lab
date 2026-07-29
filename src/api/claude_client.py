@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from anthropic.types import Message, TextBlock
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pydantic import BaseModel
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
@@ -463,7 +464,7 @@ class ClaudeClient:
             "\n\nCommence directement par { et termine par }. Aucune balise Markdown. Aucun texte avant ou après."
         )
 
-        def _call_diagnose(model: str) -> object:
+        def _call_diagnose(model: str) -> Message:
             return self.client.messages.create(
                 model=model,
                 max_tokens=16384,
@@ -507,7 +508,16 @@ class ClaudeClient:
                 "[%s] Diagnostic tronqué (stop_reason=max_tokens) — réponse incomplète, tentative de réparation JSON",
                 grades.copy_id,
             )
-        raw = response.content[0].text.strip()
+        block = response.content[0]
+        if not isinstance(block, TextBlock):
+            logger.error(
+                "[%s] Diagnostic — bloc de réponse inattendu (type=%s), TextBlock attendu.",
+                grades.copy_id, block.type,
+            )
+            return ClaudeResponse(success=False, data=None, confidence=0.0,
+                                  raw_response="",
+                                  error=f"Bloc de réponse inattendu (type={block.type!r}), TextBlock attendu.")
+        raw = block.text.strip()
         return self._parse_response(raw, DiagnosticResult)
 
     # ── Sujet de remédiation ──────────────────────────────────────────────────
@@ -532,28 +542,37 @@ class ClaudeClient:
             f"{diagnostic.model_dump_json(indent=2)}"
         )
 
-        response = self.client.messages.create(
-            model=settings.claude_model_heavy,
-            max_tokens=8192,   # 35 exercices (~150 tok/exo) = ~5 250 tok — 4096 coupait après la 1re série
-            temperature=0,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": prompt + "\n\nIMPORTANT: Réponds UNIQUEMENT avec un"
-                            " objet JSON valide commençant par { et finissant par }."
-                            " Aucun texte avant ou après.",
-                            "cache_control": {"type": "ephemeral"},
-                        }
-                    ],
-                },
-            ],
-        )
-
-        raw = response.content[0].text.strip()
-        return self._parse_response(raw, RemediationSubject)
+        try:
+            response = self.client.messages.create(
+                model=settings.claude_model_heavy,
+                max_tokens=8192,   # 35 exercices (~150 tok/exo) = ~5 250 tok — 4096 coupait après la 1re série
+                temperature=0,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt + "\n\nIMPORTANT: Réponds UNIQUEMENT avec un"
+                                " objet JSON valide commençant par { et finissant par }."
+                                " Aucun texte avant ou après.",
+                                "cache_control": {"type": "ephemeral"},
+                            }
+                        ],
+                    },
+                ],
+            )
+            block = response.content[0]
+            if not isinstance(block, TextBlock):
+                raise ValueError(
+                    f"Bloc de réponse inattendu (type={block.type!r}), TextBlock attendu."
+                )
+            raw = block.text.strip()
+            return self._parse_response(raw, RemediationSubject)
+        except Exception as e:
+            logger.error("[%s] Claude generate_remediation_subject erreur : %s", diagnostic.copy_id, e)
+            return ClaudeResponse(success=False, data=None, confidence=0.0,
+                                  raw_response="", error=str(e))
 
     # ── Sujet d'enrichissement (score parfait) ────────────────────────────────
 
@@ -578,29 +597,38 @@ class ClaudeClient:
             " par { et finissant par }. Aucun texte avant ou après."
         )
 
-        response = self.client.messages.create(
-            model=settings.claude_model_heavy,
-            max_tokens=8192,
-            temperature=0,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": prompt,
-                            "cache_control": {"type": "ephemeral"},
-                        }
-                    ],
-                },
-            ],
-        )
-
-        raw = response.content[0].text.strip()
-        result = self._parse_response(raw, RemediationSubject)
-        if result.success and result.data is not None:
-            result.data.is_enrichment = True
-        return result
+        try:
+            response = self.client.messages.create(
+                model=settings.claude_model_heavy,
+                max_tokens=8192,
+                temperature=0,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt,
+                                "cache_control": {"type": "ephemeral"},
+                            }
+                        ],
+                    },
+                ],
+            )
+            block = response.content[0]
+            if not isinstance(block, TextBlock):
+                raise ValueError(
+                    f"Bloc de réponse inattendu (type={block.type!r}), TextBlock attendu."
+                )
+            raw = block.text.strip()
+            result = self._parse_response(raw, RemediationSubject)
+            if result.success and result.data is not None:
+                result.data.is_enrichment = True
+            return result
+        except Exception as e:
+            logger.error("[%s] Claude generate_enrichment_subject erreur : %s", grade.copy_id, e)
+            return ClaudeResponse(success=False, data=None, confidence=0.0,
+                                  raw_response="", error=str(e))
 
     # ── Nom de l'élève depuis la première page ────────────────────────────────
 
@@ -642,7 +670,10 @@ class ClaudeClient:
                 temperature=0,
                 messages=[{"role": "user", "content": content}],
             )
-            name = response.content[0].text.strip()
+            block = response.content[0]
+            if not isinstance(block, TextBlock):
+                raise ValueError(f"Bloc de réponse inattendu (type={block.type!r}), TextBlock attendu.")
+            name = block.text.strip()
             # Rejet si la réponse ressemble à un texte d'échec plutôt qu'un nom
             if len(name) > 80 or "\n" in name:
                 return ""
@@ -763,7 +794,10 @@ class ClaudeClient:
             temperature=0,
             messages=[{"role": "user", "content": content}],
         )
-        return response.content[0].text.strip()
+        block = response.content[0]
+        if not isinstance(block, TextBlock):
+            raise ValueError(f"Bloc de réponse inattendu (type={block.type!r}), TextBlock attendu.")
+        return block.text.strip()
 
     # ── Extraction barème depuis PDF/image ────────────────────────────────────
 
