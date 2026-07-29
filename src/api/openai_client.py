@@ -20,9 +20,10 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from src.core.config import settings
@@ -235,13 +236,14 @@ class OpenAIClient:
         try:
             response = self._client.chat.completions.create(
                 model=settings.openai_model,
-                messages=[{"role": "user", "content": content}],
+                messages=cast(list[ChatCompletionMessageParam], [{"role": "user", "content": content}]),
                 response_format={"type": "json_object"},
                 max_completion_tokens=16384,
             )
             raw = response.choices[0].message.content or ""
-            logger.info("GPT-5 transcription OK — tokens: %d in / %d out",
-                        response.usage.prompt_tokens, response.usage.completion_tokens)
+            if response.usage:
+                logger.info("GPT-5 transcription OK — tokens: %d in / %d out",
+                            response.usage.prompt_tokens, response.usage.completion_tokens)
             return _parse_json_response(raw, TranscriptionResult)
         except Exception as e:
             logger.error("GPT-5 transcribe erreur (copy_id=%s) : %s", copy_id, e)
@@ -262,10 +264,10 @@ class OpenAIClient:
         try:
             response = self._client.chat.completions.create(
                 model=settings.openai_model,
-                messages=[{
+                messages=cast(list[ChatCompletionMessageParam], [{
                     "role": "user",
                     "content": [{"type": "text", "text": prompt}, self._image_content(first_page)],
-                }],
+                }]),
                 max_completion_tokens=64,
             )
             name = (response.choices[0].message.content or "").strip()
