@@ -2,9 +2,9 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
-from anthropic.types import Message, TextBlock
+from anthropic.types import Message, MessageParam, TextBlock, ToolChoiceParam, ToolUnionParam
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pydantic import BaseModel
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
@@ -337,9 +337,9 @@ class ClaudeClient:
             model=settings.claude_model_heavy,
             max_tokens=_TOKENS_PER_BATCH,
             temperature=0,
-            tools=[_TRANSCRIPTION_TOOL],
-            tool_choice={"type": "tool", "name": "save_transcription"},
-            messages=[{"role": "user", "content": content}],
+            tools=cast(list[ToolUnionParam], [_TRANSCRIPTION_TOOL]),
+            tool_choice=cast(ToolChoiceParam, {"type": "tool", "name": "save_transcription"}),
+            messages=cast(list[MessageParam], [{"role": "user", "content": content}]),
         )
 
         return self._extract_tool_result(response, TranscriptionResult)
@@ -396,9 +396,9 @@ class ClaudeClient:
             model=settings.claude_model_heavy,
             max_tokens=8192,
             temperature=temperature,
-            tools=[_GRADING_TOOL],
-            tool_choice={"type": "tool", "name": "save_grading"},
-            messages=[
+            tools=cast(list[ToolUnionParam], [_GRADING_TOOL]),
+            tool_choice=cast(ToolChoiceParam, {"type": "tool", "name": "save_grading"}),
+            messages=cast(list[MessageParam], [
                 {
                     "role": "user",
                     "content": [
@@ -409,7 +409,7 @@ class ClaudeClient:
                         }
                     ],
                 }
-            ],
+            ]),
         )
 
         result = self._extract_tool_result(response, CopyGrade)
@@ -668,7 +668,7 @@ class ClaudeClient:
                 model=settings.claude_model_light,
                 max_tokens=64,
                 temperature=0,
-                messages=[{"role": "user", "content": content}],
+                messages=cast(list[MessageParam], [{"role": "user", "content": content}]),
             )
             block = response.content[0]
             if not isinstance(block, TextBlock):
@@ -727,9 +727,9 @@ class ClaudeClient:
             model=settings.claude_model_heavy,
             max_tokens=1024,
             temperature=0,
-            tools=[_QUESTIONS_EXTRACTION_TOOL],
-            tool_choice={"type": "tool", "name": "save_questions"},
-            messages=[{"role": "user", "content": prompt}],
+            tools=cast(list[ToolUnionParam], [_QUESTIONS_EXTRACTION_TOOL]),
+            tool_choice=cast(ToolChoiceParam, {"type": "tool", "name": "save_questions"}),
+            messages=cast(list[MessageParam], [{"role": "user", "content": prompt}]),
         )
 
         tool_block = next(
@@ -743,6 +743,8 @@ class ClaudeClient:
             return Rubric(subject="mathematics", total_points=0, items=[])
 
         raw_questions = tool_block.input.get("questions", [])
+        if not isinstance(raw_questions, list):
+            raw_questions = []
         items = [
             RubricItem(
                 id=q.get("id", f"Q{i + 1}"),
@@ -792,7 +794,7 @@ class ClaudeClient:
             model=settings.claude_model_light,
             max_tokens=2048,
             temperature=0,
-            messages=[{"role": "user", "content": content}],
+            messages=cast(list[MessageParam], [{"role": "user", "content": content}]),
         )
         block = response.content[0]
         if not isinstance(block, TextBlock):
@@ -837,9 +839,9 @@ class ClaudeClient:
             model=settings.claude_model_heavy,
             max_tokens=2048,
             temperature=0,
-            tools=[_RUBRIC_EXTRACTION_TOOL],
-            tool_choice={"type": "tool", "name": "save_rubric"},
-            messages=[{"role": "user", "content": content}],
+            tools=cast(list[ToolUnionParam], [_RUBRIC_EXTRACTION_TOOL]),
+            tool_choice=cast(ToolChoiceParam, {"type": "tool", "name": "save_rubric"}),
+            messages=cast(list[MessageParam], [{"role": "user", "content": content}]),
         )
 
         raw_resp = self._extract_tool_result(response, _ExtractedRubric)
