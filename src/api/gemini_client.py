@@ -15,7 +15,7 @@ import logging
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from google import genai
 from google.genai import types
@@ -244,7 +244,10 @@ class GeminiTranscriptionClient:
         try:
             response = self._client.models.generate_content(
                 model=self._model,
-                contents=[prompt, Image.open(first_page)],
+                # cast en Any : Image.open() renvoie un PIL.Image.Image, distinct de
+                # google.genai.types.Image (le type déclaré dans la signature publique) —
+                # un cast vers ce dernier mentirait sur le type réel de l'objet.
+                contents=cast(Any, [prompt, Image.open(first_page)]),
                 config=types.GenerateContentConfig(max_output_tokens=64, temperature=0),
             )
             name = (response.text or "").strip()
