@@ -99,7 +99,10 @@ from src.services.copie_service import (  # noqa: E402
     get_documents_for_copie,
     get_historique_eleve,
 )
-from src.services.user_service import can_access_eleve, get_accessible_eleves  # noqa: E402
+from src.services.user_service import (  # noqa: E402
+    can_access_eleve,
+    get_accessible_eleves,
+)
 
 st.set_page_config(
     page_title="Hakili Lab — Correction IA",
@@ -531,6 +534,7 @@ def _save_upload(uploaded_file, dest: Path) -> Path:
 
 def _parse_rubric_text(rubric_text: str):
     import json as _json
+
     from src.models.domain import Rubric, RubricItem
     rubric_text = rubric_text.strip()
     if not rubric_text:
@@ -1524,7 +1528,12 @@ def _admin_view_stats(db) -> None:
     personnes apparaît automatiquement, sans toucher au code."""
     st.markdown("**Statistiques**")
 
-    from src.integrations.google_sheets import GoogleSheetsError, get_centres_derives, get_eleves, get_personnel
+    from src.integrations.google_sheets import (
+        GoogleSheetsError,
+        get_centres_derives,
+        get_eleves,
+        get_personnel,
+    )
 
     eleves = _lire_sheets_avec_secours(
         get_eleves, cache_key="eleves", bouton_key="admin_eleves", label="Élèves",
@@ -1814,7 +1823,10 @@ def _lire_sheets_avec_secours(action, *, cache_key: str, bouton_key: str, label:
     L'appelant doit traiter un retour == _SHEETS_ECHEC comme "rien à
     afficher pour l'instant", jamais planter ni deviner."""
     from src.integrations.google_sheets import (
-        GoogleSheetsConfigError, GoogleSheetsConnectiviteError, clear_cache, get_statut_lecture,
+        GoogleSheetsConfigError,
+        GoogleSheetsConnectiviteError,
+        clear_cache,
+        get_statut_lecture,
     )
     try:
         resultat = action()
@@ -1911,10 +1923,9 @@ elif page == "TRAITEMENT UNIQUE":
     if "single_result" not in st.session_state:
         st.session_state.single_result = None
 
-    from src.knowledge.test_registry import get_registry as _get_registry
-
     # ── Sélection élève (gauche) / test (droite) sur une seule ligne ──────────
     from src.integrations.google_sheets import get_eleves
+    from src.knowledge.test_registry import get_registry as _get_registry
 
     col_eleve, col_test = st.columns(2, gap="large")
 

@@ -48,8 +48,8 @@ from src.models.domain import (
     CopyGrade,
     DiagnosticResult,
     IngestionResult,
-    Rubric,
     RemediationSubject,
+    Rubric,
     TeacherDecision,
     TranscriptionResult,
 )
@@ -192,7 +192,10 @@ def _db_persist_scan(*, copy_id: str, file_paths: list[Path], identifiant_hakili
     if not identifiant_hakili:
         raise ValueError("Aucun élève sélectionné — impossible de traiter cette copie.")
 
-    from src.integrations.google_sheets import GoogleSheetsError, get_eleve_by_identifiant
+    from src.integrations.google_sheets import (
+        GoogleSheetsError,
+        get_eleve_by_identifiant,
+    )
 
     try:
         eleve = get_eleve_by_identifiant(identifiant_hakili)

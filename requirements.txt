@@ -46,5 +46,5 @@ google-auth>=2.34.0
 
 # --- Qualité code (développement uniquement — ne pas inclure en prod) ---
 # pytest==8.3.2
-# ruff==0.5.7
+ruff==0.16.0
 # mypy==1.11.1

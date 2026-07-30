@@ -1,16 +1,16 @@
 import pytest
-from src.models.domain import (
-    QuestionGrade,
-    CopyGrade,
-    RubricItem,
-    Rubric,
-    TranscriptionResult,
-    PageTranscription,
-    DiagnosticResult,
-    SkillAssessment,
-    RemediationItem,
-)
 
+from src.models.domain import (
+    CopyGrade,
+    DiagnosticResult,
+    PageTranscription,
+    QuestionGrade,
+    RemediationItem,
+    Rubric,
+    RubricItem,
+    SkillAssessment,
+    TranscriptionResult,
+)
 
 # ── CopyGrade / QuestionGrade ──────────────────────────────────────────────────
 

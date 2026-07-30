@@ -11,8 +11,7 @@ import pytest
 
 pytest.importorskip("streamlit")
 
-from src.ui.app import _mh, _mt  # noqa: E402
-
+from src.ui.app import _mh, _mt
 
 # ── _mh : rendu HTML ──────────────────────────────────────────────────────────
 

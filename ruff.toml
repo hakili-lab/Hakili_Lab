@@ -1,0 +1,26 @@
+# Configuration explicite et épinglée dans le temps : sans ce fichier, ruff
+# applique son jeu de règles par défaut, qui peut changer d'une version à
+# l'autre (nouvelles familles de règles activées par défaut) — c'est ce qui a
+# provoqué l'écart CI/local (CI installe systématiquement la dernière version
+# de ruff, sans version épinglée dans requirements.txt).
+target-version = "py311"
+
+[lint]
+# E4/E7/E9 (pas "E" en entier : "E" inclut E501/E1xx/E2xx/E3xx, que ce projet
+# n'a jamais respectés) + F (pyflakes) + I (isort) : sélection choisie pour
+# reproduire exactement le "0 erreur" mesuré avant la montée de version,
+# modulo I001 (jamais vérifié auparavant sur ce projet, mais légitime à
+# activer). Vérifié empiriquement : le zéro-config réel de ruff 0.16.0 (sans
+# ce fichier) sélectionne ~830 règles (BLE, DTZ, TRY, SIM, S, UP, RUF, N, B,
+# ASYNC, YTT, C4, ... ) et exclut même E402 — ce n'est PAS le sous-ensemble
+# E4/E7/E9/F historiquement documenté par ruff ; cette liste explicite est
+# ce qui garantit un comportement stable, indépendamment de ce que la
+# prochaine version de ruff choisira d'activer par défaut.
+# RUF100 seul (pas toute la famille RUF) : détecte les directives noqa
+# devenues inutiles (ex. tests/test_ui_math.py:14, signalé par le CI) sans
+# ouvrir la porte aux autres règles RUF (RUF059, etc.) — décision explicite
+# à part si on veut les activer plus tard.
+# Les autres nouvelles familles révélées par ruff 0.16.0 (BLE, DTZ, TRY, SIM,
+# S, UP, N, B, ...) ne sont PAS activées ici — à activer une par une,
+# décision explicite à part.
+select = ["E4", "E7", "E9", "F", "I", "RUF100"]

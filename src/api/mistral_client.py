@@ -14,10 +14,9 @@ import io
 import json
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, cast
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from mistralai.models import MessagesTypedDict
 from PIL import Image

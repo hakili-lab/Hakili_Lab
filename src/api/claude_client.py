@@ -1,11 +1,17 @@
 import json
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, cast
 
-from anthropic.types import Message, MessageParam, TextBlock, ToolChoiceParam, ToolUnionParam
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from anthropic.types import (
+    Message,
+    MessageParam,
+    TextBlock,
+    ToolChoiceParam,
+    ToolUnionParam,
+)
 from pydantic import BaseModel
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
@@ -15,9 +21,9 @@ from src.models.domain import (
     CopyGrade,
     DiagnosticResult,
     PageTranscription,
+    RemediationSubject,
     Rubric,
     RubricItem,
-    RemediationSubject,
     TranscriptionResult,
 )
 
@@ -877,8 +883,9 @@ class ClaudeClient:
         return base64.b64encode(path.read_bytes()).decode("utf-8")
 
     def _pdf_to_images(self, pdf_path: Path) -> list[Path]:
-        import fitz
         import tempfile
+
+        import fitz
         tmp_dir = Path(tempfile.mkdtemp())
         doc = fitz.open(pdf_path)
         images: list[Path] = []

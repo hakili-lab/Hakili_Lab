@@ -1,7 +1,7 @@
 import shutil
+from pathlib import Path
 
 import fitz  # PyMuPDF
-from pathlib import Path
 
 from src.models.domain import IngestionResult
 

@@ -163,7 +163,7 @@ def _load_prompt(filename: str) -> str:
 
 def _is_retryable_openai(exc: BaseException) -> bool:
     try:
-        from openai import APIStatusError, APIConnectionError, APITimeoutError
+        from openai import APIConnectionError, APIStatusError, APITimeoutError
         if isinstance(exc, APITimeoutError):
             return False
         if isinstance(exc, APIStatusError):

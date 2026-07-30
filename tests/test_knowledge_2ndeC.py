@@ -11,9 +11,10 @@ Vérifie :
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 import yaml
-from pathlib import Path
 
 _KB = Path(__file__).parent.parent / "data" / "knowledge"
 _BAREME_PATH  = _KB / "bareme_test_2ndeC.yaml"

@@ -14,7 +14,6 @@ Invariants vérifiés :
 """
 import re
 
-
 from src.pipeline.pdf_remediation_html import _split_question
 from src.pipeline.pdf_report_html import _action_html
 from src.pipeline.text_structuring import split_numbered_items

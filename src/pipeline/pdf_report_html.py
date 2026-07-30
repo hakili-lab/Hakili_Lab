@@ -18,6 +18,8 @@ from markupsafe import Markup
 # Alias soulignés conservés : usages internes et tests existants inchangés.
 from src.pipeline.math_format import (
     humanize_ids_in_text as _humanize_ids_in_text,
+)
+from src.pipeline.math_format import (
     math_to_html as _math_to_html,
 )
 from src.pipeline.text_structuring import split_numbered_items as _split_steps

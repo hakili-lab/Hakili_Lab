@@ -13,6 +13,8 @@ from typing import Any
 # existants inchangés.
 from src.pipeline.text_structuring import (
     series_title as _series_title,
+)
+from src.pipeline.text_structuring import (
     split_question as _split_question,
 )
 
