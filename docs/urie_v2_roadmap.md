@@ -4,7 +4,7 @@
 **Dernière mise à jour :** 2026-07-31 (module 2 entamé — gabarit et découpe ; travail versionné sur `chantier/urie-v2-django`)
 **Où en est-on (résumé en une ligne) :** Modules 0 et **1 ✅ faits** · **Module 2 🟨 gabarit lu dans le PDF source, 280/280 cadres, découpe et nettoyage faits** — reste le recalage · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. Trois choses bloquent, toutes hors code : une **copie scannée** (module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit. Le **Module 3** (corpus de référence) est le seul chantier qui avance sans rien attendre.
 
-**État vérifié le 2026-07-31 : 170 tests Django + 238 pytest = 408 tests passent.**
+**État vérifié le 2026-07-31 : 170 tests Django + 240 pytest = 410 tests passent.**
 
 **Pour reprendre le travail sur Django :**
 ```bash
@@ -37,7 +37,7 @@ Note : `DATABASE_URL` suit la convention SQLAlchemy — `sqlite:///:memory:`, **
 |---|---|---|---|
 | 0 | Appropriation du référentiel | ✅ Fait (2026-07-30) | — |
 | 1 | Socle de données (Neon, Django) | ✅ Fait (2026-07-30) | — |
-| 2 | Lecture des copies par zones | 🟨 En cours (2026-07-31) — gabarit et découpe faits | Une copie réellement scannée, pour le recalage |
+| 2 | Lecture des copies par zones | 🟨 En cours (2026-07-31) — gabarit et découpe faits | Un **sujet Urie** imprimé, rempli et scanné, pour le recalage |
 | 3 | Corpus de référence | ⬜ À faire | Module 1 |
 | 4 | Diagnostic contraint | ⬜ À faire | Module 2, Module 3 |
 | 5 | Composition du test de confirmation (T1) | ⬜ À faire | Module 4 |
@@ -129,8 +129,10 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - [x] **Le code typographié est effacé de la zone découpée.** Il est imprimé en noir dans le coin du cadre : le seuillage ne peut pas l'écarter, et le laisser ferait passer pour remplie une zone restée vierge. Sa position exacte vient du PDF, comme le reste.
 - [x] Détection des zones **vierges** (`vide`, `taux_encre`) — « pas de réponse » est une donnée de diagnostic à part entière, et ça évite d'envoyer une image blanche au modèle.
 - [x] Les **4** formats sont gérés, pas 3 : `qcm` (71), `court` (139), `redige` (63) et `construction` (7, non prévu par `guide-urie.md`).
-- [ ] **Reste — recalage du scan sur le gabarit** (translation, échelle, rotation). C'est le seul morceau qui demande une copie réellement scannée : impossible de calibrer un redressement sur un rendu numérique parfait, où il n'y a rien à redresser.
-- [ ] **Reste — seuil d'encre à recalibrer sur du papier** (`SEUIL_ENCRE_DEFAUT = 140`, réglé sur des rendus du PDF, pas sur un scan).
+- [x] **Le scan se fait hors plateforme** — ce qui entre est un PDF multipage ou des images. `resolution_scan()` donne la définition native de la source pour ne pas rendre un scan 200 DPI dans une image 150 DPI, et `ingest_pdf(dpi=…)` accepte désormais la résolution voulue (150 reste le défaut, D-CEO-10).
+- [x] **Garde-fou : un scan brut passé à la découpe est refusé.** Les proportions d'un scan ne sont pas celles du sujet (mesures ci-dessous) ; découpé tel quel le décalage atteint plusieurs millimètres en bas de page — assez pour attraper la ligne de la question voisine, pas assez pour que le résultat ait l'air faux.
+- [x] **Seuil d'encre confronté à un scan réel** : `SEUIL_ENCRE_DEFAUT = 140` tombe au milieu d'un large plateau (la proportion de pixels sombres ne bouge que de 1,85 % à 3,47 % entre les seuils 120 et 200). Réglage non critique tant que le scan n'est pas sous-exposé.
+- [ ] **Reste — recalage du scan sur le gabarit** (translation, échelle, rotation), **par page**. Demande une copie d'un **sujet Urie** imprimée et scannée : le scan reçu est d'un test de l'ancien format, sans cadres ni codes, il n'y a aucun gabarit sur lequel le recaler.
 - [ ] **Reste** — décider du traitement du format `construction` : la zone se découpe comme les autres, mais le diagnostic automatique n'est vraisemblablement pas atteignable dessus → orientation vers la saisie humaine (module 8).
 - [ ] **Reste** — point d'insertion dans `src/pipeline/` : nouvelle étape avant la transcription actuelle, déclenchée pour les seuls tests à cadres ancrés (les tests archivés gardent la transcription pleine page).
 
@@ -138,7 +140,17 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 **Fichiers concernés :** `src/pipeline/zones.py`, réutilise `src/pipeline/ingestion.py` pour la conversion 150 DPI.
 **Tests :** `tests/test_zones.py` (20) — 13 sur un sujet fabriqué dans le test, 7 sur les vrais sujets (ignorés si les PDF sont absents, ils ne sont pas versionnés).
 
-**⚠ Ce qu'il faut pour finir ce module :** un test d'entrée **imprimé, rempli à la main, et scanné**. Consignes d'impression sur `/sujets/` : noir et blanc, recto seul, sans réduction.
+**⚠ Ce qu'il faut pour finir ce module :** un **sujet Urie** (`Test_diagnostique_entree_*.pdf`) imprimé, rempli à la main, et scanné. Consignes d'impression sur `/sujets/` : noir et blanc, recto seul, **sans réduction**. Un scan d'un test de l'ancien format ne peut pas servir : sans cadres ancrés ni codes, il n'y a pas de gabarit sur lequel recaler.
+
+#### Ce qu'un scan réel a appris (mesuré le 2026-07-31 sur `TEST 4 3e.pdf`, HP Scan, 200 DPI, 12 pages)
+
+| Mesure | Valeur | Ce que ça impose |
+|---|---|---|
+| Taille de page | 612 pt de large, hauteur **variable de 835 à 851 pt d'une feuille à l'autre du même fichier** | Le recalage ne peut pas s'appuyer sur le rectangle de la page. Il doit s'ancrer sur le **contenu** — les cadres eux-mêmes — et se faire **page par page**. |
+| Inclinaison | −1,25° · −1,25° · +1,00° selon la page | Redressement **par page**, jamais global. |
+| Papier / encre | papier à 254, distribution franchement bimodale | Seuil d'encre non critique (plateau 120–200). |
+| Couleur de l'encre | 75 % des pixels sombres = imprimé (neutre), 22 % = stylo bleu (élève), 2,3 % = **rouge (correction de l'enseignant)** | Sur les copies déjà corrigées à la main, la correction du professeur est **séparable par la couleur**. Sans ce tri, un diagnostic lirait la correction de l'enseignant comme la production de l'élève. Compte surtout pour le **module 3** (corpus constitué d'anciennes copies). |
+| Nombre de pages | 12 pages pour un sujet qui en compte 10 (page de garde + page de renseignements) | L'appariement page scannée ↔ page du sujet ne peut pas être supposé 1:1. À traiter avec le recalage. |
 
 ---
 
@@ -540,6 +552,25 @@ Trois décisions de fond ont été prises après confrontation du protocole à l
 
 > ⚠ **Un point de gestion, hors code, qui pèse plus que le prochain module :**
 > **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+
+### 2026-07-31 (suite) — Un scan réel, et ce qu'il a corrigé dans la conception
+**Contrainte posée :** le scan se fait **hors plateforme**. Ce qui entre est un **PDF multipage ou des images** — jamais un flux scanner piloté par l'application. Pris en compte : `resolution_scan()` donne la définition native de la source, et `ingest_pdf` accepte désormais un `dpi` (150 reste le défaut, D-CEO-10) pour ne pas rendre un scan 200 DPI dans une image 150 DPI, puis recadrer au dixième de page ce qui a déjà été dégradé.
+
+**Le fichier reçu (`TEST 4 3e.pdf`) est un test de l'ancien format**, pas un sujet Urie : pas de cadres ancrés, pas de codes de question, dotté de pointillés et déjà corrigé au stylo rouge. Il ne peut pas servir de pièce d'essai au module 2 — il n'y a aucun gabarit sur lequel le recaler. Il reste précieux pour deux autres choses : il **calibre le côté scan** (tableau dans la fiche du module 2), et c'est exactement le matériau que demande le **module 3** (« rassembler ≥5 anciennes copies »).
+
+**Ce que les mesures ont changé :**
+- **Le recalage ne peut pas s'appuyer sur le rectangle de la page.** La hauteur varie de **835 à 851 pt d'une feuille à l'autre du même fichier**, et la largeur est de 612 pt là où le sujet en fait 595,3. Une mise à l'échelle sur les bords de page serait fausse de 2 à 3 %. L'ancrage doit se faire sur le **contenu** — les cadres eux-mêmes.
+- **L'inclinaison varie d'une page à l'autre** (−1,25°, −1,25°, +1,00°) : redressement par page, jamais global.
+- **La correction de l'enseignant est séparable par la couleur** (2,3 % de pixels rouges contre 22 % de bleu élève et 75 % d'imprimé neutre). Sur une ancienne copie corrigée à la main, un diagnostic qui ignore la couleur lit la correction du professeur comme la production de l'élève. À traiter au module 3.
+- **Le scan compte 12 pages pour un sujet de 10** (page de garde, page de renseignements) : l'appariement page scannée ↔ page du sujet ne peut pas être supposé 1:1.
+
+**Ajouté en conséquence :** `decouper_zones` **refuse** une page dont les proportions ne sont pas celles du sujet. Sans ce garde-fou, un scan brut se découpait sans rien signaler, avec un décalage de plusieurs millimètres en bas de page — assez pour attraper la ligne de la question voisine, pas assez pour que le résultat ait l'air faux.
+
+**Données personnelles :** ce scan porte le nom complet d'une élève, son établissement et un numéro de téléphone. Il n'est **pas** versionné et n'a pas été copié dans le dépôt. C'est le point ouvert #4 sous sa forme concrète, plus une question de principe.
+
+**Vérifié :** 22 tests sur les zones, **170 Django + 240 pytest = 410 tests passent**.
+
+**Prochaine étape :** le recalage, dès qu'un sujet Urie imprimé et rempli aura été scanné. En attendant, le **Module 3** est le seul chantier qui n'attend rien — et le fichier reçu en est la première pièce.
 
 ### 2026-07-31 (suite) — Module 2 : le gabarit ne se devine pas, il se lit
 **La question qui a décidé du module :** faut-il détecter les cadres sur le scan, comme le prescrit `guide-urie.md` ? **Non.** Les 7 sujets sont produits par WeasyPrint et leur PDF porte la position exacte de chaque cadre et son code. Vérifié avant d'écrire la moindre ligne : **280/280 cadres retrouvés sur les 7 sujets**, 0 manquant, 0 en trop, 0 doublon, et le nombre de lignes de guidage concorde avec le format annoncé par le barème sur les 280 (qcm 71 × 1 ligne, court 139 × 2, redige 63 × 8, construction 7 × 0).

@@ -57,11 +57,19 @@ _MARGE_DECOUPE = 2.0
 # Marge autour du code typographié à effacer de la zone découpée, en points.
 _PAD_CODE = 1.5
 
-# Seuil de binarisation, sur 255. Les lignes de guidage sont à 191 et le trait du
-# cadre à 122 ; l'encre d'un stylo scanné descend nettement plus bas. Tout ce qui
-# est plus clair que ce seuil est blanchi.
-# ⚠ Valeur calibrée sur des rendus du PDF, pas sur du papier scanné : à
-# reprendre sur le premier scan réel (voir docs/urie_v2_roadmap.md, module 2).
+# Écart toléré entre l'échelle horizontale et l'échelle verticale d'une page.
+# 0,5 % laisse passer l'arrondi d'un rendu, pas les 2 à 3 % d'un scan brut.
+_ECART_ECHELLE_MAX = 0.005
+
+# Seuil de binarisation, sur 255. Les lignes de guidage sont imprimées à 191 et
+# le trait du cadre à 122 ; l'encre descend nettement plus bas. Tout ce qui est
+# plus clair que ce seuil est blanchi.
+#
+# Confronté à un scan réel (HP Scan, 200 DPI, copie 3e) : le papier ressort à
+# 254 et la distribution est franchement bimodale — la proportion de pixels
+# sombres ne bouge que de 1,85 % à 3,47 % quand le seuil passe de 120 à 200.
+# 140 est donc au milieu d'un large plateau, et non sur une pente : le réglage
+# n'est pas critique tant que le scan n'est pas sous-exposé.
 SEUIL_ENCRE_DEFAUT = 140
 
 
@@ -226,6 +234,35 @@ def extraire_gabarit(chemin_pdf: Path) -> GabaritSujet:
         doc.close()
 
 
+def resolution_scan(chemin_pdf: Path) -> int | None:
+    """
+    Résolution native d'un PDF de scan, en DPI — `None` si le PDF est vectoriel.
+
+    Le scan se fait **hors plateforme** : ce qui arrive est un PDF multipage ou
+    des images, produits par un scanner dont on ne contrôle pas les réglages.
+    Rendre un scan à 200 DPI dans une image à 150 DPI perd de la définition sur
+    une zone qui sera ensuite recadrée au dixième de la page — cette fonction
+    permet à l'appelant de rendre à la résolution de la source plutôt qu'à une
+    valeur fixe.
+
+    La plus grande résolution rencontrée est retenue : un scanner peut mêler des
+    pages de définitions différentes dans un même fichier.
+    """
+    doc = fitz.open(chemin_pdf)
+    try:
+        resolutions: list[float] = []
+        for page in doc:
+            largeur_pouces = page.rect.width / 72
+            if largeur_pouces <= 0:
+                continue
+            for image in page.get_images(full=True):
+                info = doc.extract_image(image[0])
+                resolutions.append(info["width"] / largeur_pouces)
+        return round(max(resolutions)) if resolutions else None
+    finally:
+        doc.close()
+
+
 def decouper_zones(
     gabarit: GabaritSujet,
     pages: list[Path],
@@ -267,6 +304,24 @@ def decouper_zones(
             grise = image.convert("L")
             echelle_x = grise.width / gabarit.largeur_page
             echelle_y = grise.height / gabarit.hauteur_page
+
+            # Garde-fou contre l'erreur qui ne se verrait pas : passer ici un scan
+            # brut. Un scanner ne rend pas la page du gabarit — mesuré sur un scan
+            # réel (HP Scan) : largeur 612 pt au lieu de 595,3, et une hauteur qui
+            # varie de 835 à 851 pt **d'une feuille à l'autre du même fichier**.
+            # L'échelle déduite serait fausse de 2 à 3 %, soit un décalage de
+            # plusieurs millimètres en bas de page : les découpes resteraient
+            # plausibles tout en attrapant la ligne de la question voisine.
+            ecart = abs(echelle_x - echelle_y) / max(echelle_x, echelle_y)
+            if ecart > _ECART_ECHELLE_MAX:
+                raise GabaritIncoherent(
+                    f"Page {numero} : les proportions de l'image ({grise.width}×"
+                    f"{grise.height}) ne sont pas celles du sujet "
+                    f"({gabarit.largeur_page:.0f}×{gabarit.hauteur_page:.0f} pt) — "
+                    f"{ecart:.1%} d'écart entre les échelles horizontale et "
+                    f"verticale. La page doit être recalée sur le gabarit avant "
+                    f"d'être découpée."
+                )
 
             for cadre in cadres:
                 boite = (

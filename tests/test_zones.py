@@ -204,6 +204,40 @@ def test_une_page_manquante_fait_echouer_la_decoupe(sujet: Path, tmp_path: Path)
         decouper_zones(gabarit, [], tmp_path / "zones")
 
 
+def test_un_scan_brut_est_refuse_avant_decoupe(sujet: Path, tmp_path: Path) -> None:
+    """
+    Les proportions d'un scan ne sont pas celles du sujet.
+
+    Mesuré sur un scan réel (HP Scan, 200 DPI) : largeur 612 pt au lieu de
+    595,3 et hauteur variant de 835 à 851 pt d'une feuille à l'autre du même
+    fichier. Découpé tel quel, le décalage atteint plusieurs millimètres en bas
+    de page — assez pour attraper la ligne de la question voisine, pas assez
+    pour que le résultat ait l'air faux.
+    """
+    gabarit = extraire_gabarit(sujet)
+    scan = tmp_path / "scan_p1.png"
+    Image.new("L", (1700, 2320), color=255).save(scan)  # 612 × 835 pt à 200 DPI
+    with pytest.raises(GabaritIncoherent, match="recalée"):
+        decouper_zones(gabarit, [scan], tmp_path / "zones")
+
+
+def test_resolution_native_d_un_scan(tmp_path: Path) -> None:
+    """Un PDF de scan annonce sa définition ; un PDF vectoriel n'en a pas."""
+    from src.pipeline.zones import resolution_scan
+
+    page_image = tmp_path / "page.png"
+    Image.new("L", (1700, 2200), color=255).save(page_image)
+    doc = fitz.open()
+    page = doc.new_page(width=612, height=792)      # 1700 px / (612/72) po = 200 DPI
+    page.insert_image(page.rect, filename=str(page_image))
+    scanne = tmp_path / "scanne.pdf"
+    doc.save(scanne)
+    doc.close()
+
+    assert resolution_scan(scanne) == 200
+    assert resolution_scan(_sujet_factice(tmp_path / "vectoriel.pdf", [("N1", 1)])) is None
+
+
 # ── Les 7 vrais sujets ────────────────────────────────────────────────────────
 
 def _bareme(niveau: str) -> dict[str, str]:

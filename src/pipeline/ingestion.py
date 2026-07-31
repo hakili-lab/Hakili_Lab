@@ -29,7 +29,7 @@ def ingest_images(image_paths: list[Path], copy_id: str, output_dir: Path) -> In
     )
 
 
-def ingest_pdf(pdf_path: Path, copy_id: str, output_dir: Path) -> IngestionResult:
+def ingest_pdf(pdf_path: Path, copy_id: str, output_dir: Path, dpi: int = 150) -> IngestionResult:
     """
     Convertit un PDF en images JPG, une par page.
 
@@ -37,6 +37,11 @@ def ingest_pdf(pdf_path: Path, copy_id: str, output_dir: Path) -> IngestionResul
         pdf_path: Chemin vers le fichier PDF
         copy_id: Identifiant anonyme de la copie
         output_dir: Dossier de sortie (sera créé si nécessaire)
+        dpi: Résolution de rendu. 150 par défaut (D-CEO-10, optimal pour la
+            transcription pleine page). La découpe par zones demande davantage :
+            un scan à 200 DPI rendu à 150 perd de la définition sur une image
+            qui sera ensuite recadrée au dixième de la page. Voir
+            `zones.resolution_scan()` pour connaître la résolution de la source.
 
     Returns:
         IngestionResult avec les chemins des images extraites
@@ -49,7 +54,7 @@ def ingest_pdf(pdf_path: Path, copy_id: str, output_dir: Path) -> IngestionResul
 
     for page_num in range(len(doc)):
         page = doc.load_page(page_num)
-        pix = page.get_pixmap(dpi=150)  # 150 DPI : optimal LLM vision (D-CEO-10)
+        pix = page.get_pixmap(dpi=dpi)  # 150 DPI par défaut : optimal LLM vision (D-CEO-10)
 
         image_path = output_dir / f"page_{page_num + 1:02d}.jpg"
         pix.save(str(image_path))
