@@ -1,0 +1,136 @@
+# Corpus de référence — copie 2/5
+# Source : « TEST 10 3e.pdf » (même sujet que la copie 1, 12 pages, corrigée).
+#
+# Copie forte, et c'est ce qui la rend précieuse : là où la copie 1 s'effondre
+# (22 problèmes, presque tous CPT), celle-ci réussit l'essentiel et n'échoue que
+# sur des gestes. Le module 4 sera mesuré sur sa capacité à distinguer les deux —
+# un corpus qui n'aurait que des copies effondrées ne testerait que la détection
+# de l'effondrement.
+
+identifiant_hakili: CORPUS-3E-02
+tague_par: Claude (relecture humaine requise)
+date_tagage: 2026-07-31
+
+evaluation:
+  type: T0
+  date: 2025-11-01
+  support: scan 200 DPI — évaluation de l'ancien format, corrigée au stylo rouge
+
+problemes:
+  # ── Activités numériques ────────────────────────────────────────────────
+  - competence: N.APP
+    type_erreur: ATT
+    etat: hypothese
+    justification: >
+      X = 2,85418541 : écrit d'abord « x = 2,85 », qui est la bonne approximation
+      par défaut, puis encadre « 2,84 ≤ x ≤ 2,86 ». La borne inférieure contredit
+      la valeur juste écrite deux centimètres plus tôt. Erreur isolée, sans
+      logique sous-jacente, sur une compétence par ailleurs tenue — à écarter au
+      test de confirmation plutôt qu'à remédier.
+
+  - competence: N.DIVIS
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      572 = 2 × 2 × 143 : la méthode est la bonne et les deux premiers facteurs
+      sont justes, mais la décomposition s'arrête sur 143 qui n'est pas premier
+      (11 × 13). 127 est correctement reconnu comme premier juste après. Le geste
+      est acquis, son exécution est incomplète.
+
+  - competence: N.FRA2
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      Deux calculs sur quatre aboutissent (41/4 et 15/7). Les deux autres échouent
+      sur des signes : la fraction imbriquée (−2/5)/(−7) est traitée comme un
+      produit, et 5/(−3) − (−5/4) donne un numérateur 20 + 15 au lieu de
+      −20 + 15. La mise au même dénominateur et l'inversion sont maîtrisées.
+
+  # ── Calcul littéral ─────────────────────────────────────────────────────
+  - competence: L.DEV1
+    type_erreur: ATT
+    etat: hypothese
+    justification: >
+      (x²+x+1)(x−4) est développé et réduit correctement — x³ + x² − 4x² + x − 4x
+      − 4 — puis recopié « x − 3x² − 3x − 4 » à la dernière ligne : le x³ perd son
+      exposant au moment de la recopie. Tout le reste du calcul littéral est juste,
+      y compris les quatre factorisations et (3−2x)².
+
+  - competence: L.INEQ1
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      −3x−2 ≥ 1 est résolu juste (x ≤ −1) et l'intervalle ]−∞ ; −1] est écrit
+      correctement — puis la hachure part vers +∞. La règle est connue et
+      correctement choisie ; c'est le passage à la représentation qui échoue.
+
+  # ── Activités géométriques ──────────────────────────────────────────────
+  - competence: G.ANG3
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      « Deux angles opposés par le sommet sont deux angles dont les pointes des
+      sommets se touchent » et « deux angles alternes-internes sont situés de part
+      et d'autre de la droite parallèle » : l'élève décrit la configuration mais
+      n'énonce jamais la propriété — leur égalité. La description est assumée
+      comme une réponse.
+
+  - competence: G.VEC
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      2EF = AC et −3GH = LI sont justes ; NP = 2MO et MP = −3CB sont faux. Les
+      égalités qui demandent d'inverser le sens du vecteur échouent, celles de
+      même sens réussissent. La relation de Chasles et la somme dans le
+      parallélogramme (AB+AD = AC) sont acquises.
+
+  - competence: G.PROJ
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      Le projeté orthogonal B' de B sur (D) est correctement placé, angle droit
+      marqué. Le projeté A' de A sur (D) **parallèlement à (L)** n'est pas placé du
+      tout, et plus loin la direction de projection demandée est donnée comme
+      (BN), une verticale, là où il fallait une horizontale. La projection oblique
+      n'est pas construite comme notion, alors que l'orthogonale l'est.
+
+  - competence: G.SYMO
+    type_erreur: ATT
+    etat: hypothese
+    justification: >
+      Symétrique de E par rapport à (OC) donné « H » au lieu de G — une colonne
+      trop loin — alors que le symétrique par rapport à un point, juste au-dessus,
+      est correct. Erreur unique sur une compétence par ailleurs tenue.
+
+  - competence: M.VOL
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Formules du volume de la pyramide et du cylindre laissées vides toutes les
+      deux, sur une copie où presque tout le reste est traité. Connaissance non
+      disponible, et non manque de temps.
+
+hesitations:
+  - sur: trois ATT sur la même copie
+    pourquoi: >
+      N.APP, L.DEV1 et G.SYMO sont tagués ATT parce que chaque erreur est isolée
+      sur une compétence par ailleurs réussie — c'est la définition du type. Mais
+      trois inattentions sur une même copie interrogent : est-ce un profil
+      d'élève rapide et négligent, ce que le référentiel ne sait pas nommer ? Le
+      protocole prévoit d'écarter ATT à T1 ; ici, l'écarter trois fois ferait
+      peut-être disparaître une information réelle.
+
+  - sur: G.PROJ — CPT ou CNS ?
+    pourquoi: >
+      La projection orthogonale est réussie, l'oblique est absente. Retenu CPT
+      (deux notions confondues en une), mais CNS se défend : la définition de la
+      projection parallèlement à une direction n'est peut-être simplement pas
+      disponible. Le référentiel ne sépare pas les deux projections en deux
+      compétences, ce qui oblige à trancher sur le type plutôt que sur l'objet.
+
+  - sur: L.DEV1 — la perte de l'exposant
+    pourquoi: >
+      « x³ » devient « x » à la recopie finale. Tagué ATT. Un correcteur plus
+      sévère y verrait PRC (exécution). La frontière ATT/PRC n'est pas nette quand
+      l'erreur porte sur une recopie, et elle change le coût — ATT vaut 0 h, PRC
+      vaut une demi-heure au moins.

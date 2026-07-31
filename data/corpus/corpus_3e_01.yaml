@@ -1,0 +1,243 @@
+# Corpus de référence — copie 1/5
+# Source : « TEST 4 3e.pdf » (évaluation 3ème, 12 pages, corrigée à la main).
+# Note obtenue : 0,25/20.
+#
+# Identifiant volontairement non nominatif : le corpus est un instrument de
+# mesure, il n'a aucun besoin de nommer un enfant. La copie porte le nom complet
+# d'une élève, son établissement et un numéro de téléphone (point ouvert #4).
+
+identifiant_hakili: CORPUS-3E-01
+tague_par: Claude (relecture humaine requise)
+date_tagage: 2026-07-31
+
+evaluation:
+  type: T0
+  date: 2025-11-01
+  support: scan 200 DPI — évaluation de l'ancien format, corrigée au stylo rouge
+
+problemes:
+  # ── Activités numériques ────────────────────────────────────────────────
+  - competence: N.ENS
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      « D est l'ensemble des entiers Décimaux », « Z est l'ensemble des entiers
+      relatifs qui peuvent s'écrire avec une virgule », « Q est l'ensemble des
+      entiers relatifs qui s'écrit sous forme de fraction ». Les trois définitions
+      se recouvrent et confondent les ensembles. Répond ensuite « faux » à
+      IN ⊂ Z. Notion comprise de travers, pas exécution ratée.
+
+  - competence: N.RELOP
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      27 + 3×(−22) donne « 27 + 66 = 93 » : le produit d'un positif par un négatif
+      est rendu positif. Reproduit plus bas : −5×(−88) rendu « −440 ». La règle des
+      signes est appliquée de façon systématiquement fausse, sur deux questions
+      indépendantes.
+
+  - competence: N.APP
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      X = 2,85418541 ; approximation au 1/100 : donne « par défaut 2,8 » et
+      « par excès 2,85 ». L'ordre demandé (centième) est traité comme un dixième,
+      et l'excès est confondu avec la troncature. Les deux réponses relèvent de la
+      même notion mal construite.
+
+  - competence: N.DIVIS
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      Décomposition de 572 en facteurs premiers commencée par une division par 4,
+      qui n'est pas premier, puis abandonnée. 127 est recopié sans traitement
+      (il est pourtant premier, donc la réponse était immédiate).
+
+  - competence: N.PUI
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      (2³)⁷, (2)³×(2)⁵ et (2)³/(2)⁵ laissés entièrement vides alors que les
+      questions voisines sont traitées. Les règles sur les puissances ne sont pas
+      mobilisées — absence de réponse, pas erreur de calcul.
+
+  - competence: N.FRA2
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      Sur les quatre calculs de fractions, la démarche est visible et du bon type
+      (mise au même dénominateur, produit en croix) mais aucun résultat n'aboutit :
+      7/4×3+5 donne 67/12, (2×3/7)+9/7 donne 147/98. Le geste est choisi
+      correctement, son exécution échoue. Voir l'hésitation notée plus bas.
+
+  # ── Calcul littéral ─────────────────────────────────────────────────────
+  - competence: L.DEV1
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      (x²+x+1)(x−4) devient « x³ + 5x » puis « 664x ». Les lettres sont traitées
+      comme des nombres à additionner ; le développement est confondu avec un
+      calcul numérique. Même geste sur toutes les questions de calcul littéral.
+
+  - competence: L.IDR
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      (3−2x)² est réécrit « (3−2x)²(3−2x)² » puis donne « 2x ». Le carré est
+      interprété comme une duplication de l'écriture, non comme un produit.
+
+  - competence: L.FAC1
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      f(x) = 3x²−2x est « factorisé » en 3x×3x−2x = 6x−2x = 4x. Factoriser est
+      compris comme « calculer et réduire ». La consigne n'est pas la difficulté :
+      c'est la nature de l'opération demandée qui n'est pas en place.
+
+  - competence: L.FAC2
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      Même geste sur les trois identités remarquables : 36x²−84x+49 donne
+      « 1163x », 9x²−16 donne « 65x », 25x²+30x+9 donne « 664x ». Aucune des trois
+      formes n'est reconnue comme un carré ou une différence de carrés.
+
+  - competence: L.EQ1
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Les trois équations (18+x=30 ; 4x=36 ; 28/x=7) sont laissées vides, y
+      compris la plus simple. La technique de résolution n'est pas disponible.
+
+  - competence: L.INEQ1
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      Représentation graphique de −3x−2 ≥ 1 : hachure un segment borné entre −3 et
+      −1 environ, alors que la solution x ≤ −1 est une demi-droite non bornée. Le
+      caractère infini de l'ensemble solution n'est pas construit.
+
+  - competence: L.MISE
+    type_erreur: MOD
+    etat: hypothese
+    justification: >
+      Partage de 5 000 F, Moussa recevant 1 500 F de plus que Karim. Écrit
+      5000÷2 = 2500, puis 2500−1500 = 1000 et 2500+1500 = 4000. Les calculs sont
+      justes et le total retombe sur 5 000, mais l'écart obtenu vaut 3 000 au lieu
+      de 1 500 : l'énoncé n'est pas traduit correctement, la technique n'est pas en
+      cause. C'est la signature même de MOD.
+
+  # ── Activités géométriques ──────────────────────────────────────────────
+  - competence: G.ABS
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      Distance AB avec A(−7) et B(−3) : écrit « AB = −7−3 = −10 » et accepte une
+      distance négative. Deux notions manquent ensemble — la soustraction de
+      relatifs et le fait qu'une longueur est positive.
+
+  - competence: G.REP
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      Sur la droite graduée, 7/2 est noté « 7/3 » et placé vers 1. Dans le repère,
+      B(−1/2 ; −2) est placé près de (−2 ; −1). Les points entiers sont tous
+      corrects : ce sont les abscisses fractionnaires, et elles seules, qui
+      échouent — sur deux figures différentes.
+
+  - competence: G.ANG3
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      « Deux angles opposés par le sommet sont parallèles » — propriété énoncée de
+      façon fausse mais assumée. La question sur les angles alternes-internes reste
+      vide.
+
+  - competence: G.TRIP
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      « La somme des angles d'un triangle est égale à la somme de ces deux côtés ».
+      La propriété (180°) n'est pas mobilisée, et la réponse mélange angles et
+      longueurs.
+
+  - competence: G.VEC
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      AB + AD donne « BD » au lieu de AC, alors que AB + BC = AC est juste juste
+      au-dessus. La relation de Chasles est appliquée mécaniquement sur des lettres
+      qui se suivent, sans la règle qui la fonde. Les égalités vectorielles
+      suivantes (2EF, −3GH, NP, MP) sont toutes fausses.
+
+  - competence: G.PROJ
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      Projeté de A sur (D) parallèlement à (L) et projeté orthogonal de B sur (D)
+      placés tous deux hors de la droite (D). Un projeté sur une droite qui n'est
+      pas sur cette droite : la définition n'est pas en place.
+
+  - competence: G.SYMC
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      « Le symétrique de B par rapport au point G est perpendiculaire ». La
+      question attend un point ; la réponse est un mot de relation. La nature même
+      de l'objet cherché est méconnue.
+
+  - competence: G.SYMO
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      « Le symétrique de E par rapport à la droite (OC) est parallèle ». Même
+      substitution que pour la symétrie centrale, sur une figure où les points
+      étaient tous nommés et disponibles.
+
+  - competence: M.VOL
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Formules du volume de la pyramide et du cylindre laissées vides toutes les
+      deux. Aucune tentative, aucune formule approchante : connaissance non
+      disponible.
+
+hesitations:
+  - sur: G.SYMC, G.SYMO, G.ANG3, G.TRIP — quatre compétences, une seule cause ?
+    pourquoi: >
+      L'élève répond « parallèle » ou « perpendiculaire » à quatre questions qui
+      attendent un point ou une mesure. C'est un échec corrélé sur plusieurs
+      compétences distinctes — la signature exacte de PRQ. Mais PRQ exige de
+      nommer le prérequis, et AUCUNE compétence du référentiel ne couvre le
+      vocabulaire géométrique de base (point, droite, parallèle, perpendiculaire,
+      symétrique). Faute de pouvoir le nommer, j'ai tagué quatre CPT séparés — ce
+      qui gonfle mécaniquement le coût. À arbitrer : le référentiel a-t-il besoin
+      d'une compétence transversale de vocabulaire géométrique ?
+
+  - sur: N.FRA2 — PRC ou CPT ?
+    pourquoi: >
+      La démarche est lisible et du bon type, ce qui plaide PRC. Mais elle échoue
+      sur les quatre calculs sans exception, ce qui plaide CPT (« erreur
+      reproductible, résiste à la répétition »). J'ai retenu PRC parce que le choix
+      de la méthode est juste à chaque fois. Un enseignant trancherait mieux.
+
+  - sur: N.DIVIS — CPT ou PRC ?
+    pourquoi: >
+      Diviser 572 par 4 pour une décomposition en facteurs *premiers* peut se lire
+      comme une notion absente (CPT) ou comme une méthode connue mal conduite
+      (PRC). Retenu CPT parce que 127, qui est premier, n'est pas reconnu non plus.
+
+  - sur: la copie elle-même
+    pourquoi: >
+      0,25/20 : presque tout échoue. C'est un cas limite utile, mais un corpus
+      composé de copies aussi faibles ne dira rien de la finesse du module 4 — il
+      ne mesurera que sa capacité à détecter l'effondrement. Prévoir des copies
+      moyennes parmi les cinq.
+
+  - sur: le lien avec l'identité de l'élève
+    pourquoi: >
+      J'ai employé un identifiant non nominatif (CORPUS-3E-01) plutôt que
+      l'identifiant Hakili de l'élève. Le corpus est un instrument de mesure : il
+      n'a pas besoin de nommer un enfant, et ces copies portent nom, établissement
+      et téléphone. À confirmer — si le corpus doit servir aussi au suivi réel de
+      ces élèves, il faudra le vrai identifiant.

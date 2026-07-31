@@ -18,10 +18,19 @@ runs/
 data/copies/
 data/outputs/
 
-# Corpus de référence (module 3) — les fichiers de tagage portent l'identifiant
-# d'un élève. Seul l'exemple est versionné.
+# Corpus de référence (module 3).
+#
+# Les fichiers `corpus_*.yaml` SONT versionnés, à une condition tenue par
+# construction : ils n'emploient que des identifiants non nominatifs
+# (CORPUS-3E-01…). Aucun nom, aucun établissement, aucun téléphone — les
+# justifications citent la production de l'élève, jamais son identité.
+#
+# Ce sont eux l'étalon du module 4 : les laisser hors du dépôt reviendrait à
+# faire reposer la seule mesure objective du dispositif sur un disque unique.
+# Tout le reste du dossier (scans, brouillons, exports) reste exclu.
 data/corpus/*
 !data/corpus/exemple.yaml
+!data/corpus/corpus_*.yaml
 *.pdf
 !docs/*.pdf
 
