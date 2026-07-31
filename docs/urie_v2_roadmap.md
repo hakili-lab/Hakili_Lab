@@ -1,7 +1,7 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-07-30 (fin de soirée)
+**Dernière mise à jour :** 2026-07-31 (travail versionné — branche `chantier/urie-v2-django` poussée sur `origin`)
 **Où en est-on (résumé en une ligne) :** Modules 0 et **1 ✅ faits** · **Module 6 🟨 le moteur du plan et du palier tourne** (ordre des prérequis, coût, palier, inscription au programme) · **interface migrée sur Django** (suivi, correction unique/lot/libre, mise en service préparée) — prochaine étape : **Module 2** (lecture des copies par zones), le seul chemin vers le Module 4. Reste bloquant en aval : les **209 corrigés** (arbitrage B) et **un essai réel de bout en bout** avant de retirer Streamlit.
 
 **État vérifié le 2026-07-30 en fin de soirée : 170 tests Django + 218 pytest = 388 tests passent.**
@@ -530,6 +530,16 @@ Trois décisions de fond ont été prises après confrontation du protocole à l
 
 **Bloqué par :** rien techniquement. **Prochaine étape : Module 2** (lecture des copies par zones) — c'est le seul chemin vers le Module 4, dont tout le reste dépend.
 
-> ⚠ **Deux points de gestion, hors code, qui pèsent plus que le prochain module :**
-> 1. **Le dépôt n'a rien reçu depuis le 2026-07-23.** Tout le socle Django (`hakili/`, `comptes/`, `suivi/`, `suivi_web/`, `correction_web/`, `templates_django/`, `Procfile`) est **non suivi par git** — 13 fichiers modifiés, 22 supprimés, 29 non suivis. Une semaine de travail ne tient que sur un disque.
-> 2. **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+> ⚠ **Un point de gestion, hors code, qui pèse plus que le prochain module :**
+> **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+
+### 2026-07-31 — Le travail est versionné
+Le socle Django n'était pas suivi par git : rien n'avait été commité depuis le **2026-07-23**, une semaine de travail ne tenait que sur un disque. Corrigé — **10 commits découpés par domaine** sur la branche `chantier/urie-v2-django`, poussée sur `origin`.
+
+Découpage : nettoyage des documents périmés · socle Django + authentification · `referentiel/` (module 1) · `suivi/` (modules 1 et 6) · `suivi_web/` · `correction_web/` · extraction de la logique métier hors de l'interface · scripts et barèmes · mise en service · documentation.
+
+**Branche plutôt que `main`** : `main` est partagée avec le collègue (l'historique porte plusieurs fusions) et cette semaine de travail n'a pas été relue. Le rattrapage sera un fast-forward.
+
+**Vérifié avant de commiter :** aucun secret n'entre dans le dépôt (`.env`, `credentials/`, `*.json`, `logs/`, `runs/`, `dev.db` couverts par `.gitignore` — les 138 fichiers ajoutés ont été scannés) ; les 22 suppressions étaient bien intentionnelles (doc périmée et sources remplacées). **170 tests Django + 218 pytest = 388 tests passent** sur l'arbre commité.
+
+**Reste inchangé :** l'essai réel de bout en bout, toujours en attente de clés API. **Prochaine étape technique : Module 2.**
