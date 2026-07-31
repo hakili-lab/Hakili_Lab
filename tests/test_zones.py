@@ -96,6 +96,29 @@ def test_un_cadre_sans_ligne_est_une_question_de_construction(tmp_path: Path) ->
     assert (cadre.format, cadre.lignes) == ("construction", 0)
 
 
+def test_le_gabarit_survit_a_un_changement_de_teinte(tmp_path: Path) -> None:
+    """
+    Le sujet est un document vivant : régénéré, il changera de teintes.
+
+    Les règles sont exprimées en plages, pas en égalité aux valeurs relevées sur
+    les sujets d'aujourd'hui. Une égalité stricte aurait fait échouer la lecture
+    à la première retouche — et l'échec aurait été **total** (zéro cadre trouvé),
+    pas partiel : le module 2 se serait arrêté net sans autre explication.
+    """
+    autre_teinte = _sujet_factice(
+        tmp_path / "retouche.pdf", [("N1", 1), ("G1", 8)], gris=(0.35, 0.35, 0.35)
+    )
+    cadres = {c.code: c.format for c in extraire_gabarit(autre_teinte).cadres}
+    assert cadres == {"N1": "qcm", "G1": "redige"}
+
+
+def test_le_nombre_de_lignes_d_une_question_redigee_peut_changer(tmp_path: Path) -> None:
+    """Au-delà de deux lignes, c'est une rédaction — que le sujet en offre 6, 8 ou 10."""
+    chemin = _sujet_factice(tmp_path / "six_lignes.pdf", [("G13", 6)])
+    cadre = extraire_gabarit(chemin).cadres[0]
+    assert (cadre.format, cadre.lignes) == ("redige", 6)
+
+
 def test_le_code_en_marge_ne_cree_pas_de_cadre(sujet: Path) -> None:
     # trois codes en marge + trois dans les cadres : six occurrences, trois cadres
     assert len(extraire_gabarit(sujet).cadres) == 3

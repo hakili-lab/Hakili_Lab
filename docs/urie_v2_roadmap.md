@@ -4,7 +4,7 @@
 **Dernière mise à jour :** 2026-07-31 (module 2 entamé — gabarit et découpe ; travail versionné sur `chantier/urie-v2-django`)
 **Où en est-on (résumé en une ligne) :** Modules 0 et **1 ✅ faits** · **Module 2 🟨 gabarit lu dans le PDF source, 280/280 cadres, découpe et nettoyage faits** — reste le recalage · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. Trois choses bloquent, toutes hors code : une **copie scannée** (module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit. Le **Module 3** (corpus de référence) est le seul chantier qui avance sans rien attendre.
 
-**État vérifié le 2026-07-31 : 170 tests Django + 240 pytest = 410 tests passent.**
+**État vérifié le 2026-07-31 : 170 tests Django + 242 pytest = 412 tests passent.**
 
 **Pour reprendre le travail sur Django :**
 ```bash
@@ -123,7 +123,8 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 > **Écart assumé avec `guide-urie.md`, et c'est le point de conception du module.** Le guide prescrit de *détecter* les rectangles sur le scan puis de lire au **OCR** le code de chaque cadre. Inutile : les 7 sujets sont produits par WeasyPrint et leur PDF **porte déjà** la position exacte de chaque cadre et son code. Le gabarit est donc lu à la source, pas deviné sur le scan. Ça supprime l'étape la plus fragile de la chaîne — un OCR sur trois caractères à 150 DPI aurait été le premier point de panne, et une confusion `G1`/`G7` aurait attribué une réponse à la mauvaise question **sans que rien ne le signale**. Il ne reste qu'un seul problème à résoudre sur le scan : le recalage.
 
 - [x] **Gabarit extrait du PDF source** (`extraire_gabarit`) : code, page, rectangle, format et nombre de lignes de chaque cadre. **Vérifié 280/280 sur les 7 sujets**, 0 manquant, 0 en trop, 0 doublon.
-- [x] Le format se **déduit de la géométrie** (1 ligne = `qcm`, 2 = `court`, 8 = `redige`, 0 ligne et bord gris 0,600 = `construction`) et n'est pas lu dans le barème — les deux sont ensuite confrontés (`verifier_gabarit`). C'est le garde-fou contre un sujet d'une autre version que celle chargée en base : les codes ou les formats divergent, et on le sait **avant** d'attribuer des réponses aux mauvaises questions.
+- [x] **Règles de lecture exprimées en plages, pas en constantes relevées** (D-CEO-35) : plages de gris et fractions de la largeur de page, au lieu de l'égalité à 0,478431 / 480 pt / 8 lignes. Le sujet est un document vivant — régénéré, il changera de marges et de teintes, et une égalité stricte aurait fait échouer la lecture **totalement** (zéro cadre trouvé), pas partiellement. Au-delà de 2 lignes de guidage, la question est rédigée, qu'il y en ait 6, 8 ou 10.
+- [x] Le format se **déduit de la géométrie** (1 ligne = `qcm`, 2 = `court`, ≥3 = `redige`, 0 ligne = `construction`) et n'est pas lu dans le barème — les deux sont ensuite confrontés (`verifier_gabarit`). C'est le garde-fou contre un sujet d'une autre version que celle chargée en base : les codes ou les formats divergent, et on le sait **avant** d'attribuer des réponses aux mauvaises questions.
 - [x] Découpe de l'intérieur du cadre (`decouper_zones`), une image PNG par code, échelle déduite de l'image (aucune hypothèse de résolution).
 - [x] Suppression des lignes de guidage par seuillage — blanchiment plutôt que binarisation franche, pour qu'un trait de crayon clair reste lisible.
 - [x] **Le code typographié est effacé de la zone découpée.** Il est imprimé en noir dans le coin du cadre : le seuillage ne peut pas l'écarter, et le laisser ferait passer pour remplie une zone restée vierge. Sa position exacte vient du PDF, comme le reste.
@@ -553,6 +554,15 @@ Trois décisions de fond ont été prises après confrontation du protocole à l
 
 > ⚠ **Un point de gestion, hors code, qui pèse plus que le prochain module :**
 > **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+
+### 2026-07-31 (suite) — Format des sujets confirmé, lecture rendue tolérante (D-CEO-35)
+**Question posée, réponse obtenue :** les sujets v2 **conservent leurs cadres ancrés et leurs codes de question**. `TEST 4 3e.pdf` était une copie d'archive de l'ancien format, pas une préfiguration des sujets à venir. La conception du module 2 tient donc telle quelle — il ne lui manque que le recalage.
+
+**Conséquence à ne pas perdre :** le format à cadres ancrés n'est plus une commodité de mise en page, c'est **une dépendance du diagnostic structuré**. Un sujet sans cadres ni codes ne peut pas être découpé en zones, donc ne peut pas alimenter le module 4. Toute régénération des sujets doit les conserver — c'est acté en D-CEO-35.
+
+**Adaptation faite dans la foulée.** Les règles de lecture étaient collées aux valeurs relevées sur les 7 PDF d'aujourd'hui : gris exactement 0,478431, largeur supérieure à 480 pt, exactement 8 lignes pour une rédaction. Le sujet est un document vivant : régénéré, il changera de marges et de teintes. Les règles sont désormais exprimées en **plages de gris** et en **fractions de la largeur de page**, et toute question de plus de 2 lignes est une rédaction. Ce qui était en jeu : avec des valeurs exactes, une simple retouche du gabarit d'impression aurait fait échouer la lecture **totalement** — zéro cadre trouvé, module 2 arrêté net — et non partiellement.
+
+**Vérifié :** les 280 cadres des 7 sujets sont toujours retrouvés avec les règles tolérantes, et 2 tests verrouillent la tolérance (une teinte différente, une rédaction à 6 lignes). 24 tests sur les zones, **170 Django + 242 pytest = 412 tests passent**.
 
 ### 2026-07-31 (suite) — Un scan réel, et ce qu'il a corrigé dans la conception
 **Contrainte posée :** le scan se fait **hors plateforme**. Ce qui entre est un **PDF multipage ou des images** — jamais un flux scanner piloté par l'application. Pris en compte : `resolution_scan()` donne la définition native de la source, et `ingest_pdf` accepte désormais un `dpi` (150 reste le défaut, D-CEO-10) pour ne pas rendre un scan 200 DPI dans une image 150 DPI, puis recadrer au dixième de page ce qui a déjà été dégradé.

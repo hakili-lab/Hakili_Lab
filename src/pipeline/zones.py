@@ -33,22 +33,30 @@ FormatQuestion = Literal["qcm", "court", "redige", "construction"]
 
 # ── Signature graphique des sujets ────────────────────────────────────────────
 # Les cadres sont dessinés en aplats gris (type "f"), pas en traits : c'est le
-# niveau de gris qui les distingue, et lui seul. Relevé sur les 7 sujets.
-_GRIS_CADRE_LIGNE = 0.478431      # cadre des questions à lignes (qcm/court/redige)
-_GRIS_CADRE_TRACE = 0.600000      # cadre vide des questions `construction`
-_GRIS_LIGNE_GUIDAGE = 0.749020    # lignes de guidage à l'intérieur d'un cadre
-_TOLERANCE_GRIS = 0.01
+# niveau de gris qui les distingue.
+#
+# Ces règles sont volontairement exprimées en **plages** et en **proportions de
+# la page**, pas en valeurs relevées sur les 7 sujets actuels. Le sujet est un
+# document vivant : régénéré, il changera de marges, de teintes et de nombre de
+# lignes. Une égalité stricte à 0,478431 ou une largeur de 480 pt aurait fait
+# échouer la lecture du gabarit à la première retouche du gabarit d'impression —
+# et l'échec aurait été total (zéro cadre trouvé), pas partiel.
+_GRIS_CADRE_MIN = 0.30            # plus sombre : du texte ou un bandeau plein
+_GRIS_CADRE_MAX = 0.70            # plus clair : une ligne de guidage
+_GRIS_LIGNE_MIN = 0.70            # les lignes de guidage sont plus pâles que les cadres
+_GRIS_LIGNE_MAX = 0.95            # plus clair encore : une trame de fond
 
-# Un cadre de réponse occupe toute la largeur du bloc de texte. Les seuls autres
-# rectangles de cette largeur sont les bandeaux de section (« A1. Nombres »),
-# écartés par leur hauteur et leur gris.
-_LARGEUR_MIN_CADRE = 480.0
+# Un cadre de réponse occupe toute la largeur du bloc de texte. Exprimé en
+# fraction de la largeur de page, la règle survit à un changement de marges.
+_PART_LARGEUR_CADRE = 0.75
+_PART_LARGEUR_LIGNE = 0.60
 _HAUTEUR_MIN_CADRE = 25.0
-_LARGEUR_MIN_LIGNE = 400.0
 
-# Nombre de lignes de guidage → format de la question. Relevé sur les 7 sujets :
-# qcm 71 × 1 ligne, court 139 × 2, redige 63 × 8, construction 7 × 0.
-_FORMAT_PAR_LIGNES: dict[int, FormatQuestion] = {1: "qcm", 2: "court", 8: "redige"}
+# Nombre de lignes de guidage → format de la question. Relevé sur les 7 sujets
+# actuels : qcm 71 × 1 ligne, court 139 × 2, redige 63 × 8, construction 7 × 0.
+# Au-delà de 2 lignes, c'est une question rédigée : la borne est ouverte pour
+# qu'un sujet à 6 ou 10 lignes reste lu correctement.
+_FORMAT_PAR_LIGNES: dict[int, FormatQuestion] = {0: "construction", 1: "qcm", 2: "court"}
 
 # Marge retirée de chaque côté à la découpe, en points PDF : le trait du cadre
 # lui-même n'a pas à se retrouver dans l'image envoyée au diagnostic.
@@ -132,8 +140,13 @@ class GabaritIncoherent(RuntimeError):
     """Le PDF ne présente pas la structure attendue d'un sujet Urie v2."""
 
 
-def _est_gris(valeur: tuple[float, ...] | None, attendu: float) -> bool:
-    return valeur is not None and abs(valeur[0] - attendu) < _TOLERANCE_GRIS
+def _gris_dans(valeur: tuple[float, ...] | None, mini: float, maxi: float) -> bool:
+    """Un aplat gris — donc non coloré — dont la clarté tombe dans la plage."""
+    if valeur is None or len(valeur) < 3:
+        return False
+    if max(valeur[:3]) - min(valeur[:3]) > 0.05:   # une couleur, pas un gris
+        return False
+    return mini <= valeur[0] < maxi
 
 
 def _code_candidat(mot: str) -> bool:
@@ -163,16 +176,19 @@ def extraire_gabarit(chemin_pdf: Path) -> GabaritSujet:
             rects_cadres: list[fitz.Rect] = []
             rects_lignes: list[fitz.Rect] = []
 
+            largeur_min_cadre = page.rect.width * _PART_LARGEUR_CADRE
+            largeur_min_ligne = page.rect.width * _PART_LARGEUR_LIGNE
+
             for dessin in page.get_drawings():
                 rect, fill = dessin["rect"], dessin["fill"]
                 largeur, hauteur = rect.width, rect.height
                 if (
-                    (_est_gris(fill, _GRIS_CADRE_LIGNE) or _est_gris(fill, _GRIS_CADRE_TRACE))
-                    and largeur > _LARGEUR_MIN_CADRE
+                    _gris_dans(fill, _GRIS_CADRE_MIN, _GRIS_CADRE_MAX)
+                    and largeur > largeur_min_cadre
                     and hauteur > _HAUTEUR_MIN_CADRE
                 ):
                     rects_cadres.append(rect)
-                elif _est_gris(fill, _GRIS_LIGNE_GUIDAGE) and largeur > _LARGEUR_MIN_LIGNE:
+                elif _gris_dans(fill, _GRIS_LIGNE_MIN, _GRIS_LIGNE_MAX) and largeur > largeur_min_ligne:
                     rects_lignes.append(rect)
 
             mots = [m for m in page.get_text("words") if _code_candidat(m[4])]
@@ -209,7 +225,7 @@ def extraire_gabarit(chemin_pdf: Path) -> GabaritSujet:
                     CadreReponse(
                         code=code,
                         page=numero,
-                        format=_FORMAT_PAR_LIGNES.get(lignes, "construction"),
+                        format=_FORMAT_PAR_LIGNES.get(lignes, "redige"),
                         lignes=lignes,
                         x0=rect.x0, y0=rect.y0, x1=rect.x1, y1=rect.y1,
                         code_x0=mot_code[0], code_y0=mot_code[1],

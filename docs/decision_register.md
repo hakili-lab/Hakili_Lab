@@ -645,6 +645,21 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 
 ---
 
+### D-CEO-35 — Le gabarit des zones est lu dans le PDF du sujet *(nouveau 2026-07-31)*
+**Décision :** les sujets Urie **conservent leurs cadres de réponse ancrés et leurs codes de question**. Le module 2 lit donc la position de chaque zone **dans le PDF du sujet**, au lieu de la détecter sur la copie scannée.
+
+**Ce qui est écarté, et pourquoi.** `guide-urie.md` prescrit de détecter les rectangles sur le scan puis de lire au **OCR** le code de chaque cadre. C'était le premier point de panne de toute la chaîne : trois caractères à 150 DPI, imprimés à côté de l'écriture d'un élève. Une confusion `G1`/`G7` aurait attribué une réponse à la mauvaise question **sans que rien ne le signale** — pas d'erreur, pas d'alerte, un diagnostic faux. Le PDF du sujet porte déjà l'information exacte : 280/280 cadres retrouvés sur les 7 sujets, 0 manquant, 0 en trop, 0 doublon.
+
+**Conséquence sur le format des sujets :** un sujet sans cadres ni codes ne peut pas être découpé en zones. Le format à cadres ancrés n'est plus une commodité de mise en page, c'est **une dépendance du diagnostic structuré**. Toute régénération des sujets doit les conserver.
+
+**Ce qui a été rendu tolérant :** les règles de lecture sont exprimées en **plages de gris et en fractions de la largeur de page**, jamais en égalité aux valeurs relevées sur les sujets d'aujourd'hui (0,478431 ; 480 pt ; 8 lignes). Une régénération changera les marges et les teintes ; avec des valeurs exactes, la lecture du gabarit aurait échoué **totalement** — zéro cadre trouvé — et non partiellement.
+
+**Confrontation au barème plutôt que confiance :** le format d'une question est déduit de la **géométrie** du cadre, jamais lu dans le barème, puis les deux sont comparés (`verifier_gabarit`). C'est ce qui détecte qu'un enseignant a scanné une autre version du sujet — avant que des réponses ne soient attribuées aux mauvaises questions.
+
+**Vérifié :** 24 tests, dont 7 sur les vrais sujets (ignorés si les PDF sont absents, ils ne sont pas versionnés) et 2 qui verrouillent la tolérance aux teintes et au nombre de lignes.
+
+---
+
 ## Tableau de synthèse
 
 | ID | Sujet | Décision finale | Date |
@@ -681,6 +696,7 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 | **D-CEO-25** | **Connexion nom+PIN, centres dérivés** | **Table `credentials` supprimée, rôle+PIN lus dans le Sheet personnel, regroupement par (nom, prénom) ; `CENTRES_AUTORISES` remplacée par `deriver_centres()` (détection de centre suspect, plus de liste figée)** | **2026-07-20** |
 | **D-CEO-26** | **Urie v2 — archivage + barème** | **Les 6 anciens tests archivés (`archive: True`, masqués de la sélection mais toujours résolus pour l'historique) ; barème stocké sur 20, note calculée contre la somme réelle des `max_score` et jamais contre un total déclaré** | **2026-07-30** |
 | **D-CEO-27** | **7 tests Urie générés depuis le classeur** | **Énoncés non extractibles des PDF (maths en vectoriel, WeasyPrint) → source = `Referentiel_Urie_v0.xlsx` via `scripts/generer_baremes_urie.py` ; 280 questions, 71 QCM corrigés, 209 corrigés en attente ; classe canonique unique par test ; copie parfaite = 20,0/20 vérifiée** | **2026-07-30** |
+| **D-CEO-35** | **Gabarit des zones lu dans le PDF** | **Les sujets conservent cadres ancrés et codes ; la position des zones est lue à la source, pas détectée sur le scan. L'OCR sort de la chaîne — c'était le premier point de panne, et une confusion de code aurait fauté sans rien signaler. Règles exprimées en plages, pas en valeurs relevées** | **2026-07-31** |
 | **D-CEO-34** | **États de session et inscription** | **Sept états ; l'inscription bascule les problèmes, date la facturation et refuse le palier C sans motif tracé. Trois sorties sans remédiation distinguées — « aucune lacune » est une réussite, pas un abandon** | **2026-07-30** |
 | **D-CEO-33** | **Cycle : T2 retiré, tests répétables** | **Cinq étapes au lieu de six ; un même type d'évaluation peut se répéter (rang automatique) tant que les lacunes persistent. Les indicateurs, qui comptent des transitions, restent valides** | **2026-07-30** |
 | **D-CEO-32** | **Périmètre unique** | **Centre d'encadrement, pas école : toute personne autorisée voit tous les élèves et corrige toute copie. Cloisonnement centre/classe retiré, sélecteur de casquette supprimé ; le Sheet reste la source des accès, avec un écran de consultation** | **2026-07-30** |
