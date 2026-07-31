@@ -448,6 +448,203 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 
 ---
 
+### D-CEO-26 — Anciens tests archivés, barème stocké sur 20 *(nouveau 2026-07-30)*
+**Décision :** premiers arbitrages du chantier Urie v2 (référentiel `Referentiel_Urie_v0.xlsx`, nouveaux sujets à cadres ancrés). Analyse complète : [docs/harmonisation_donnees.md](harmonisation_donnees.md) ; avancement : [docs/urie_v2_roadmap.md](urie_v2_roadmap.md).
+
+**Contexte :** l'investigation d'harmonisation a établi que les 7 nouveaux sujets PDF et le classeur sont parfaitement alignés (280/280 codes de question identiques, intitulés correspondant mot à mot), tandis que les 6 tests existants ne partagent **aucun identifiant** avec le référentiel : codes de question différents (`Q_NUM_01` vs `N1`), compétences en texte libre au lieu des 101 codes canoniques, ancrage par `chunk_ids` disjoint, nombre de questions variable (26 à 54) contre 40 systématiques. Les sujets ayant été refaits, ces 6 tests n'ont plus de sujet correspondant.
+
+**Anciens tests archivés (arbitrage A → A1) :** champ `archive: True` sur les 6 entrées de `_TEST_CATALOG` (`src/knowledge/test_registry.py`), nouveau champ `HakiliTest.archive`. `available_tests()` (menu de sélection UI) les masque ; `all_tests()` ajouté pour l'historique.
+
+**Archivage et non suppression — motif :** `get_test()` doit continuer à résoudre les tests archivés. `_apply_extracted_classe` (`pipeline.py`) s'en sert pour lire les niveaux déclarés d'un test lors de la détermination de la classe d'une copie. Retirer les entrées du catalogue aurait dégradé silencieusement la relecture des copies déjà corrigées — même classe de piège que les `chunk_ids` cassés journalisés en `debug` (§5.4 du document d'harmonisation). Vérifié après changement : `get_test('hakili_3e_v1')` résout toujours, niveaux intacts.
+
+**Les 4 défauts actifs des anciens barèmes ne sont pas corrigés, délibérément** — bug de notation (copie parfaite à 20,5/20 au test 3e v1, 18,5/20 au 3e v2, 19,5/20 au tle), `meta.total_questions` faux dans 4 fichiers sur 6, `score_max` ignoré par le loader dans `bareme_test_3e.yaml`, 16 `chunk_ids` cassés + 69/121 chunks orphelins. Réparer un système sortant n'a pas de valeur ; ils sont documentés comme dette assumée. **Exception : la classe de bug de notation est corrigée dans le code** (voir ci-dessous), car elle frapperait identiquement les nouveaux tests.
+
+**Conséquence visible assumée :** tant que les 7 nouveaux tests ne sont pas intégrés, l'interface ne propose plus aucun test Hakili — seul « Test personnalisé » reste. Comportement attendu de A1.
+
+**Barème stocké sur 20 (arbitrage D) :** l'échelle imprimée sur le sujet fait foi. Le classeur note sur 60 (30 questions × 1 pt en partie A, 10 exercices × 3 pts en partie B) ; la conversion `bareme_classeur / 3` est faite **à l'import**. Les poids relatifs sont identiques dans les deux échelles — un exercice de partie B vaut 3 questions de partie A —, il ne s'agit que d'une unité.
+
+**Règle de calcul du score, conséquence directe de D :** une question de partie A vaut 1/3 de point, non représentable exactement en décimal (30 × 0,3333 = 9,999). **La note doit donc toujours se calculer contre la somme réelle des `max_score`, jamais contre un total déclaré en métadonnée.** Avec cette règle, une copie parfaite vaut exactement 20,00 quelle que soit la précision de stockage. C'est aussi le correctif du bug de notation constaté : `CopyGrade.compute_final_score()` divise aujourd'hui par `total_possible` (valeur déclarée) au lieu de la somme réelle — le champ `rubric_actual_max`, déjà présent mais explicitement inutilisé, devient le dénominateur.
+
+**Vérifié :** `available_tests()` vide, `all_tests()`/`ids` complets à 6, `get_test()` résout les archivés. Suite de tests : 102 passent (les 2 erreurs de collecte sur `test_google_sheets.py` et `test_ui_math.py` sont pré-existantes — absence de `.env` local, `ANTHROPIC_API_KEY` requise à l'import de `config.py`).
+
+**Arbitrages encore ouverts** (§9 de `harmonisation_donnees.md`) : **B — production des 209 corrigés manquants du référentiel (chemin critique, bloque les modules 3 à 9)** ; C — sort du curriculum RAG (121 chunks) ; E — volumes horaires du lycée absents, palier incalculable en 2ndeC/1ereD ; F — traitement du format `construction`.
+
+---
+
+### D-CEO-27 — Les 7 tests Urie v2 générés depuis le classeur *(nouveau 2026-07-30)*
+**Décision :** les données des 7 nouveaux tests diagnostiques sont générées depuis `Referentiel_Urie_v0.xlsx`, et non extraites des sujets PDF. Suite directe de D-CEO-26.
+
+**Motif — les énoncés ne sont pas extractibles des PDF :** les 7 sujets sont produits par WeasyPrint et **toutes les mathématiques y sont rendues en vectoriel** (211 tracés sur une page, aucun span de texte les portant). L'extraction ne rend que la prose : la question `N5` du test de 3ème donne « Recopier et compléter avec le symbole  ou le symbole  :  et  . » — nombres, formules et symboles disparus. Tous les modes d'extraction PyMuPDF ont été testés ; aucune source HTML ni script générateur n'existe sur le disque. **Nuance :** les codes de cadre, eux, s'extraient parfaitement — c'est tout ce dont le module 2 aura besoin, il lit le code et découpe la zone sans interpréter la page.
+
+**Pourquoi l'absence d'énoncé n'est pas bloquante :** dans ce format, l'élève compose **sur le sujet**. La copie scannée porte donc l'énoncé imprimé, que l'IA transcrit avec la réponse. `subject_text` devient non critique — il aurait été bloquant dans l'ancien format à copie séparée.
+
+**Livré :** `scripts/generer_baremes_urie.py` (idempotent, vérifié par hachage) produit `data/knowledge/bareme_urie_<niveau>.yaml` pour les 7 niveaux. Source : `04_Questions` (code, partie, format, barème, compétence, intitulé), `06_Distracteurs` (options QCM + bonne réponse), `02_Competences` (domaine). **280 questions, 71 QCM avec bonne réponse, 209 champs `reponse_attendue`/`solution` émis vides** — l'arbitrage B pourra être rendu sans migration corrective.
+
+**Format YAML plat (`questions`) plutôt que l'ancien découpage :** les 7 domaines du référentiel (N, L, G, D, F, M, S, T) ne rentrent pas dans `questions_numeriques` / `questions_geometriques`. `_build_rubric_from_yaml` détecte désormais les deux formats — l'ancien reste lu pour les tests archivés, qui ne doivent pas cesser de se charger.
+
+**`label` et `niveaux` non dupliqués dans le catalogue :** les entrées `urie_*` de `_TEST_CATALOG` les laissent vides ; ils sont lus dans le `meta` du barème (`titre`, `classe`). Écrire le titre à deux endroits aurait créé deux valeurs qui divergent — même raisonnement que pour les Sheets en D-CEO-20/21.
+
+**Classe canonique unique par test, au lieu des niveaux évalués :** chaque test déclare `classe` = `6e`, `5e`, `4e`, `3e`, `2nde`, `1ere` ou `Tle`. Vérifié au passage que `normalize_classe` ne reconnaît **pas** `2ndeC`, `1ereD` ni `TleD` (retourne `None`) — d'où l'emploi des formes canoniques, sans quoi la classe n'aurait pas été écrite en base. Bénéfice sur les anciens tests, qui déclaraient les niveaux évalués (« 6e · 5e · 4e ») : `resolve_classe` disposait alors d'un garde-fou qui pouvait rejeter la classe réelle de l'élève ; il a maintenant un garde-fou exact et un repli fiable en cas d'échec d'extraction de l'en-tête (un seul niveau déclaré).
+
+**Propriété centrale vérifiée :** une copie parfaite vaut **exactement 20,0/20 sur les 7 tests**, malgré les tiers de point de la partie A (somme réelle 19,99999, absorbée par l'arrondi au quart déjà en place). C'est la règle de D-CEO-26 mise à l'épreuve ; verrouillée par test de régression pour qu'une régénération ou un changement de barème ne la casse pas en silence.
+
+**Vérifié :** `tests/test_baremes_urie.py` — 40 questions par test, structure 30 A + 10 B, barème /20 = classeur/3 question par question, classe reconnue par le normaliseur, codes uniques, QCM à bonne réponse unique, distracteurs tous tagués par un type de la liste fermée, 209 sans corrigé correspondant exactement aux non-QCM, copie parfaite = 20/20, copie nulle = 0/20, tests archivés masqués de la sélection mais toujours résolus avec leurs niveaux. **168 tests passent** (102 avant ce chantier).
+
+**Limite cosmétique assumée :** les intitulés du classeur sont majoritairement en ASCII replié (254/280 sans accents : « Ecrire », « Frequence ») et apparaissent tels quels comme libellés de question dans l'interface. Sans effet sur la correction ni le diagnostic ; corrigeable plus tard sans changement de schéma. Si la source HTML des sujets est retrouvée, elle donnerait les énoncés exacts avec leurs formules — cela vaut d'être demandé, sans être bloquant.
+
+**Régénération :** relancer `python scripts/generer_baremes_urie.py` après toute mise à jour du classeur — mais **sauvegarder d'abord les corrigés saisis à la main**, la régénération écrase `reponse_attendue` et `solution`.
+
+---
+
+### D-CEO-28 — Sortie de Streamlit vers Django, socle de données posé *(nouveau 2026-07-30)*
+**Décision :** l'interface passe de Streamlit à **Django + HTMX** en rendu serveur, hébergée sur Railway ou Render, base **Neon inchangée**. Analyse complète : [docs/architecture_cible.md](architecture_cible.md).
+
+**Contraintes tranchées :** pas de fonctionnement hors ligne, pas de PWA, données restant sur Neon. Ces trois réponses lèvent la seule réserve qui pesait sur le choix : sans besoin hors ligne, aucune API séparée n'est nécessaire et Django REST Framework devient inutile.
+
+**Motifs, mesurés et non génériques :** `src/ui/app.py` fait 2 876 lignes (26 % du projet, 342 appels `st.*`, 71 usages de `session_state`, 30 blocs HTML concaténés) mais **70 % du code est déjà indépendant du framework** — pipeline, 5 clients IA, RAG, PDF et Sheets migrent intacts. Deux besoins que Streamlit ne peut pas porter : (1) une **authentification réelle** — le PIN à 4 chiffres vit en clair dans un Google Sheet, sans jeton de session ni autorisation par requête, alors que le dispositif conserve des données scolaires nominatives d'élèves mineurs sur sept mois (point ouvert #4, CIL Burkina Faso) ; (2) le **mobile**, exigence explicite du module 8 (« une fiche qui exige un ordinateur ne sera pas remplie »). L'`admin` Django couvre par ailleurs une part importante des écrans à construire sur 11 tables relationnelles.
+
+**Moment choisi délibérément :** avant le module 1. Les 11 tables n'étaient pas écrites — écrire des modèles SQLAlchemy et une migration Alembic pour les réécrire ensuite aurait été du travail jeté.
+
+**Module 1 livré dans la cible :** projet `hakili/` + apps `referentiel` et `suivi`, 11 tables migrées (cycle descente/remontée testé), `manage.py importer_referentiel` idempotent chargeant 7 types d'erreur, 101 compétences, 136 prérequis, 444 coûts, 280 questions, 1031 signatures et 284 options — chiffres identiques au module 0. Contrôle d'intégrité avant toute écriture : un code inconnu fait échouer l'import avec un message précis plutôt que d'écrire à moitié. `src/` n'a pas été touché et Streamlit continue de tourner.
+
+**`Transition` protégée par le code :** `Probleme.changer_etat()` refuse un enchaînement non prévu par le graphe d'états, écrit la transition dans la même opération atomique, et `Transition.save()` refuse toute modification après création. L'admin met `etat` en lecture seule pour qu'on ne puisse pas contourner la méthode. Sans cela, un état modifié sans transition rendrait les 5 indicateurs du module 9 faux en silence.
+
+**Les settings Django ne lisent pas `src/core/config.py`** — `Settings()` exige `anthropic_api_key` sans valeur par défaut, ce qui ferait échouer `manage.py migrate` sur une machine sans clé LLM, alors qu'une migration n'appelle aucun modèle. Les deux configurations coexistent pour des besoins différents.
+
+**`Evaluation.copy_id` est un champ texte, pas une clé étrangère.** Tenté d'abord en FK vers une `Copie` déclarée `managed = False` : les tests ont révélé que Django ne crée pas les tables non gérées en base de test, donc toute insertion d'évaluation échouait, et le contournement habituel (lanceur flexant `managed`) ne fonctionne pas non plus puisque les migrations figent `managed: False`. Le lien souple est de toute façon le bon choix : c'est le précédent de `identifiant_hakili` (D-CEO-20) — quand la donnée référencée est hors du territoire de Django, on garde un identifiant et on documente le lien. Deviendra une vraie clé étrangère quand `copie` passera sous Django, à la fin de la migration.
+
+**Réglages Neon repris de D-CEO-19 :** `CONN_HEALTH_CHECKS` (équivalent de `pool_pre_ping`) et `CONN_MAX_AGE=300` (équivalent de `pool_recycle`). Neon met la base en veille et les connexions gardées ouvertes meurent sans prévenir — c'est ce qui provoquait des écritures silencieusement perdues avant D-CEO-19.
+
+**Sécurité posée d'emblée :** `DJANGO_SECRET_KEY` obligatoire hors DEBUG (échec au démarrage plutôt qu'une clé de repli qui rendrait les sessions falsifiables), `SECURE_SSL_REDIRECT`, cookies de session et CSRF sécurisés, HSTS un an, en-tête proxy Railway/Render. Indispensable dès que l'application quitte le poste local avec des données nominatives de mineurs.
+
+**Support SQLite ajouté** à `DATABASE_URL` pour que les tests et l'intégration continue tournent sans base Postgres ; la production reste sur Neon.
+
+**Vérifié :** 15 tests Django dont **le parcours complet T0→T5 d'un élève fictif avec toutes ses transitions enregistrées** — le critère de fin du module 1 tel qu'écrit dans `guide-urie.md`. Plus : transitions interdites refusées, états terminaux bloqués, `ATT` ne pouvant jamais être confirmé (l'inattention existe pour être écartée), atomicité de `changer_etat`, unicité d'un problème par session, immuabilité des transitions, calcul du taux de confirmation. En base, L5 du test de 3ème redonne exactement la réponse du module 0 : `L.IDR × CPT`, 0,50 h, bonne réponse `d`. **Les 172 tests pytest existants passent toujours** — aucune régression sur Streamlit.
+
+**Reste à faire :** migrer les écrans Streamlit (connexion, tableaux de bord, correction) puis retirer Streamlit ; remplacer la connexion nom + PIN par l'authentification Django (les rôles deviendront des groupes).
+
+---
+
+### D-CEO-29 — Volume horaire de repli pour le lycée : 4 h *(nouveau 2026-07-30)*
+**Décision :** les 27 compétences de lycée sans volume horaire officiel reçoivent un volume de repli de **4 heures**, permettant enfin de calculer leur coût de remédiation et donc le palier d'un élève de 2nde ou de 1ère.
+
+**Contexte :** les documents officiels du secondaire ne donnent qu'une progression mensuelle, sans volume par chapitre (point ouvert #2). Sans volume, `coût = volume × coefficient` n'est pas calculable, aucune ligne n'existe dans `08_Cout_remediation`, et le palier A/B/C reste indéterminable — le dispositif ne peut tout simplement pas tourner sur ces niveaux.
+
+**Pourquoi 4 h et pas 20 h.** La consigne initiale était « sur la base de 20 h ». Le calcul, fait avant application, a montré que cette valeur rendait le dispositif **dégénéré** : avec le plafond de 4 h par problème (protocole §4), `PRQ` (20 × 0,50 = 10 h), `CPT` (7 h) et `MOD` (5 h) tombaient **tous les trois à 4 h**. Le type d'erreur n'aurait plus eu aucun effet sur le coût, donc sur le palier, sur l'ensemble du lycée — et deux problèmes confirmés auraient suffi à basculer en palier B, cinq en palier C. Toute la finesse du diagnostic aurait été perdue là où elle sert le plus.
+
+**4 h est la médiane des 74 volumes réels du collège** (moyenne 5,3 h, étendue 1,5 à 20,5 h). Elle donne six coûts distincts — PRQ 2 h, CPT 1,5 h, MOD 1 h, PRC/RED/CNS 0,5 h — et des paliers qui gardent leur sens : 2 problèmes PRQ → 4 h (palier A), 5 → 10 h (B), 11 → 22 h (C).
+
+**C'est une estimation, et elle est marquée comme telle.** `Competence.volume_estime` et `CoutRemediation.estime` distinguent un chiffre dérivé du curriculum d'une valeur de repli ; l'admin les affiche en orange avec la mention « estimé ». Le classeur source, lui, continue d'indiquer « non disponible » — on ne réécrit pas la source avec une valeur inventée. Le remplacement sera trivial le jour où les vrais volumes seront connus.
+
+**Effet :** `CoutRemediation` passe de 444 à **606 lignes** (101 compétences × 6 types remédiables). `ATT` n'y figure toujours pas — non remédiable, coefficient 0 : le module 6 doit traiter son absence comme un coût nul, pas comme une anomalie.
+
+**Formule isolée dans `referentiel/couts.py`** — arrondi à la demi-heure, plancher 0,5 h, plafond 4 h — avec le motif du choix en docstring, plutôt que dispersée dans l'import.
+
+**Vérifié :** 10 tests dédiés, dont un **test de garde** qui documente pourquoi 20 h a été écarté : il échouera si quelqu'un relève `VOLUME_REPLI_LYCEE` sans mesurer l'effet du plafond. Import réel rejoué : 444 officiels + 162 estimés = 606, six valeurs distinctes, zéro compétence de 2nde C sans coût. 97 tests Django + 218 pytest passent.
+
+---
+
+### D-CEO-30 — Ancrage du diagnostic reconstruit sur le référentiel *(nouveau 2026-07-30)*
+**Décision :** le contexte programme injecté au diagnostic est désormais construit depuis le **référentiel** (compétences, prérequis, signatures d'erreur), et non plus depuis les `chunk_ids` du curriculum.
+
+**Défaut découvert, et il était silencieux.** Le nettoyage des fichiers obsolètes a révélé que l'ancrage passait par le champ `chunk_ids` des anciens barèmes. Les barèmes générés depuis le classeur (D-CEO-27) n'ont pas ce champ — le classeur ne le fournit pas. Mesuré : `urie_3eme` recevait **0 caractère** de contexte programme, là où `hakili_3e_v1` en recevait 2 048. Le pipeline n'échouait pas ; il produisait un diagnostic générique, c'est-à-dire précisément ce que D-CEO-12 qualifie d'inutilisable (« un diagnostic qui dit *lacune en algèbre* est inutilisable »). Personne ne l'aurait vu avant une correction réelle.
+
+**Pourquoi le référentiel plutôt que d'attendre l'arbitrage C.** Le rapprochement leçon ↔ compétence n'est pas validé, mais il n'est pas nécessaire : le référentiel porte déjà tout ce qu'il faut, et de façon vérifiée (module 0, zéro violation d'intégrité) — `Question.competence` (lien fiable et complet), `Prerequis` (la chaîne remontante, exactement ce que le protocole demande : « remonter d'un échec vers la lacune ancienne qui l'explique »), et `SignatureErreur` (1 031 signatures **par question**).
+
+**Le nouveau contexte est meilleur que l'ancien**, pas seulement fonctionnel : les signatures sont propres à la question posée, là où un chunk de curriculum décrivait une leçon entière. Le modèle n'a plus à deviner, il reconnaît — ce que le guide demande pour le module 4. Mesuré sur données réelles : 3 490 caractères et 3 lacunes pour trois questions de 3ème.
+
+**La frontière `src/` reste étanche.** Le référentiel vit dans une application Django ; `src/pipeline/` ne doit dépendre d'aucun framework, sous peine de ne plus pouvoir servir les deux interfaces. `run_phase_b` reçoit donc un paramètre `ancrage` — une fonction fournie par l'appelant — au lieu d'importer les modèles. Vérifié : aucun import Django dans `src/`.
+
+**Chemin historique conservé.** Sans `ancrage`, le pipeline retombe sur les `chunk_ids` : c'est ce qui sert au mode libre et aux anciens tests. Et un diagnostic qui se retrouve sans aucun ancrage est désormais **journalisé en avertissement** au lieu de passer inaperçu — c'est ce silence qui avait laissé le défaut vivre.
+
+**Le curriculum n'est pas abandonné :** une fois l'arbitrage C validé, son contenu rédigé (savoir-faire, erreurs fréquentes) enrichira ce contexte. Il s'ajoutera, il ne remplacera pas.
+
+**Vérifié :** 15 tests dédiés — contexte non vide, compétence et code présents, chaîne de prérequis remontée sur deux niveaux, signatures de la question, consigne de ne jamais inventer de code, compatibilité avec `CompetencyGap` sans adaptation, mode libre et ancien test retombant proprement sur l'ancien chemin. 112 tests Django + 218 pytest passent.
+
+---
+
+### D-CEO-31 — Nettoyage des fichiers et bibliothèques obsolètes *(nouveau 2026-07-30)*
+**Supprimés** (tous suivis par git, donc récupérables) : `AGENTS.md` et `docs/implementation_plan.md` (décrivaient un état antérieur à D-CEO-16, contredisaient la réalité) ; `data/schemas/` (6 schémas JSON sans aucune référence depuis que `jsonschema` n'est plus utilisé) ; `docs/generate_guide_maths_pdf.py` et le PDF qu'il produisait ; `emoji_check.txt`, `test_diagnostic_run.py`, une capture d'écran, `setup.ps1`.
+
+**Bibliothèques retirées :** `jsonschema`, `opencv-python-headless` (le contrôle qualité image a été supprimé en D-CEO-15, plus aucun import de `cv2`), `httpx`.
+
+**Faux positifs écartés — à ne pas retirer :** `alembic`, `gunicorn`, `whitenoise` et `psycopg2-binary` n'apparaissent dans aucun `import`, mais sont indispensables : chargés par nom (middleware, pilote de base) ou lancés en ligne de commande. Une analyse d'imports seule les aurait condamnés à tort.
+
+**Conservés délibérément :** les 6 anciens barèmes et corrigés `*_test_*.yaml` — ils alimentent le seul ancrage encore fonctionnel pour le mode libre, et servent de référence le temps de rebrancher le RAG (D-CEO-30). `streamlit` et `pandas` restent jusqu'à l'essai réel de bout en bout.
+
+**Correction d'une justification erronée de D-CEO-26 :** j'y écrivais qu'il fallait garder les tests archivés résolvables « pour les copies déjà corrigées ». C'est faux — `bareme_id` n'est jamais stocké dans la table `copie`, il ne circule qu'au moment de la correction. Les tests archivés sont donc inaccessibles et supprimables ; ils sont conservés pour la raison ci-dessus, pas pour celle-là.
+
+---
+
+### D-CEO-32 — Périmètre unique : centre d'encadrement, pas école *(nouveau 2026-07-30)*
+**Décision :** toute personne autorisée accède à **tous les élèves** et peut corriger **n'importe quelle copie**. Le cloisonnement par centre et par classe est retiré.
+
+**Motif — le modèle métier avait été mal compris.** Hakili Lab est un **centre d'encadrement**, pas une école : les enseignants n'ont pas « leurs » classes au sens scolaire. Ils tournent, se remplacent, reprennent les copies d'un collègue absent. Le filtrage par centre et classe (D-CEO-23, D-CEO-24) bloquait un travail parfaitement légitime sans rien protéger d'utile — une copie mal attribuée est empêchée par la **sélection explicite de l'élève** (D-CEO-20), pas par le périmètre.
+
+**Où se joue désormais la sécurité :** en amont, à l'autorisation. Une personne présente dans le Sheet du personnel avec un code d'accès peut travailler ; retirée du Sheet, elle ne peut plus se connecter, immédiatement. C'est un contrôle binaire et lisible, là où le filtrage par classe donnait une illusion de finesse.
+
+**Le rôle ne commande plus qu'une chose :** l'accès à l'administration (statistiques, référentiel, écran des accès). Il ne détermine plus quels élèves sont visibles.
+
+**Conséquences :**
+- `get_accessible_eleves` rend tous les élèves ; `can_access_eleve` est vrai pour toute personne autorisée. Les deux restent alignés — leur divergence avait déjà causé un bug (D-CEO-24).
+- **Le sélecteur de casquette est retiré** : il ne servait qu'à basculer entre périmètres. Sans périmètres distincts, il n'aurait fait qu'induire en erreur.
+- `casquette_par_defaut` privilégie désormais `administrateur` : cacher ses propres écrans à un administrateur n'aurait pas de sens.
+- Les affectations (centre, classe) restent lues du Sheet, mais **à titre informatif**.
+
+**Gestion des accès — le Sheet reste la source de vérité (voie A retenue).** L'administrateur *est* le docteur, qui contrôle déjà le Sheet : il ajoute une ligne, la personne se connecte ; il la retire, elle perd l'accès. **Aucun code n'a été écrit pour cela** — D-CEO-21 et D-CEO-25 sont confirmées, pas renversées. Gérer les comptes des deux côtés aurait recréé la seconde source de vérité que ce projet a démolie deux fois.
+
+**Ce qui manquait, en revanche, c'était de *voir* l'état.** Nouvel écran `/personnel/`, réservé à l'administrateur et **en lecture seule** : qui peut se connecter, qui ne le peut pas. Personne n'y est masqué — surtout pas les cas en défaut : une personne sans code d'accès ou au rôle non reconnu figure dans le Sheet en croyant avoir accès, et c'est précisément ce que l'administrateur doit repérer. Les comptes en défaut sont affichés en premier. **Les codes d'accès ne sont jamais affichés**, bien qu'ils soient en clair dans le Sheet.
+
+**Vérifié :** 130 tests Django + 218 pytest. Les tests qui encodaient l'ancien cloisonnement ont été réécrits pour affirmer le nouveau modèle, pas supprimés — un enseignant de Siao accède désormais à un élève de Tampouy, et c'est ce qui est testé.
+
+---
+
+### D-CEO-33 — Cycle de suivi : T2 retiré, évaluations répétables *(nouveau 2026-07-30)*
+**Décision :** le cycle passe de six à cinq étapes, et un même type d'évaluation peut se répéter autant de fois que nécessaire.
+
+**Le cycle réel, tel qu'il se pratique :**
+1. **T0** — test de niveau → des lacunes probables sont détectées
+2. **T1** — le système génère un sujet ciblé pour les confirmer ou les écarter
+3. Fiche de remédiation avec volume horaire, puis inscription de l'élève au programme
+4. Travail **hors plateforme**, avec le tuteur, selon la fiche
+5. **T3** — à la fin du volume horaire, vérification que les lacunes sont corrigées
+6. **T4** — 45 jours après, contrôle de rétention
+7. **T5** — 3 mois après, dernier contrôle, puis clôture du cycle
+
+**T2 (contrôle de mi-parcours) est retiré.** Le protocole le plaçait entre la remédiation et le test de sortie, mais le rendait déjà facultatif en palier A. Il ne correspond pas à la pratique du centre : on va de la fin du volume horaire directement à la vérification.
+
+**Un même type peut désormais se répéter.** Tant que des lacunes ne sont pas corrigées, l'enseignant relance un test de vérification. La contrainte `UniqueConstraint(session, type)` l'interdisait — un second T3 était rejeté par la base. Elle est remplacée par `UniqueConstraint(session, type, numero)` : les évaluations d'un même type se distinguent par un **rang**, attribué automatiquement à la création. Le calculer côté modèle plutôt que de le laisser à l'appelant évite qu'un rang oublié fasse échouer l'insertion avec un message incompréhensible.
+
+**Les indicateurs du module 9 ne sont pas cassés**, et c'est ce qui a permis ce changement sans dommage : ils comptent des **transitions** rattachées à une évaluation, pas « la » T1 ou « le » T3. Avec plusieurs T3, ils agrègent naturellement l'ensemble — un problème résolu au troisième passage compte comme résolu, ce qui est le comportement souhaité.
+
+**Le cycle de vie des problèmes supportait déjà la boucle :** `non_resolu → en_remediation → resolu` était permis, autant de fois que nécessaire. Seule la contrainte sur les évaluations bloquait.
+
+**Vérifié :** cycle réel simulé (T0, T1, trois T3 successifs, T4, T5) — les rangs s'attribuent seuls, les libellés signalent « 2e passage », « 3e passage ». 135 tests Django + 218 pytest passent. Les tables de suivi étant encore vides, la migration ne touche aucune donnée.
+
+**Reste à trancher :** l'**inscription au programme de remédiation** (étape 3). C'est un état de session à part entière — aujourd'hui une session est `ouverte / close / abandonnée`, sans distinguer « diagnostiquée, en attente d'inscription » de « inscrite, en remédiation ». C'est probablement le moment où la facturation démarre, donc l'endroit à nommer précisément.
+
+---
+
+### D-CEO-34 — États de session et inscription au programme *(nouveau 2026-07-30)*
+**Décision :** la session porte désormais l'avancement du cycle, et l'inscription au programme de remédiation devient une action explicite et tracée.
+
+**Sept états au lieu de trois.** `ouverte / close / abandonnee` ne distinguait pas « diagnostiquée, en attente » de « inscrite, en remédiation » — or c'est le moment où le palier cesse d'être une estimation pour devenir un engagement, et vraisemblablement celui où la facturation démarre.
+
+**Trois sorties sans remédiation, distinguées délibérément :**
+- `sans_suite` — T1 n'a confirmé aucun problème. **C'est un bon résultat**, et le protocole insiste : « un outil qui n'oriente pas systématiquement vers de la remédiation payante est un outil crédible. » Le confondre avec un abandon transformerait une réussite en échec dans les comptes rendus d'un centre.
+- `hors_dispositif` — palier C, orientation vers un accompagnement long. Une orientation, pas un renoncement.
+- `abandonnee` — retrait de l'élève ou de la famille.
+
+**`Session.inscrire()` — la décision humaine du cycle.** Bascule tous les problèmes confirmés en remédiation avec leur transition, enregistre `date_inscription`, et **refuse le palier C sans décision explicite**. Le passage outre reste possible mais exige un motif, conservé dans le commentaire des transitions : la décision est tracée, pas seulement prise. Inscrire sans aucun problème confirmé est refusé — il n'y aurait rien à remédier et la facturation serait sans objet.
+
+**Un point de conception trouvé en testant :** `hors_dispositif` étant terminal, le contrôle générique « session terminée » masquait le message du palier C — alors que c'est précisément l'état où une dérogation se demande. L'état est désormais laissé passer jusqu'au garde-fou du palier, dont le message explique quoi faire. Et une inscription forcée depuis cet état lève la date de clôture : la session repart.
+
+**Deux contraintes en base, pas des conventions :** une session non terminée ne peut pas porter de date de clôture (elle fausserait les indicateurs de durée), et l'état `remediation` exige une date d'inscription.
+
+**Vérifié :** 15 tests dédiés, dont le refus du palier C, le passage outre avec motif tracé, le refus d'un motif vide, la double inscription, l'inscription sans problème confirmé, et les trois orientations après T1. Cycle réel simulé de bout en bout. 150 tests Django + 218 pytest passent.
+
+---
+
 ## Tableau de synthèse
 
 | ID | Sujet | Décision finale | Date |
@@ -482,3 +679,12 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 | **D-CEO-23** | **Vue Responsable — tendance** | **Pastille vert/orange/rouge/gris sur les 2 dernières notes, `SEUIL_TENDANCE` dans `tendance.py`, chargement groupé par centre, baisses triées en premier** | **2026-07-18** |
 | **D-CEO-24** | **Vue Enseignant — profil élève** | **Sélection déroulante restreinte + profil détaillé (tendance réutilisée, copies chronologiques, documents) ; bug de permission `can_access_eleve`/enseignant corrigé** | **2026-07-18** |
 | **D-CEO-25** | **Connexion nom+PIN, centres dérivés** | **Table `credentials` supprimée, rôle+PIN lus dans le Sheet personnel, regroupement par (nom, prénom) ; `CENTRES_AUTORISES` remplacée par `deriver_centres()` (détection de centre suspect, plus de liste figée)** | **2026-07-20** |
+| **D-CEO-26** | **Urie v2 — archivage + barème** | **Les 6 anciens tests archivés (`archive: True`, masqués de la sélection mais toujours résolus pour l'historique) ; barème stocké sur 20, note calculée contre la somme réelle des `max_score` et jamais contre un total déclaré** | **2026-07-30** |
+| **D-CEO-27** | **7 tests Urie générés depuis le classeur** | **Énoncés non extractibles des PDF (maths en vectoriel, WeasyPrint) → source = `Referentiel_Urie_v0.xlsx` via `scripts/generer_baremes_urie.py` ; 280 questions, 71 QCM corrigés, 209 corrigés en attente ; classe canonique unique par test ; copie parfaite = 20,0/20 vérifiée** | **2026-07-30** |
+| **D-CEO-34** | **États de session et inscription** | **Sept états ; l'inscription bascule les problèmes, date la facturation et refuse le palier C sans motif tracé. Trois sorties sans remédiation distinguées — « aucune lacune » est une réussite, pas un abandon** | **2026-07-30** |
+| **D-CEO-33** | **Cycle : T2 retiré, tests répétables** | **Cinq étapes au lieu de six ; un même type d'évaluation peut se répéter (rang automatique) tant que les lacunes persistent. Les indicateurs, qui comptent des transitions, restent valides** | **2026-07-30** |
+| **D-CEO-32** | **Périmètre unique** | **Centre d'encadrement, pas école : toute personne autorisée voit tous les élèves et corrige toute copie. Cloisonnement centre/classe retiré, sélecteur de casquette supprimé ; le Sheet reste la source des accès, avec un écran de consultation** | **2026-07-30** |
+| **D-CEO-31** | **Nettoyage fichiers et bibliothèques** | **`AGENTS.md`, `implementation_plan.md`, `data/schemas/`, 3 bibliothèques inutilisées retirés ; faux positifs (`gunicorn`, `whitenoise`, `alembic`, `psycopg2`) écartés car chargés par nom** | **2026-07-30** |
+| **D-CEO-30** | **Ancrage du diagnostic reconstruit** | **Le RAG était mort sur les 7 nouveaux tests (0 caractère de contexte) : reconstruit sur le référentiel — compétence, chaîne de prérequis, signatures par question. `src/` reste sans dépendance framework via un paramètre `ancrage`** | **2026-07-30** |
+| **D-CEO-29** | **Volume de repli lycée : 4 h** | **Médiane du collège, marquée « estimé » ; 20 h écarté après calcul — le plafond de 4 h y écrasait PRQ/CPT/MOD à la même valeur. 606 coûts au lieu de 444, palier enfin calculable en 2nde et 1ère** | **2026-07-30** |
+| **D-CEO-28** | **Streamlit → Django + HTMX, socle de données** | **Rendu serveur, Railway/Render, Neon inchangé ; 11 tables migrées en Django, référentiel importé (idempotent, contrôle d'intégrité avant écriture), admin configuré ; `Transition` immuable et `changer_etat()` atomique ; parcours T0→T5 vérifié** | **2026-07-30** |
