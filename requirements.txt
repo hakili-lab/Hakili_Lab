@@ -4,14 +4,12 @@
 # --- Core ---
 pydantic>=2.9.0
 pydantic-settings>=2.5.0
-jsonschema==4.23.0
 python-dotenv==1.0.1
 pyyaml>=6.0.2
 python-docx>=1.1.2    # Extraction énoncé DOCX (TestRegistry)
 
 # --- Traitement image & PDF ---
 pillow>=10.4.0,<12.0.0
-opencv-python-headless==4.10.0.84
 pymupdf>=1.24.9        # wheel pré-compilé dispo 1.27+ pour Python 3.13 Windows
 
 # --- Génération PDF ---
@@ -20,7 +18,12 @@ jinja2==3.1.4
 markupsafe>=3.0.0     # utilisé directement dans pdf_report_html.py (pas seulement transitif via jinja2)
 xhtml2pdf>=0.2.14
 
-# --- Interface ---
+# --- Interface web Django (cible — voir docs/architecture_cible.md) ---
+django>=5.1,<6.0
+gunicorn>=22.0.0      # serveur WSGI de production (Railway / Render)
+whitenoise>=6.7.0     # sert les fichiers statiques sans serveur web séparé
+
+# --- Interface Streamlit (sortante — retirée à la fin de la migration) ---
 streamlit>=1.36.0
 pandas>=2.2.0
 openpyxl>=3.1.0        # Lecture .xlsx (import élèves en masse)
@@ -32,7 +35,6 @@ openai>=1.30.0        # DeepSeek (API compatible OpenAI) + GPT-5 (fallback)
 mistralai>=1.0.0,<2.0.0   # Mistral Small 3.1 — v2.x a changé l'API
 
 # --- Réseau & Robustesse ---
-httpx>=0.28.1
 tenacity==8.5.0
 
 # --- Base de données (portail de consultation Neon Postgres) ---

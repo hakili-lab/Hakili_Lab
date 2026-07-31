@@ -53,3 +53,8 @@ htmlcov/
 
 # Claude Code (local uniquement)
 .claude/settings.local.json
+
+# Django
+staticfiles/
+*.sqlite3
+*.db
