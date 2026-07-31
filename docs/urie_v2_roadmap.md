@@ -163,7 +163,8 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - [x] **Deux champs ajoutés à `Probleme`**, dont le module 4 a besoin autant que le module 3 : `evaluation_origine` (la passation qui a révélé le problème) et `justification` (ce qu'on a lu sur la copie). La justification est ce qui rend un désaccord entre le corpus et le module 4 **arbitrable**, au lieu d'un simple écart de comptage.
 - [x] **Outil de saisie : `manage.py taguer_corpus --fichier …`** (arbitrage rendu : un fichier YAML plutôt qu'un écran — le tagage est lent et discutable, un fichier se relit, se compare et se reprend le lendemain ; un formulaire perd tout à la première fermeture d'onglet). Options `--a-blanc` et `--remplacer`.
 - [x] **Validation complète avant toute écriture** : aucun code inventé, justification obligatoire, `ATT` non confirmable, couple en double refusé. Un corpus à moitié écrit serait pire que pas de corpus — il aurait l'air complet.
-- [ ] Rassembler ≥5 anciennes copies d'élèves Hakili Lab. **1 sur 5** (`TEST 4 3e.pdf`).
+- [x] Rassembler ≥5 anciennes copies d'élèves Hakili Lab — **5 réunies** (2 en 3ème, 2 en 5ème, 1 en 6ème).
+- [ ] Taguer les 5 copies — **2 sur 5 faites** (`corpus_3e_01`, `corpus_3e_02`). Restent 2 copies de 5ème et 1 de 6ème.
 - [ ] Pour chaque copie : relever chaque réponse fausse, chercher la signature correspondante dans `05_Grille_diagnostic`, noter le problème (`code_competence` + `code_type_erreur`).
 - [ ] Enregistrer chaque problème taggé dans les tables du Module 1 (`probleme`, `transition` en état `hypothese` ou directement `confirme` selon le protocole retenu pour le tagage manuel).
 - [ ] Noter chaque cas d'hésitation et pourquoi — ce sont des défauts potentiels du référentiel, à remonter à l'utilisateur (pas à corriger seul, cf. `CLAUDE.md` "ce qui n'est pas de ton ressort").
@@ -563,6 +564,29 @@ Trois décisions de fond ont été prises après confrontation du protocole à l
 
 > ⚠ **Un point de gestion, hors code, qui pèse plus que le prochain module :**
 > **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+
+### 2026-07-31 (suite) — Deux premières copies taguées, et un contraste qui valide la démarche
+Les 5 copies sont réunies (2 en 3ème, 2 en 5ème, 1 en 6ème). Les **deux copies de 3ème** — même sujet, même correcteur — sont taguées.
+
+| | copie 1 | copie 2 |
+|---|---|---|
+| Note | 0,25/20 | forte |
+| Problèmes | **22** | **10** |
+| Coût | **34,5 h → palier C** | **8,5 h → palier B** |
+| Types dominants | CPT (13/22) | PRC (4), ATT (3), CNS (2) |
+
+**C'est ce contraste qui fait le corpus.** Une copie s'effondre — presque tout est conceptuel, la remédiation courte est hors de portée et le dispositif doit le dire. L'autre réussit l'essentiel et n'échoue que sur des gestes : signes dans les fractions, exposant perdu à la recopie, hachure du mauvais côté d'une inéquation pourtant bien résolue. **Le module 4 sera jugé sur sa capacité à distinguer les deux**, pas à détecter l'effondrement — que n'importe quelle heuristique repère.
+
+Deux mécanismes déjà éprouvés en conditions réelles au passage : les trois `ATT` de la copie 2 sont **comptés 0 h**, et le palier bascule de B à C entre les deux copies sans intervention.
+
+**Ce que le tagage a appris sur le référentiel — 8 hésitations relevées, dont trois qui comptent :**
+1. **Aucune compétence ne couvre le vocabulaire géométrique de base.** La copie 1 répond « parallèle » ou « perpendiculaire » à quatre questions attendant un point ou une mesure — échec corrélé sur `G.SYMC`, `G.SYMO`, `G.ANG3`, `G.TRIP`, c'est-à-dire la signature exacte de **PRQ**. Mais PRQ exige de *nommer* le prérequis, et il n'existe pas. Faute de mieux, quatre `CPT` séparés ont été posés — ce qui **gonfle mécaniquement le coût** d'un élève dont le problème est unique. Le référentiel a-t-il besoin d'une compétence transversale de vocabulaire géométrique ?
+2. **La frontière ATT / PRC n'est pas nette**, et elle n'est pas neutre : `ATT` vaut 0 h, `PRC` vaut au moins 0,5 h. Un `x³` recopié `x` est-il une inattention ou une exécution ratée ? Le classement change la facture.
+3. **Trois `ATT` sur une même copie** interrogent le protocole : chacune se justifie isolément, mais les écarter toutes à T1 ferait peut-être disparaître un profil réel — élève rapide et négligent — que le référentiel ne sait pas nommer.
+
+**Décision prise sur les données personnelles :** les copies portent nom complet, établissement et téléphone d'élèves mineurs. Le corpus emploie des identifiants **non nominatifs** (`CORPUS-3E-01`…) : c'est un instrument de mesure, il n'a aucun besoin de nommer un enfant. À confirmer si ces élèves doivent aussi être suivis pour de vrai.
+
+**Reste :** les 3 dernières copies (2 en 5ème, 1 en 6ème, 14 pages chacune).
 
 ### 2026-07-31 (suite) — Module 3 : l'étalon a maintenant où se poser
 Le module 1 avait laissé le marqueur du corpus « à définir ». Il est défini, et deux manques sont apparus en le posant.
