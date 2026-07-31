@@ -1,0 +1,669 @@
+# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
+# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# mise à jour du classeur. Exception : les champs reponse_attendue et
+# solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
+# les sauvegarder avant de régénérer.
+
+meta:
+  test_id: urie_3eme
+  titre: Test diagnostique d'entrée en 3ème
+  niveau_test: 3eme
+  classe: 3e
+  total_questions: 40
+  total_possible: 20
+  somme_baremes_reelle: 19.99999
+  bareme_classeur_total: 60.0
+  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_urie.py
+  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+    B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
+questions:
+- code: D1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.STAT1
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Frequence en pourcentage de 18 eleves sur 50
+  reponse_attendue: ''
+  solution: ''
+- code: D2
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.ECH
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Distance reelle pour 6 cm a l'echelle 1/50 000
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: 0,3 km
+    correcte: false
+    type_erreur: PRQ
+    erreur: 'Distance sur le terrain trouvee (300 000 cm) mais divisee par 1 000 000 : la conversion cm
+      vers km est ratee d''un facteur 10^3.'
+  - lettre: b
+    texte: 3 km
+    correcte: true
+  - lettre: c
+    texte: 30 km
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Conversion 300 000 cm vers km effectuee en divisant par 10 000 : un zero de moins dans le
+      facteur de conversion.'
+  - lettre: d
+    texte: 300 km
+    correcte: false
+    type_erreur: CPT
+    erreur: '300 000 cm converti en km par une seule division par 1 000 : l''eleve pense qu''un kilometre
+      vaut 1 000 centimetres.'
+- code: D3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.STAT1
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Moyenne ponderee de quatre notes avec coefficients
+  reponse_attendue: ''
+  solution: ''
+- code: D4
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: D.STAT1
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Note moyenne et frequence en pourcentage de la note 12
+  reponse_attendue: ''
+  solution: ''
+- code: D5
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: D.POUR
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Benefice de 12 % et prix de vente d'un sac de niebe
+  reponse_attendue: ''
+  solution: ''
+- code: F1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.APP
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Image de -2 par f(x) = 3x - 4
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: '-6'
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Calcul arrete a 3 x (-2) : la constante -4 de l''expression n''est pas prise en compte.'
+  - lettre: b
+    texte: '-2'
+    correcte: false
+    type_erreur: CPT
+    erreur: 'La valeur de depart est redonnee comme image : confusion entre image et antecedent.'
+  - lettre: c
+    texte: '10'
+    correcte: false
+    type_erreur: ATT
+    erreur: 'Calcul -6 - 4 dont le resultat est ecrit 10 : perte du signe negatif au moment de conclure.'
+  - lettre: d
+    texte: '-10'
+    correcte: true
+- code: F2
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: F.APP
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Completer le tableau de g puis donner l'antecedent de 1
+  reponse_attendue: ''
+  solution: ''
+- code: G1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.ABS
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Distance AB sur une droite graduee, abscisses -3 et 5
+  reponse_attendue: ''
+  solution: ''
+- code: G2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.VEC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Completer l'egalite vectorielle dans un parallelogramme
+  reponse_attendue: ''
+  solution: ''
+- code: G3
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.REP
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Coordonnees du milieu de [EF] avec E(-2;7) et F(6;1)
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: (4 ; -3)
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Application de (x_F - x_E)/2 et (y_F - y_E)/2 : la formule du milieu est confondue avec une
+      demi-difference de coordonnees.'
+  - lettre: b
+    texte: (2 ; 3)
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Abscisse correcte mais ordonnee calculee comme (7 - 1)/2 : soustraction utilisee sur une
+      seule coordonnee.'
+  - lettre: c
+    texte: (2 ; 4)
+    correcte: true
+  - lettre: d
+    texte: (4 ; 8)
+    correcte: false
+    type_erreur: CNS
+    erreur: 'Somme des coordonnees sans division par 2 : la partie "moitie" de la formule du milieu n''est
+      pas mobilisee.'
+- code: G4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.TRANS
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Image de M par la translation transformant N en P
+  reponse_attendue: ''
+  solution: ''
+- code: G5
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.SOL1
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Volume d'un cone de rayon 3 cm et hauteur 7 cm
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: 7 pi cm^3
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Formule (1/3) x pi x r x h : le rayon n''est pas eleve au carre dans le calcul de l''aire
+      de base.'
+  - lettre: b
+    texte: 21 pi cm^3
+    correcte: true
+  - lettre: c
+    texte: 63 pi cm^3
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Formule du cylindre pi x r^2 x h appliquee au cone : le facteur un tiers est absent.'
+  - lettre: d
+    texte: 84 pi cm^3
+    correcte: false
+    type_erreur: PRQ
+    erreur: 'Calcul (1/3) x pi x 6^2 x 7 : le nombre 3 est pris pour un diametre, confusion rayon/diametre.'
+- code: G6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.ABS
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Abscisse de Q sachant PQ = 6 et x < -1
+  reponse_attendue: ''
+  solution: ''
+- code: G7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PROJ
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer MN, segment des milieux, avec ST = 9,4 cm
+  reponse_attendue: ''
+  solution: ''
+- code: G8
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.VEC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Simplifier la somme AB + BC + CD par Chasles
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: vecteur AC
+    correcte: false
+    type_erreur: PRC
+    erreur: Chasles applique a AB + BC seulement, le troisieme vecteur CD est laisse de cote.
+  - lettre: b
+    texte: vecteur BD
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Chasles applique a BC + CD en oubliant que l''origine du resultat est A : le premier point
+      de la chaine n''est pas identifie comme origine.'
+  - lettre: c
+    texte: vecteur AD
+    correcte: true
+  - lettre: d
+    texte: vecteur DA
+    correcte: false
+    type_erreur: ATT
+    erreur: Extremites correctement identifiees mais lettres ecrites dans l'ordre inverse.
+- code: G9
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.SYMC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Image de [RS] par la symetrie de centre O
+  reponse_attendue: ''
+  solution: ''
+- code: G10
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.POLY
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Mesure d'un angle au centre d'un polygone regulier a 8 cotes
+  reponse_attendue: ''
+  solution: ''
+- code: G11
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.REP
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Coordonnees de B puis du milieu J de [AI]
+  reponse_attendue: ''
+  solution: ''
+- code: G12
+  partie: B
+  format: construction
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.VEC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Construire le triangle puis le point D somme vectorielle
+  reponse_attendue: ''
+  solution: ''
+- code: G13
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.PROJ
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Montrer que F est le milieu de [MP] puis calculer MF
+  reponse_attendue: ''
+  solution: ''
+- code: L1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.DEV1
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Developper et reduire 3(2x-5) - 4(x-1)
+  reponse_attendue: ''
+  solution: ''
+- code: L2
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.EQ1
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre 5x - 7 = 2x + 8
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: x = 1/3
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Le terme -7 est transpose sans changer de signe : 3x = 8 - 7 = 1.'
+  - lettre: b
+    texte: x = 5
+    correcte: true
+  - lettre: c
+    texte: x = -5
+    correcte: false
+    type_erreur: ATT
+    erreur: Equation reduite correctement en 3x = 15, mais signe negatif ajoute a tort au moment de la
+      division finale.
+  - lettre: d
+    texte: x = 15/7
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Les termes en x des deux membres sont additionnes (5x + 2x = 7x) au lieu d''etre soustraits
+      : la transposition est comprise comme un simple regroupement.'
+- code: L3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.FAC1
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Factoriser 7x^2 + 21x
+  reponse_attendue: ''
+  solution: ''
+- code: L4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.INEQ1
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre l'inequation 3x - 4 <= 11
+  reponse_attendue: ''
+  solution: ''
+- code: L5
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.IDR
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Developper (2x - 3)^2
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: 4x^2 + 9
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Oubli complet du double produit : (a - b)^2 est traite comme a^2 + b^2.'
+  - lettre: b
+    texte: 2x^2 - 12x + 9
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Double produit correct mais (2x)^2 calcule comme 2x^2 : le coefficient 2 n''est pas eleve
+      au carre.'
+  - lettre: c
+    texte: 4x^2 - 6x + 9
+    correcte: false
+    type_erreur: PRC
+    erreur: Double produit calcule comme 2x fois 3 sans le facteur 2 de la formule 2ab.
+  - lettre: d
+    texte: 4x^2 - 12x + 9
+    correcte: true
+- code: L6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.FAC2
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Factoriser 25x^2 - 16
+  reponse_attendue: ''
+  solution: ''
+- code: L7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.EQ1
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre x/3 - 2 = x/6 + 1
+  reponse_attendue: ''
+  solution: ''
+- code: L8
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.MISE
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Traduire une phrase par une inequation d'inconnue x
+  reponse_attendue: ''
+  solution: ''
+- code: L9
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.IDR
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Developper et reduire E puis calculer E pour x = 2
+  reponse_attendue: ''
+  solution: ''
+- code: L10
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.FAC2
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Factoriser G puis calculer G pour x = 1
+  reponse_attendue: ''
+  solution: ''
+- code: L11
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.MISE
+  competence_secondaire: L.EQ1
+  domaine: Calcul litteral et algebre
+  objet: Mettre en equation un achat et resoudre
+  reponse_attendue: ''
+  solution: ''
+- code: N1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.ENS
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecrire les nombres appartenant a Z
+  reponse_attendue: ''
+  solution: ''
+- code: N2
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.SCI
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecriture scientifique de 0,00042
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 4,2 x 10^-4
+    correcte: true
+  - lettre: b
+    texte: 4,2 x 10^4
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Mantisse correcte mais exposant positif : l''eleve compte les rangs sans relier un nombre
+      plus petit que 1 a un exposant negatif.'
+  - lettre: c
+    texte: 42 x 10^-5
+    correcte: false
+    type_erreur: CNS
+    erreur: 'Egalite numerique juste mais mantisse egale a 42 : la contrainte 1 <= a < 10 de l''ecriture
+      scientifique n''est pas connue.'
+  - lettre: d
+    texte: 0,42 x 10^-3
+    correcte: false
+    type_erreur: CNS
+    erreur: 'Egalite numerique juste mais mantisse egale a 0,42 : la contrainte 1 <= a < 10 n''est pas
+      connue, la virgule est arretee un rang trop tot.'
+- code: N3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.APP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Approximation decimale par defaut a 10^-2 de 7/3
+  reponse_attendue: ''
+  solution: ''
+- code: N4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.RAT
+  competence_secondaire: N.PGCD
+  domaine: Activites numeriques
+  objet: Calculer une fraction a etages et rendre irreductible
+  reponse_attendue: ''
+  solution: ''
+- code: N5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.ENS
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Completer avec le symbole d'appartenance ou de non-appartenance
+  reponse_attendue: ''
+  solution: ''
+- code: N6
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.APP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Encadrer 22/7 par deux decimaux consecutifs d'ordre 2
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 3,14 < 22/7 < 3,15
+    correcte: true
+  - lettre: b
+    texte: 3,13 < 22/7 < 3,14
+    correcte: false
+    type_erreur: CPT
+    erreur: 'L''eleve reconnait 3,14 comme valeur approchee de 22/7 et le place systematiquement comme
+      borne superieure : confusion entre defaut et exces.'
+  - lettre: c
+    texte: 3,15 < 22/7 < 3,16
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Division 22 : 7 mal posee donnant 3,15 ou plus : la borne inferieure est calculee au-dessus
+      de la valeur reelle.'
+  - lettre: d
+    texte: 3,1 < 22/7 < 3,2
+    correcte: false
+    type_erreur: CNS
+    erreur: 'Encadrement realise avec des decimaux d''ordre 1 : la signification de "ordre 2" (precision
+      10^-2) n''est pas mobilisee.'
+- code: N7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.SCI
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecrire un quotient de puissances de dix sous forme a x 10^n
+  reponse_attendue: ''
+  solution: ''
+- code: N8
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.APP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ordre de grandeur de 187 sacs a 19 850 FCFA
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: 400 000 FCFA
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Arrondis corrects (200 et 20 000) mais produit calcule avec un zero de moins : 2 x 2 = 4
+      suivi de seulement cinq zeros.'
+  - lettre: b
+    texte: 2 000 000 FCFA
+    correcte: false
+    type_erreur: CPT
+    erreur: '187 arrondi a 100 au lieu de 200 : la regle d''arrondi retient le chiffre des centaines sans
+      regarder le suivant.'
+  - lettre: c
+    texte: 4 000 000 FCFA
+    correcte: true
+  - lettre: d
+    texte: 40 000 000 FCFA
+    correcte: false
+    type_erreur: ATT
+    erreur: Bon raisonnement 200 x 20 000 mais un zero excedentaire dans l'ecriture du resultat.
+- code: N9
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.RAT
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Fraction creusee en deux semaines et fraction restante
+  reponse_attendue: ''
+  solution: ''

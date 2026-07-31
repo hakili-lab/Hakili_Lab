@@ -1,0 +1,650 @@
+# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
+# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# mise à jour du classeur. Exception : les champs reponse_attendue et
+# solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
+# les sauvegarder avant de régénérer.
+
+meta:
+  test_id: urie_6eme
+  titre: Test diagnostique d'entrée en 6ème
+  niveau_test: 6eme
+  classe: 6e
+  total_questions: 40
+  total_possible: 20
+  somme_baremes_reelle: 19.99999
+  bareme_classeur_total: 60.0
+  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_urie.py
+  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+    B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
+questions:
+- code: D1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.PROP
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Calculer le prix unitaire, 5 cahiers pour 1 750 FCFA
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: 250 FCFA
+    correcte: false
+    type_erreur: PRC
+    erreur: Estimer le quotient sans poser la division (250 x 5 = 1 250).
+  - lettre: b
+    texte: 350 FCFA
+    correcte: true
+  - lettre: c
+    texte: 305 FCFA
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Oublier d''abaisser un chiffre dans la potence de 1 750 : 5.'
+  - lettre: d
+    texte: 875 FCFA
+    correcte: false
+    type_erreur: MOD
+    erreur: 'Diviser par 2 au lieu de 5 : le nombre de cahiers n''est pas modelise.'
+- code: D2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.TAB
+  competence_secondaire: D.POUR
+  domaine: Donnees, proportionnalite, statistique
+  objet: Calculer le pourcentage de savons vendus le mardi
+  reponse_attendue: ''
+  solution: ''
+- code: D3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.PROP
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Calculer le prix de 8 m de tissu proportionnellement
+  reponse_attendue: ''
+  solution: ''
+- code: D4
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: D.PROP
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Completer un tableau de proportionnalite prix-sacs de riz
+  reponse_attendue: ''
+  solution: ''
+- code: D5
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: D.POUR
+  competence_secondaire: D.TAB
+  domaine: Donnees, proportionnalite, statistique
+  objet: Comparer les pourcentages de reussite de deux classes
+  reponse_attendue: ''
+  solution: ''
+- code: G1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.VOC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Donner AM, M milieu de [AB] avec AB = 9 cm
+  reponse_attendue: ''
+  solution: ''
+- code: G2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.ANG1
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Donner la nature d'un angle de 47 degres
+  reponse_attendue: ''
+  solution: ''
+- code: G3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.FIG
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Donner la nature d'un triangle de cotes 6, 6 et 4 cm
+  reponse_attendue: ''
+  solution: ''
+- code: G4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.VOC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer AC, points alignes, AB = 4,5 cm, BC = 6 cm
+  reponse_attendue: ''
+  solution: ''
+- code: G5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PARA
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Designer le cote du rectangle ABCD parallele a [AB]
+  reponse_attendue: ''
+  solution: ''
+- code: G6
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.ANG1
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Lire au rapporteur un angle entre graduations 70 et 80
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: 70 degres
+    correcte: false
+    type_erreur: PRC
+    erreur: Lire la graduation inferieure sans traiter la position intermediaire.
+  - lettre: b
+    texte: 72 degres
+    correcte: false
+    type_erreur: CPT
+    erreur: Attribuer une valeur fausse aux graduations intermediaires du rapporteur.
+  - lettre: c
+    texte: 80 degres
+    correcte: false
+    type_erreur: PRC
+    erreur: Lire la graduation superieure sans traiter la position intermediaire.
+  - lettre: d
+    texte: 75 degres
+    correcte: true
+- code: G7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.FIG
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Situer P (OP = 4 cm) par rapport au cercle
+  reponse_attendue: ''
+  solution: ''
+- code: G8
+  partie: B
+  format: construction
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.PARA
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Tracer la perpendiculaire et la parallele a (d) passant par A
+  reponse_attendue: ''
+  solution: ''
+- code: G9
+  partie: B
+  format: construction
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.FIG
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Construire le triangle EFG de cotes 6, 5 et 4 cm
+  reponse_attendue: ''
+  solution: ''
+- code: M1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.CONV
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Convertir 3,2 km en metres
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: 32 m
+    correcte: false
+    type_erreur: CNS
+    erreur: Ignorer 1 km = 1 000 m et multiplier 3,2 par 10.
+  - lettre: b
+    texte: 3 200 m
+    correcte: true
+  - lettre: c
+    texte: 320 m
+    correcte: false
+    type_erreur: PRC
+    erreur: Decaler la virgule de deux rangs au lieu de trois.
+  - lettre: d
+    texte: 32 000 m
+    correcte: false
+    type_erreur: PRC
+    erreur: Decaler la virgule de quatre rangs dans le tableau de conversion.
+- code: M2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.AIRE
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer l'aire d'un rectangle de 12 cm sur 7 cm
+  reponse_attendue: ''
+  solution: ''
+- code: M3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.CONV
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Convertir 4 500 g en kilogrammes
+  reponse_attendue: ''
+  solution: ''
+- code: M4
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.PER
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer le perimetre d'un carre de 9 cm de cote
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: 18 cm
+    correcte: false
+    type_erreur: CPT
+    erreur: Croire que le perimetre du carre vaut 2 x cote.
+  - lettre: b
+    texte: 45 cm
+    correcte: false
+    type_erreur: CNS
+    erreur: Multiplier le cote par 5, faute de disposer de la formule du perimetre.
+  - lettre: c
+    texte: 81 cm
+    correcte: false
+    type_erreur: CPT
+    erreur: Calculer l'aire 9 x 9 et la donner comme perimetre.
+  - lettre: d
+    texte: 36 cm
+    correcte: true
+- code: M5
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.CONV
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer la duree entre 8 h 45 et 10 h 20
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: 1 h 25 min
+    correcte: false
+    type_erreur: PRC
+    erreur: Inverser la soustraction des minutes (45 - 20) pour eviter l'emprunt.
+  - lettre: b
+    texte: 1 h 75 min
+    correcte: false
+    type_erreur: CPT
+    erreur: Faire l'emprunt en base 10 (120 - 45) au lieu de 60 minutes.
+  - lettre: c
+    texte: 1 h 35 min
+    correcte: true
+  - lettre: d
+    texte: 2 h 35 min
+    correcte: false
+    type_erreur: ATT
+    erreur: Oublier de retirer l'heure empruntee apres avoir calcule 35 minutes.
+- code: M6
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.AIRE
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer l'aire d'un triangle, base 10 cm, hauteur 6
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 30 cm2
+    correcte: true
+  - lettre: b
+    texte: 16 cm2
+    correcte: false
+    type_erreur: CPT
+    erreur: Additionner base et hauteur au lieu de les multiplier.
+  - lettre: c
+    texte: 15 cm2
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Diviser deux fois par 2 (60 : 2 : 2) apres un produit correct.'
+  - lettre: d
+    texte: 60 cm2
+    correcte: false
+    type_erreur: CNS
+    erreur: Appliquer base x hauteur sans la division par 2.
+- code: M7
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: M.PER
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer trois tours de fil autour d'un jardin rectangulaire
+  reponse_attendue: ''
+  solution: ''
+- code: M8
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: M.AIRE
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer l'aire d'un mur diminuee d'une porte carree
+  reponse_attendue: ''
+  solution: ''
+- code: N1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.NUM
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecrire en chiffres soixante mille quatre-vingt-douze
+  reponse_attendue: ''
+  solution: ''
+- code: N2
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.CMP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Choisir le plus grand parmi quatre nombres decimaux
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 7,5
+    correcte: true
+  - lettre: b
+    texte: 7,48
+    correcte: false
+    type_erreur: CPT
+    erreur: Comparer 48 et 5 comme des entiers, sans tenir compte des rangs decimaux.
+  - lettre: c
+    texte: 7,409
+    correcte: false
+    type_erreur: CPT
+    erreur: Croire que le nombre ayant le plus de chiffres decimaux est le plus grand.
+  - lettre: d
+    texte: 7,09
+    correcte: false
+    type_erreur: ATT
+    erreur: Selection au hasard apres lecture hative, sans comparaison effectuee.
+- code: N3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.ADD
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Effectuer l'addition 3 608 + 947
+  reponse_attendue: ''
+  solution: ''
+- code: N4
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.NUM
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecrire le nombre valant 3 unites et 7 centiemes
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: 3,7
+    correcte: false
+    type_erreur: CPT
+    erreur: Confondre centiemes et dixiemes en placant le 7 au premier rang decimal.
+  - lettre: b
+    texte: 3,70
+    correcte: false
+    type_erreur: CPT
+    erreur: Placer le 7 en dixiemes et completer par un zero, en croyant marquer les centiemes.
+  - lettre: c
+    texte: 3,07
+    correcte: true
+  - lettre: d
+    texte: 0,37
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Inverser partie entiere et partie decimale : les rangs ne sont pas identifies.'
+- code: N5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.MUL
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Effectuer la multiplication 326 x 48
+  reponse_attendue: ''
+  solution: ''
+- code: N6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.CMP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ranger 5,7 ; 5,09 ; 5,71 ; 5,2 dans l'ordre croissant
+  reponse_attendue: ''
+  solution: ''
+- code: N7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.DIVE
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Donner le reste de la division euclidienne de 758 par 6
+  reponse_attendue: ''
+  solution: ''
+- code: N8
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.ADD
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Completer l'egalite 12,4 + ... = 20
+  reponse_attendue: ''
+  solution: ''
+- code: N9
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.FRA1
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer le quart de 60 mangues
+  reponse_attendue: ''
+  solution: ''
+- code: N10
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.MUL
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer le produit 12,6 x 5
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: 6,3
+    correcte: false
+    type_erreur: PRC
+    erreur: Placer deux chiffres apres la virgule au lieu d'un dans le produit 630.
+  - lettre: b
+    texte: 60,30
+    correcte: false
+    type_erreur: CPT
+    erreur: Multiplier separement 12 x 5 et 6 x 5 puis juxtaposer les deux resultats.
+  - lettre: c
+    texte: '630'
+    correcte: false
+    type_erreur: PRC
+    erreur: Effectuer 126 x 5 sans replacer la virgule dans le resultat.
+  - lettre: d
+    texte: '63'
+    correcte: true
+- code: N11
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.CMP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Encadrer 8,36 par deux entiers qui se suivent
+  reponse_attendue: ''
+  solution: ''
+- code: N12
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.PROB
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Choisir le calcul donnant la masse de 18 sacs de 50 kg
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 18 x 50
+    correcte: true
+  - lettre: b
+    texte: 18 + 50
+    correcte: false
+    type_erreur: MOD
+    erreur: Additionner les deux donnees de l'enonce sans modeliser la situation.
+  - lettre: c
+    texte: 50 - 18
+    correcte: false
+    type_erreur: MOD
+    erreur: Choisir la soustraction d'apres l'ordre des nombres, sans traduire l'enonce.
+  - lettre: d
+    texte: 18 x 5
+    correcte: false
+    type_erreur: ATT
+    erreur: Bonne operation mais la donnee 50 kg est recopiee en 5.
+- code: N13
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.DIVE
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Completer l'egalite ... x 6 = 174
+  reponse_attendue: ''
+  solution: ''
+- code: N14
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.PROB
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer le reste sur 5 000 FCFA apres trois cahiers
+  reponse_attendue: ''
+  solution: ''
+- code: N15
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.ADD
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Additionner trois livraisons de mil puis retrancher la vente
+  reponse_attendue: ''
+  solution: ''
+- code: N16
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.DIVE
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: 'Repartir 253 savons en cartons de 12 : cartons pleins et reste'
+  reponse_attendue: ''
+  solution: ''
+- code: N17
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.FRA1
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer le tiers et le quart de 240 livres
+  reponse_attendue: ''
+  solution: ''
+- code: N18
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.PROB
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer la monnaie rendue sur 50 000 FCFA apres deux achats
+  reponse_attendue: ''
+  solution: ''

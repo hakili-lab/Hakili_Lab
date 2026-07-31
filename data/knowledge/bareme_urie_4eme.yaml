@@ -1,0 +1,651 @@
+# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
+# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# mise à jour du classeur. Exception : les champs reponse_attendue et
+# solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
+# les sauvegarder avant de régénérer.
+
+meta:
+  test_id: urie_4eme
+  titre: Test diagnostique d'entrée en 4ème
+  niveau_test: 4eme
+  classe: 4e
+  total_questions: 40
+  total_possible: 20
+  somme_baremes_reelle: 19.99999
+  bareme_classeur_total: 60.0
+  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_urie.py
+  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+    B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
+questions:
+- code: D1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.POUR
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Calculer 36 % d'un effectif de 250 eleves
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: '90'
+    correcte: true
+  - lettre: b
+    texte: '72'
+    correcte: false
+    type_erreur: PRC
+    erreur: Calcule 36 % de 200 en negligeant les dizaines de 250.
+  - lettre: c
+    texte: '214'
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Soustrait 36 de 250 : le pourcentage est pris pour un effectif.'
+  - lettre: d
+    texte: '694'
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Inverse le rapport et calcule 250 x 100 : 36.'
+- code: D2
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: D.POUR
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Calculer un pourcentage d'augmentation de prix
+  reponse_attendue: ''
+  solution: ''
+- code: G1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.ANG3
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Donner la mesure de l'angle oppose par le sommet
+  reponse_attendue: ''
+  solution: ''
+- code: G2
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.TRIP
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer le troisieme angle d'un triangle
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: 85°
+    correcte: false
+    type_erreur: PRC
+    erreur: Calcule 47 + 68 = 95 au lieu de 115, puis soustrait de 180.
+  - lettre: b
+    texte: 115°
+    correcte: false
+    type_erreur: CNS
+    erreur: S'arrete a la somme des deux angles connus sans utiliser la propriete des 180°.
+  - lettre: c
+    texte: 133°
+    correcte: false
+    type_erreur: PRC
+    erreur: Ne soustrait qu'un seul des deux angles connus a 180°.
+  - lettre: d
+    texte: 65°
+    correcte: true
+- code: G3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.SYMC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Donner OA, B etant le symetrique de A par rapport a O
+  reponse_attendue: ''
+  solution: ''
+- code: G4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.ANG3
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Donner la mesure du second angle correspondant pour un parallelisme
+  reponse_attendue: ''
+  solution: ''
+- code: G5
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.SOL1
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer le volume d'un cylindre de revolution
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 250 pi cm³
+    correcte: true
+  - lettre: b
+    texte: 25 pi cm³
+    correcte: false
+    type_erreur: CNS
+    erreur: 'S''arrete a l''aire de base pi x r² : le facteur hauteur n''est pas mobilise.'
+  - lettre: c
+    texte: 500 pi cm³
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Echange les roles du rayon et de la hauteur : calcule pi x h² x r.'
+  - lettre: d
+    texte: 1 000 pi cm³
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Utilise 10 comme rayon : rayon et diametre confondus.'
+- code: G6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.TRIP
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Donner IP quand I est le point de concours des mediatrices
+  reponse_attendue: ''
+  solution: ''
+- code: G7
+  partie: B
+  format: construction
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.SYMC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Construire un triangle, un milieu et un symetrique central
+  reponse_attendue: ''
+  solution: ''
+- code: G8
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.SOL1
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer le volume d'une pyramide reguliere a base carree
+  reponse_attendue: ''
+  solution: ''
+- code: G9
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.ANG3
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer un angle alterne-interne et nommer la propriete
+  reponse_attendue: ''
+  solution: ''
+- code: L1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.EGA
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Ecrire l'egalite obtenue en ajoutant 8 aux deux membres
+  reponse_attendue: ''
+  solution: ''
+- code: L2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.EQD
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre dans D l'equation 3x - 7 = 14
+  reponse_attendue: ''
+  solution: ''
+- code: L3
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.EGA
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Identifier l'operation transformant 2x - 3 = 9 en 2x = 12
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: soustraire 3
+    correcte: false
+    type_erreur: CPT
+    erreur: Reprend le signe « moins » de l'enonce sans identifier l'operation inverse.
+  - lettre: b
+    texte: ajouter 3
+    correcte: true
+  - lettre: c
+    texte: multiplier par 3
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Confond le terme -3 avec un facteur : transformation multiplicative appliquee a une egalite
+      additive.'
+  - lettre: d
+    texte: diviser par 3
+    correcte: false
+    type_erreur: CPT
+    erreur: Cherche l'inverse d'une multiplication alors que 3 est un terme, non un coefficient.
+- code: L4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.MISE
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Traduire une phrase par une equation d'inconnue x
+  reponse_attendue: ''
+  solution: ''
+- code: L5
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.MISE
+  competence_secondaire: L.EQD
+  domaine: Calcul litteral et algebre
+  objet: Mettre en equation un achat puis resoudre dans D
+  reponse_attendue: ''
+  solution: ''
+- code: M1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.ECH
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer une distance reelle a partir d'une echelle
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: 1,4 km
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Divise par 1 000 000 : 1 km assimile a un million de centimetres.'
+  - lettre: b
+    texte: 140 km
+    correcte: false
+    type_erreur: PRC
+    erreur: Conversion cm vers km menee avec un rang de decalage en trop.
+  - lettre: c
+    texte: 14 km
+    correcte: true
+  - lettre: d
+    texte: 1 400 km
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Divise par 1 000 seulement : 1 km assimile a 1 000 cm.'
+- code: M2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.MVD
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer une vitesse moyenne en km/h
+  reponse_attendue: ''
+  solution: ''
+- code: M3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.ECH
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer une longueur sur un plan a l'echelle 1/500
+  reponse_attendue: ''
+  solution: ''
+- code: M4
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.MVD
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer la masse volumique d'un bloc de granite
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: 0,37 g/cm³
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Divise le volume par la masse : quotient inverse.'
+  - lettre: b
+    texte: 2,7 g/cm³
+    correcte: true
+  - lettre: c
+    texte: 27 g/cm³
+    correcte: false
+    type_erreur: PRC
+    erreur: Division correctement posee mais virgule decalee d'un rang.
+  - lettre: d
+    texte: 425 g/cm³
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Soustrait le volume a la masse : grandeur quotient confondue avec une difference.'
+- code: M5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.ECH
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer l'echelle d'un plan a partir de deux longueurs
+  reponse_attendue: ''
+  solution: ''
+- code: M6
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: M.MVD
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Calculer un debit puis un volume sur une duree donnee
+  reponse_attendue: ''
+  solution: ''
+- code: N1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.DIVIS
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Identifier les nombres divisibles par 9 dans une liste
+  reponse_attendue: ''
+  solution: ''
+- code: N2
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.RELOP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer la somme de trois nombres relatifs
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: '-24'
+    correcte: false
+    type_erreur: CPT
+    erreur: Additionne les valeurs absolues 7 + 12 + 5 et conserve le signe du premier terme.
+  - lettre: b
+    texte: '+10'
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Traite (-5) comme (+5) : le signe d''un terme relatif est ignore.'
+  - lettre: c
+    texte: '0'
+    correcte: true
+  - lettre: d
+    texte: '+24'
+    correcte: false
+    type_erreur: CPT
+    erreur: Additionne les valeurs absolues en ignorant totalement les signes.
+- code: N3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.FRA2
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Additionner deux fractions et donner le resultat irreductible
+  reponse_attendue: ''
+  solution: ''
+- code: N4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.VAB
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer une expression avec trois valeurs absolues
+  reponse_attendue: ''
+  solution: ''
+- code: N5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.DIVIS
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecrire la liste de tous les diviseurs de 45
+  reponse_attendue: ''
+  solution: ''
+- code: N6
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.PUI
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecrire le produit de deux puissances de meme base
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 5^7
+    correcte: true
+  - lettre: b
+    texte: 5^12
+    correcte: false
+    type_erreur: CPT
+    erreur: Multiplie les exposants (4 x 3) au lieu de les additionner.
+  - lettre: c
+    texte: 25^7
+    correcte: false
+    type_erreur: CPT
+    erreur: Additionne correctement les exposants mais multiplie aussi les bases.
+  - lettre: d
+    texte: 10^7
+    correcte: false
+    type_erreur: CPT
+    erreur: Additionne les bases (5 + 5) en plus des exposants.
+- code: N7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.PGCD
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer le PGCD de 84 et 126
+  reponse_attendue: ''
+  solution: ''
+- code: N8
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.RELOP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer un nouveau solde apres un depot sur un compte debiteur
+  reponse_attendue: ''
+  solution: ''
+- code: N9
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.MULD
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer un produit de trois facteurs dont deux negatifs
+  reponse_attendue: ''
+  solution: ''
+- code: N10
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.VAB
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Reconnaitre l'inegalite vraie entre nombres relatifs
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: -3,04 < -3,4
+    correcte: false
+    type_erreur: CPT
+    erreur: Compare les parties decimales comme si les nombres etaient positifs.
+  - lettre: b
+    texte: -0,9 < -2,5
+    correcte: false
+    type_erreur: CPT
+    erreur: Compare les valeurs absolues 0,9 et 2,5 sans inverser l'ordre pour les negatifs.
+  - lettre: c
+    texte: '|-5| < |+3|'
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Lit |-5| comme -5 : la valeur absolue est confondue avec le nombre signe.'
+  - lettre: d
+    texte: -3,4 < -3,04
+    correcte: true
+- code: N11
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.FRA2
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Multiplier deux fractions et donner le resultat irreductible
+  reponse_attendue: ''
+  solution: ''
+- code: N12
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.DIVIS
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Decomposer 180 en produit de facteurs premiers
+  reponse_attendue: ''
+  solution: ''
+- code: N13
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.PUI
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecrire le quotient de deux puissances de meme base
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: 6^13
+    correcte: false
+    type_erreur: CPT
+    erreur: Additionne les exposants au lieu de les soustraire.
+  - lettre: b
+    texte: 6^36
+    correcte: false
+    type_erreur: CPT
+    erreur: Multiplie les exposants (9 x 4).
+  - lettre: c
+    texte: 6^5
+    correcte: true
+  - lettre: d
+    texte: 1^5
+    correcte: false
+    type_erreur: CPT
+    erreur: Soustrait correctement les exposants mais divise aussi les bases.
+- code: N14
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.MULD
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Factoriser l'expression 9x + 15
+  reponse_attendue: ''
+  solution: ''
+- code: N15
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.FRA2
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer la fraction de recolte restante apres deux ventes
+  reponse_attendue: ''
+  solution: ''
+- code: N16
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.PUI
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Reduire un quotient de puissances de 4 et calculer (-2)^5
+  reponse_attendue: ''
+  solution: ''
+- code: N17
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.PGCD
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Determiner la masse maximale d'un sac et le nombre de sacs
+  reponse_attendue: ''
+  solution: ''
+- code: N18
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.MULD
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Developper l'expression 5 x (x + 7)
+  reponse_attendue: ''
+  solution: ''

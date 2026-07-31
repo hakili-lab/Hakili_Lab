@@ -1,0 +1,651 @@
+# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
+# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# mise à jour du classeur. Exception : les champs reponse_attendue et
+# solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
+# les sauvegarder avant de régénérer.
+
+meta:
+  test_id: urie_1ereD
+  titre: Test diagnostique d'entrée en 1ère D
+  niveau_test: 1ereD
+  classe: 1ere
+  total_questions: 40
+  total_possible: 20
+  somme_baremes_reelle: 19.99999
+  bareme_classeur_total: 60.0
+  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_urie.py
+  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+    B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
+questions:
+- code: D1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.STAT2
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Mediane de la serie 7, 15, 9, 12, 6, 14, 10
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: '9'
+    correcte: false
+    type_erreur: PRC
+    erreur: Serie rangee mais mauvais rang retenu (3e valeur au lieu de la 4e).
+  - lettre: b
+    texte: 10,5
+    correcte: false
+    type_erreur: CPT
+    erreur: Moyenne des deux valeurs centrales appliquee alors que l'effectif est impair.
+  - lettre: c
+    texte: '10'
+    correcte: true
+  - lettre: d
+    texte: '12'
+    correcte: false
+    type_erreur: CPT
+    erreur: Valeur centrale prise dans la liste non ordonnee.
+- code: D2
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: D.STAT2
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Calculer la moyenne et l'etendue de la serie
+  reponse_attendue: ''
+  solution: ''
+- code: F1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.REF
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Sommet de la courbe de f(x) = (x+2)^2
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: (2 ; 0)
+    correcte: false
+    type_erreur: CPT
+    erreur: Lit (x + 2)^2 comme une translation de +2 selon l'axe des abscisses.
+  - lettre: b
+    texte: (0 ; 2)
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Place le 2 en ordonnee : confusion entre translation horizontale et verticale.'
+  - lettre: c
+    texte: (-2 ; 0)
+    correcte: true
+  - lettre: d
+    texte: (0 ; -2)
+    correcte: false
+    type_erreur: CNS
+    erreur: Coordonnees du sommet non reliees a la forme canonique.
+- code: F2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.DEF
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Ensemble de definition de f(x) = (2x+1)/(x-3)
+  reponse_attendue: ''
+  solution: ''
+- code: F3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.GRA
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Image de 1 par f, courbe passant par C(1;4)
+  reponse_attendue: ''
+  solution: ''
+- code: F4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.PAR
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Parite de g(x) = x^4 - 3x^2 + 1
+  reponse_attendue: ''
+  solution: ''
+- code: F5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.CIRC
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Convertir 135 degres en radians
+  reponse_attendue: ''
+  solution: ''
+- code: F6
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.REF
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Vecteur de translation de 1/x vers 1/x + 4
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 4 j
+    correcte: true
+  - lettre: b
+    texte: -4 j
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Direction correcte mais sens inverse : +4 sur f(x) lu comme une descente.'
+  - lettre: c
+    texte: 4 i
+    correcte: false
+    type_erreur: CPT
+    erreur: Confond ajout sur f(x) (vertical) et ajout sur x (horizontal).
+  - lettre: d
+    texte: -4 i
+    correcte: false
+    type_erreur: CNS
+    erreur: 'Ni la direction ni le sens ne sont etablis : propriete non disponible.'
+- code: F7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.PAR
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: 'u(-3) : axe (Oy) de symetrie, M(3;-5) sur la courbe'
+  reponse_attendue: ''
+  solution: ''
+- code: F8
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.GRA
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Resoudre f(x) < 0 par lecture graphique
+  reponse_attendue: ''
+  solution: ''
+- code: F9
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.CIRC
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Valeur exacte de cos(5pi/6)
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: racine de 3 sur 2
+    correcte: false
+    type_erreur: CPT
+    erreur: Bonne valeur remarquable mais signe du cosinus dans le deuxieme quadrant ignore.
+  - lettre: b
+    texte: moins racine de 3 sur 2
+    correcte: true
+  - lettre: c
+    texte: 1/2
+    correcte: false
+    type_erreur: CNS
+    erreur: 'Valeur remarquable de pi/3 donnee sans signe : table du cercle non memorisee.'
+  - lettre: d
+    texte: -1/2
+    correcte: false
+    type_erreur: CNS
+    erreur: Signe correct mais valeur de pi/6 et pi/3 confondues.
+- code: F10
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.REF
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Sens de variation de h(x) = -x^2 sur [0;+inf[
+  reponse_attendue: ''
+  solution: ''
+- code: F11
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: F.DEF
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Ensemble de definition de g(x) = (x+2)/V(5-x)
+  reponse_attendue: ''
+  solution: ''
+- code: F12
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: F.GRA
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Dresser le tableau de variations de h sur [-5;4]
+  reponse_attendue: ''
+  solution: ''
+- code: F13
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: F.CIRC
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Calculer sin x sachant cos x = 3/5 sur [0;pi/2]
+  reponse_attendue: ''
+  solution: ''
+- code: G1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PS
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Produit scalaire de u(3;-2) et v(4;5)
+  reponse_attendue: ''
+  solution: ''
+- code: G2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PLAN
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Equation de la droite par A(2;-1), coefficient directeur 3
+  reponse_attendue: ''
+  solution: ''
+- code: G3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.COL
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Reel k tel que v(-6;9) = k u(2;-3)
+  reponse_attendue: ''
+  solution: ''
+- code: G4
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.HOM
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Image de B(3;-2) par la translation de vecteur w(-1;4)
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: (4 ; -6)
+    correcte: false
+    type_erreur: PRQ
+    erreur: Soustrait les coordonnees du vecteur au lieu de les ajouter.
+  - lettre: b
+    texte: (-3 ; -8)
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Multiplie coordonnees du point et du vecteur : definition de la translation erronee.'
+  - lettre: c
+    texte: (2 ; -6)
+    correcte: false
+    type_erreur: ATT
+    erreur: Additionne les abscisses mais soustrait les ordonnees.
+  - lettre: d
+    texte: (2 ; 2)
+    correcte: true
+- code: G5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PS
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Reel m rendant u(m;3) et v(2;-4) orthogonaux
+  reponse_attendue: ''
+  solution: ''
+- code: G6
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.ESP
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Position relative de (AE) et (BF) dans le cube
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: paralleles
+    correcte: true
+  - lettre: b
+    texte: secantes
+    correcte: false
+    type_erreur: CNS
+    erreur: Vocabulaire des positions relatives dans l'espace non disponible.
+  - lettre: c
+    texte: non coplanaires
+    correcte: false
+    type_erreur: CPT
+    erreur: Croit que deux droites de faces differentes ne sont jamais dans un meme plan.
+  - lettre: d
+    texte: orthogonales
+    correcte: false
+    type_erreur: CPT
+    erreur: Confond deux aretes verticales avec un couple arete verticale / arete horizontale.
+- code: G7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PLAN
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Rayon du cercle de centre I(1;-2) passant par A(4;2)
+  reponse_attendue: ''
+  solution: ''
+- code: G8
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.HOM
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Image de M(4;0) par homothetie de centre I(1;2), rapport 3
+  reponse_attendue: ''
+  solution: ''
+- code: G9
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.ESP
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Position relative de (AD) et (BF) dans le cube
+  reponse_attendue: ''
+  solution: ''
+- code: G10
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.VEC
+  competence_secondaire: G.COL
+  domaine: Activites geometriques
+  objet: Exprimer IJ en fonction de AB et AC
+  reponse_attendue: ''
+  solution: ''
+- code: G11
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.PS
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer AB.AC puis preciser la nature du triangle ABC
+  reponse_attendue: ''
+  solution: ''
+- code: L1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.EQ2
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre x^2 - 5x + 6 = 0 dans R
+  reponse_attendue: ''
+  solution: ''
+- code: L2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.TRI
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Factoriser le trinome x^2 - 7x + 12
+  reponse_attendue: ''
+  solution: ''
+- code: L3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.SYSL
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre le systeme 2x+y=7 et x-y=2
+  reponse_attendue: ''
+  solution: ''
+- code: L4
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.EQ2
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Trouver m pour que x^2-6x+m=0 ait une racine double
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: '-9'
+    correcte: false
+    type_erreur: PRQ
+    erreur: 'Ecrit delta = 36 + 4m : signe du produit -4ac non maitrise.'
+  - lettre: b
+    texte: '3'
+    correcte: false
+    type_erreur: CPT
+    erreur: Donne la racine double -b/2a = 3 au lieu de la valeur de m.
+  - lettre: c
+    texte: '6'
+    correcte: false
+    type_erreur: CNS
+    erreur: 'Recopie le coefficient de x : la condition delta = 0 n''est pas mobilisee.'
+  - lettre: d
+    texte: '9'
+    correcte: true
+- code: L5
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.INEQ2
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre l'inequation (x-1)(x+4) <= 0
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: '[-1 ; 4]'
+    correcte: false
+    type_erreur: CPT
+    erreur: Lit les racines -1 et 4 dans les facteurs (x - 1) et (x + 4) sans inverser les signes.
+  - lettre: b
+    texte: '[-4 ; 1]'
+    correcte: true
+  - lettre: c
+    texte: ']-inf ; -4] U [1 ; +inf['
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Donne l''ensemble ou le produit est positif : le sens de l''inegalite n''est pas pris en
+      compte.'
+  - lettre: d
+    texte: ']-4 ; 1['
+    correcte: false
+    type_erreur: PRC
+    erreur: Bonnes bornes mais crochets ouverts alors que le <= impose de les inclure.
+- code: L6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.TRI
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Trinome factorise de racines -2 et 5, coefficient 2
+  reponse_attendue: ''
+  solution: ''
+- code: L7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.SYSL
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre le systeme 2x-1 >= 3 et 5-x > 0
+  reponse_attendue: ''
+  solution: ''
+- code: L8
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.EQ2
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre x^2+3x-154=0 et donner la largeur du champ
+  reponse_attendue: ''
+  solution: ''
+- code: L9
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.TRI
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Tableau de signe de f(x) = -x^2+4x+5
+  reponse_attendue: ''
+  solution: ''
+- code: L10
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.INEQ2
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Resoudre (2x-6)/(x+1) >= 0
+  reponse_attendue: ''
+  solution: ''
+- code: N1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.INT
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecrire -3 <= x < 5 sous forme d'intervalle
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: '[-3 ; 5['
+    correcte: true
+  - lettre: b
+    texte: ']-3 ; 5['
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Traite -3 <= x comme -3 < x : confusion entre inegalite large et stricte.'
+  - lettre: c
+    texte: ']-3 ; 5]'
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Inverse l''ouverture des deux crochets : correspondance symbole/crochet memorisee a l''envers.'
+  - lettre: d
+    texte: '[-3 ; 5]'
+    correcte: false
+    type_erreur: CPT
+    erreur: Ferme la borne 5 alors que x < 5 l'exclut.
+- code: N2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.RAC
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ecrire V50 - 3V2 sous la forme aV2
+  reponse_attendue: ''
+  solution: ''
+- code: N3
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.INT
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Encadrer -2x sachant -1 < x <= 4
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: -2 < -2x <= 8
+    correcte: false
+    type_erreur: CPT
+    erreur: Multiplie par 2 en ignorant le signe moins et conserve le sens des inegalites.
+  - lettre: b
+    texte: -8 < -2x <= 2
+    correcte: false
+    type_erreur: PRC
+    erreur: Les valeurs des bornes sont echangees mais les symboles stricts et larges ne suivent pas.
+  - lettre: c
+    texte: -8 <= -2x < 2
+    correcte: true
+  - lettre: d
+    texte: -2 <= -2x < 8
+    correcte: false
+    type_erreur: CPT
+    erreur: Echange les symboles mais garde les bornes calculees sans le signe moins.
+- code: N4
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.VAB
+  competence_secondaire: N.RAC
+  domaine: Activites numeriques
+  objet: Ecrire A = |3-V10| + |V10-4| sans valeur absolue
+  reponse_attendue: ''
+  solution: ''

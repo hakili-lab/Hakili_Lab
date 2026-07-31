@@ -1,0 +1,654 @@
+# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
+# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# mise à jour du classeur. Exception : les champs reponse_attendue et
+# solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
+# les sauvegarder avant de régénérer.
+
+meta:
+  test_id: urie_5eme
+  titre: Test diagnostique d'entrée en 5ème
+  niveau_test: 5eme
+  classe: 5e
+  total_questions: 40
+  total_possible: 20
+  somme_baremes_reelle: 19.99999
+  bareme_classeur_total: 60.0
+  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_urie.py
+  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+    B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
+questions:
+- code: D1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.PROP
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Prix de 8 kg si 5 kg coutent 3000 F
+  reponse_attendue: ''
+  solution: ''
+- code: D2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.REP
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: 'Coordonnees du point S : 4 carreaux a droite, 3 au-dessus'
+  reponse_attendue: ''
+  solution: ''
+- code: D3
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.POUR
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Montant d'une remise de 10 % sur 12 500 FCFA
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 1 250 FCFA
+    correcte: true
+  - lettre: b
+    texte: 125 FCFA
+    correcte: false
+    type_erreur: CPT
+    erreur: '12 500 : 100 = 125 : 10 % est confondu avec 1 %.'
+  - lettre: c
+    texte: 11 250 FCFA
+    correcte: false
+    type_erreur: MOD
+    erreur: Prix apres remise donne a la place du montant de la remise.
+  - lettre: d
+    texte: 1 000 FCFA
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Remise calculee sur 10 000 F : le pourcentage est applique a un prix arrondi.'
+- code: D4
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: D.PROP
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: 'Completer un tableau de proportionnalite : 4 savons valent 1 000 F'
+  reponse_attendue: ''
+  solution: ''
+- code: D5
+  partie: B
+  format: construction
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.REP
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Tracer un repere et placer A(2;3), B(5;3), C(5;7)
+  reponse_attendue: ''
+  solution: ''
+- code: G1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.VOC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Notation de la demi-droite d'origine A passant par B
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: '[AB]'
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Notation du segment : la demi-droite est confondue avec le segment d''extremites A et B.'
+  - lettre: b
+    texte: '[AB)'
+    correcte: true
+  - lettre: c
+    texte: (AB)
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Notation de la droite : l''origine de la demi-droite n''est pas prise en compte.'
+  - lettre: d
+    texte: '[BA)'
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Origine placee en B : l''ordre des lettres dans la notation n''est pas maitrise.'
+- code: G2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.TRI
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Nature du triangle ABC de cotes 5 cm, 5 cm, 8 cm
+  reponse_attendue: ''
+  solution: ''
+- code: G3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.CERC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Longueur du diametre d'un cercle de rayon 4,5 cm
+  reponse_attendue: ''
+  solution: ''
+- code: G4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.ANG2
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Mesure du complementaire d'un angle de 37 degres
+  reponse_attendue: ''
+  solution: ''
+- code: G5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PARA
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Position de (d3) et (d2) sachant (d1)//(d2) et (d3) perpendiculaire a (d1)
+  reponse_attendue: ''
+  solution: ''
+- code: G6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PARAL
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Longueur de [CD] dans le parallelogramme ABCD avec AB = 6 cm
+  reponse_attendue: ''
+  solution: ''
+- code: G7
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.TRI
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Choisir le triplet de longueurs constructible en triangle
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 6 cm ; 7 cm ; 10 cm
+    correcte: true
+  - lettre: b
+    texte: 3 cm ; 4 cm ; 8 cm
+    correcte: false
+    type_erreur: CNS
+    erreur: '3 + 4 = 7 < 8 : l''inegalite triangulaire n''est pas mobilisee du tout.'
+  - lettre: c
+    texte: 2 cm ; 5 cm ; 7 cm
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Cas d''egalite 2 + 5 = 7 accepte : triangle aplati considere comme constructible.'
+  - lettre: d
+    texte: 1 cm ; 2 cm ; 4 cm
+    correcte: false
+    type_erreur: CPT
+    erreur: '1 + 2 = 3 < 4 : le triplet est choisi sur la taille des nombres, pas sur la condition d''existence.'
+- code: G8
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.MED
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Longueur MB si M appartient a la mediatrice de [AB]
+  reponse_attendue: ''
+  solution: ''
+- code: G9
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PARAL
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Nature d'un parallelogramme a diagonales egales et perpendiculaires
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: losange
+    correcte: false
+    type_erreur: CPT
+    erreur: Une seule des deux hypotheses est utilisee (diagonales perpendiculaires).
+  - lettre: b
+    texte: rectangle
+    correcte: false
+    type_erreur: CPT
+    erreur: Une seule des deux hypotheses est utilisee (diagonales de meme longueur).
+  - lettre: c
+    texte: carre
+    correcte: true
+  - lettre: d
+    texte: rectangle non carre
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Le carre est explicitement exclu alors que les deux proprietes le caracterisent : hierarchie
+      des quadrilateres non construite.'
+- code: G10
+  partie: B
+  format: construction
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.ANG1
+  competence_secondaire: G.ANG2
+  domaine: Activites geometriques
+  objet: Construire un angle de 124 degres puis tracer sa bissectrice
+  reponse_attendue: ''
+  solution: ''
+- code: G11
+  partie: B
+  format: construction
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.TRI
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Construire le triangle RST connaissant deux cotes et l'angle compris
+  reponse_attendue: ''
+  solution: ''
+- code: G12
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.PARAL
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: 'Parallelogramme EFGH : donner HG et l''angle FGH avec justification'
+  reponse_attendue: ''
+  solution: ''
+- code: M1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.CONV
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Convertir 3,5 km en metres
+  reponse_attendue: ''
+  solution: ''
+- code: M2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.AIRE
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Aire d'un triangle de base 9 cm et hauteur 6 cm
+  reponse_attendue: ''
+  solution: ''
+- code: M3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.PER
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Perimetre d'un rectangle de 12 cm sur 7 cm
+  reponse_attendue: ''
+  solution: ''
+- code: M4
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.VOL
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Volume d'un pave droit de 8 cm, 5 cm et 3 cm
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: 40 cm3
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Produit de deux dimensions seulement (8 x 5) : volume confondu avec l''aire d''une face.'
+  - lettre: b
+    texte: 16 cm3
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Somme des trois dimensions (8 + 5 + 3) : le volume est traite additivement.'
+  - lettre: c
+    texte: 120 cm3
+    correcte: true
+  - lettre: d
+    texte: 158 cm3
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Aire totale 2 x (40 + 24 + 15) calculee a la place du volume : confusion aire / volume.'
+- code: M5
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.CONV
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Exprimer 2,5 L en centilitres
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: 25 cL
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Multiplication par 10 au lieu de 100 : cL confondu avec dL.'
+  - lettre: b
+    texte: 0,25 cL
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Division au lieu de multiplication : sens de la conversion inverse.'
+  - lettre: c
+    texte: 2 500 cL
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Multiplication par 1 000 : cL confondu avec mL.'
+  - lettre: d
+    texte: 250 cL
+    correcte: true
+- code: M6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: M.AIRE
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Largeur d'un rectangle d'aire 54 cm2 et de longueur 9 cm
+  reponse_attendue: ''
+  solution: ''
+- code: M7
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: M.AIRE
+  competence_secondaire: null
+  domaine: Mesures et grandeurs
+  objet: Aire d'un jardin forme d'un rectangle et d'un triangle accoles
+  reponse_attendue: ''
+  solution: ''
+- code: M8
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.SOL1
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Aire totale de papier recouvrant un pave droit 4x3x2 cm
+  reponse_attendue: ''
+  solution: ''
+- code: N1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.NUM
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: 'Ecrire le decimal : 6 dizaines, 4 unites, 7 dixiemes, 5 centiemes'
+  reponse_attendue: ''
+  solution: ''
+- code: N2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.PRIO
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer 25 - 4 x 3 + 6
+  reponse_attendue: ''
+  solution: ''
+- code: N3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.FRA1
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Simplifier la fraction 24/36
+  reponse_attendue: ''
+  solution: ''
+- code: N4
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.CMP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ranger 3,5 ; 3,45 ; 3,409 dans l'ordre croissant
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: 3,5 < 3,45 < 3,409
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Rangement decroissant presente comme croissant : les deux sens d''ordre sont confondus.'
+  - lettre: b
+    texte: 3,45 < 3,409 < 3,5
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Regle de comparaison instable : 3,45 place avant 3,409 parce que 409 a plus de chiffres que
+      45.'
+  - lettre: c
+    texte: 3,409 < 3,45 < 3,5
+    correcte: true
+  - lettre: d
+    texte: 3,409 < 3,5 < 3,45
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Partie decimale lue comme un entier : 3,45 juge plus grand que 3,5 car 45 > 5.'
+- code: N5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.AST
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer astucieusement 25 x 17 x 4
+  reponse_attendue: ''
+  solution: ''
+- code: N6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.EGT
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Completer l'egalite 7 x ... = 91
+  reponse_attendue: ''
+  solution: ''
+- code: N7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.CMP
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Designer la plus lourde des masses 12,08 ; 12,8 ; 12,079 kg
+  reponse_attendue: ''
+  solution: ''
+- code: N8
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.REL
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ranger -7 ; +3 ; -12 ; 0 dans l'ordre croissant
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: -7 < -12 < 0 < +3
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Ordre inverse sur les negatifs : -12 est juge plus grand que -7 parce que 12 > 7.'
+  - lettre: b
+    texte: -12 < -7 < 0 < +3
+    correcte: true
+  - lettre: c
+    texte: 0 < +3 < -7 < -12
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Le signe moins est ignore : les nombres sont ranges 0 < 3 < 7 < 12.'
+  - lettre: d
+    texte: +3 < 0 < -7 < -12
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Rangement decroissant correct mais presente avec le symbole < : confusion croissant / decroissant.'
+- code: N9
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.AST
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer astucieusement 63 x 8 + 37 x 8
+  reponse_attendue: ''
+  solution: ''
+- code: N10
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.PROB
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Choisir l'expression du montant de 4 pains et 3 savons
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: (4 + 3) x (150 + 200)
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Quantites et prix regroupes puis multiplies : le total est confondu avec un produit global
+      7 x 350.'
+  - lettre: b
+    texte: 4 + 150 x 3 + 200
+    correcte: false
+    type_erreur: MOD
+    erreur: Les donnees sont recopiees dans l'ordre du texte sans traduire chaque achat par un produit.
+  - lettre: c
+    texte: (4 + 150) x (3 + 200)
+    correcte: false
+    type_erreur: MOD
+    erreur: 'Un nombre d''articles est additionne a un prix : les natures de grandeurs ne sont pas distinguees.'
+  - lettre: d
+    texte: 4 x 150 + 3 x 200
+    correcte: true
+- code: N11
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.EGT
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Completer l'egalite ... - 3 750 = 1 250
+  reponse_attendue: ''
+  solution: ''
+- code: N12
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.FRA1
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Calculer les 3/5 d'une recolte de 45 kg
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: 15 kg
+    correcte: false
+    type_erreur: CPT
+    erreur: '45 est divise par le numerateur 3 : roles du numerateur et du denominateur echanges.'
+  - lettre: b
+    texte: 27 kg
+    correcte: true
+  - lettre: c
+    texte: 9 kg
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Seule la division par 5 est faite : la multiplication par le numerateur 3 est omise.'
+  - lettre: d
+    texte: 75 kg
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Fraction inversee (5/3 de 45) : le resultat depasse la quantite totale sans que cela alerte
+      l''eleve.'
+- code: N13
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.PROB
+  competence_secondaire: N.PRIO
+  domaine: Activites numeriques
+  objet: Monnaie rendue sur 200 000 F apres deux achats multiples
+  reponse_attendue: ''
+  solution: ''
+- code: N14
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.FRA1
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: 'Champ de 48 ares : aire semee en mil (3/8) et comparaison'
+  reponse_attendue: ''
+  solution: ''
+- code: N15
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.REL
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Ranger quatre abscisses en decroissant et situer un point
+  reponse_attendue: ''
+  solution: ''

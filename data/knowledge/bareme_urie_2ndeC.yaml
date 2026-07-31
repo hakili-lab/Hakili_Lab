@@ -1,0 +1,650 @@
+# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
+# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# mise à jour du classeur. Exception : les champs reponse_attendue et
+# solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
+# les sauvegarder avant de régénérer.
+
+meta:
+  test_id: urie_2ndeC
+  titre: Test diagnostique d'entrée en 2nde C
+  niveau_test: 2ndeC
+  classe: 2nde
+  total_questions: 40
+  total_possible: 20
+  somme_baremes_reelle: 19.99999
+  bareme_classeur_total: 60.0
+  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_urie.py
+  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+    B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
+questions:
+- code: D1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: D.STAT1
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Fréquence en pourcentage des 12 femmes sur 40 membres
+  reponse_attendue: ''
+  solution: ''
+- code: D2
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: D.STAT1
+  competence_secondaire: null
+  domaine: Donnees, proportionnalite, statistique
+  objet: Effectif total, note moyenne et fréquence de la note 10
+  reponse_attendue: ''
+  solution: ''
+- code: F1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.LIN
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Image de -3 par l'application affine f(x) = 2x - 5
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: '-1'
+    correcte: false
+    type_erreur: PRC
+    erreur: Signe du terme constant -5 mal traité (-6 + 5)
+  - lettre: b
+    texte: '-16'
+    correcte: false
+    type_erreur: CPT
+    erreur: 'Opérations inversées : soustraction avant multiplication'
+  - lettre: c
+    texte: '-11'
+    correcte: true
+  - lettre: d
+    texte: '1'
+    correcte: false
+    type_erreur: PRQ
+    erreur: Signe de -3 ignoré lors de la substitution
+- code: F2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: F.LIN
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Équation de la droite passant par A(0 ; 3), coefficient directeur -2
+  reponse_attendue: ''
+  solution: ''
+- code: F3
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: F.LIN
+  competence_secondaire: null
+  domaine: Fonctions et applications
+  objet: Exprimer f(x), calculer f(12) puis l'antécédent de 3 500
+  reponse_attendue: ''
+  solution: ''
+- code: G1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PYT
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer BC, triangle rectangle en A, AB=9, AC=12
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: 15 cm
+    correcte: true
+  - lettre: b
+    texte: 21 cm
+    correcte: false
+    type_erreur: CNS
+    erreur: Théorème de Pythagore non mobilisé, simple addition des côtés
+  - lettre: c
+    texte: √21 cm
+    correcte: false
+    type_erreur: CPT
+    erreur: Racine appliquée à la somme des longueurs au lieu des carrés
+  - lettre: d
+    texte: √63 cm
+    correcte: false
+    type_erreur: PRC
+    erreur: Carrés soustraits au lieu d'être additionnés
+- code: G2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.RON
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Coordonnées du milieu I de [AB], A(-2 ; 3), B(4 ; -1)
+  reponse_attendue: ''
+  solution: ''
+- code: G3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.VEC
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Réduire la somme des vecteurs AB + BC + CD
+  reponse_attendue: ''
+  solution: ''
+- code: G4
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: T.TRIR
+  competence_secondaire: null
+  domaine: Trigonometrie
+  objet: Cosinus de ABC, rectangle en A, AB=5, BC=13
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: 12/13
+    correcte: false
+    type_erreur: CPT
+    erreur: Cosinus confondu avec le sinus de l'angle ABC
+  - lettre: b
+    texte: 5/12
+    correcte: false
+    type_erreur: CNS
+    erreur: Définition du cosinus non disponible, quotient des deux cathètes
+  - lettre: c
+    texte: 13/5
+    correcte: false
+    type_erreur: PRC
+    erreur: 'Quotient inverse : hypoténuse sur côté adjacent'
+  - lettre: d
+    texte: 5/13
+    correcte: true
+- code: G5
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.RON
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Distance AB avec A(1 ; 2) et B(5 ; 5)
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: '7'
+    correcte: false
+    type_erreur: CNS
+    erreur: Formule de distance non mobilisée, écarts additionnés
+  - lettre: b
+    texte: '5'
+    correcte: true
+  - lettre: c
+    texte: √7
+    correcte: false
+    type_erreur: CPT
+    erreur: Racine appliquée à la somme des écarts, carrés oubliés
+  - lettre: d
+    texte: '25'
+    correcte: false
+    type_erreur: PRC
+    erreur: Somme des carrés correcte mais racine finale omise
+- code: G6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.THA
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer AC avec (MN)//(BC), AM=3, AB=9, AN=4
+  reponse_attendue: ''
+  solution: ''
+- code: G7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.COL
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Déterminer k tel que v=k u, u(3;-2), v(-9;6)
+  reponse_attendue: ''
+  solution: ''
+- code: G8
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.PYT
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: 'Préciser le sommet de l''angle droit : 8, 15, 17'
+  reponse_attendue: ''
+  solution: ''
+- code: G9
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: T.TRIR
+  competence_secondaire: null
+  domaine: Trigonometrie
+  objet: 'Distance au mur : échelle de 4 m à 60 degrés'
+  reponse_attendue: ''
+  solution: ''
+- code: G10
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: G.RON
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: 'Coordonnées de F : I(2;-1) milieu de [EF], E(-3;5)'
+  reponse_attendue: ''
+  solution: ''
+- code: G11
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.COL
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Coordonnées de AB et AC, puis alignement de A, B et C
+  reponse_attendue: ''
+  solution: ''
+- code: G12
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.PYT
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Comparer le trajet par la diagonale AC et le trajet par B
+  reponse_attendue: ''
+  solution: ''
+- code: G13
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: G.THA
+  competence_secondaire: null
+  domaine: Activites geometriques
+  objet: Calculer BC et AN, (MN)//(BC), AM=4, MB=6
+  reponse_attendue: ''
+  solution: ''
+- code: L1
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.IDR
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Développer (2x - 3)^2
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: 4x^2 + 9
+    correcte: false
+    type_erreur: CNS
+    erreur: Identité remarquable non mobilisée, double produit absent
+  - lettre: b
+    texte: 4x^2 - 6x + 9
+    correcte: false
+    type_erreur: PRC
+    erreur: Double produit calculé 2x3 au lieu de 2 x 2x x 3
+  - lettre: c
+    texte: 4x^2 - 12x + 9
+    correcte: true
+  - lettre: d
+    texte: 2x^2 - 12x + 9
+    correcte: false
+    type_erreur: CPT
+    erreur: Coefficient 2 non élève au carré dans (2x)^2
+- code: L2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.FAC2
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Factoriser x^2 - 49
+  reponse_attendue: ''
+  solution: ''
+- code: L3
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.EQ1
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Résoudre 5x - 7 = 3x + 11
+  reponse_attendue: d
+  solution: ''
+  options:
+  - lettre: a
+    texte: x = -9
+    correcte: false
+    type_erreur: PRC
+    erreur: Signe faux introduit lors de la division de 18 par 2
+  - lettre: b
+    texte: x = 2
+    correcte: false
+    type_erreur: CPT
+    erreur: Transposition de -7 sans changement de signe
+  - lettre: c
+    texte: x = -2
+    correcte: false
+    type_erreur: PRQ
+    erreur: Cumul d'erreurs de signe sur les relatifs
+  - lettre: d
+    texte: x = 9
+    correcte: true
+- code: L4
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.INEQ1
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Résoudre dans R l'inéquation 3x - 5 <= 7
+  reponse_attendue: ''
+  solution: ''
+- code: L5
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.IDR
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Réduire (x + 5)(x - 5) - (x - 2)^2
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: -4x - 29
+    correcte: false
+    type_erreur: PRC
+    erreur: Signe du double produit -4x non changé après la parenthèse
+  - lettre: b
+    texte: 4x - 29
+    correcte: true
+  - lettre: c
+    texte: 4x - 21
+    correcte: false
+    type_erreur: CPT
+    erreur: Signe moins distribué partiellement, le +4 reste positif
+  - lettre: d
+    texte: -4x - 21
+    correcte: false
+    type_erreur: CNS
+    erreur: Identités remarquables non mobilisées, aucun terme correct
+- code: L6
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.FAC1
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Factoriser (3x - 1)(x + 4) + (3x - 1)^2
+  reponse_attendue: ''
+  solution: ''
+- code: L7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.SYS
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Résoudre le système x+y=7 ; 2x-y=5
+  reponse_attendue: ''
+  solution: ''
+- code: L8
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.EQP
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Résoudre (2x - 6)(x + 5) = 0
+  reponse_attendue: ''
+  solution: ''
+- code: L9
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: L.INEQ1
+  competence_secondaire: null
+  domaine: Calcul litteral et algebre
+  objet: Résoudre l'inéquation -2x + 1 > 7
+  reponse_attendue: c
+  solution: ''
+  options:
+  - lettre: a
+    texte: ']-3 ; +∞['
+    correcte: false
+    type_erreur: CPT
+    erreur: Sens de l'inégalité non inverse lors de la division par -2
+  - lettre: b
+    texte: ']3 ; +∞['
+    correcte: false
+    type_erreur: PRQ
+    erreur: Signe du quotient et sens de l'inégalité tous deux erronés
+  - lettre: c
+    texte: ']-∞ ; -3['
+    correcte: true
+  - lettre: d
+    texte: ']-∞ ; 3['
+    correcte: false
+    type_erreur: PRC
+    erreur: Sens correctement inverse mais signe du quotient faux
+- code: L10
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.FAC2
+  competence_secondaire: L.FAC1
+  domaine: Calcul litteral et algebre
+  objet: Factoriser R = 4x^2-9-(2x-3)(x+1) puis calculer R(-2)
+  reponse_attendue: ''
+  solution: ''
+- code: L11
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.MISE
+  competence_secondaire: L.EQ1
+  domaine: Calcul litteral et algebre
+  objet: Mettre en équation et calculer le prix des deux sacs
+  reponse_attendue: ''
+  solution: ''
+- code: L12
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: L.SYS
+  competence_secondaire: L.MISE
+  domaine: Calcul litteral et algebre
+  objet: Prix du kilo de niébé et de sorgho (système)
+  reponse_attendue: ''
+  solution: ''
+- code: N1
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.FRA2
+  competence_secondaire: N.PRIO
+  domaine: Activites numeriques
+  objet: Calculer 3/4 - 2/3 x 5/2, résultat en fraction irréductible
+  reponse_attendue: ''
+  solution: ''
+- code: N2
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.SCI
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Écrire 45 000 x 10^-7 en notation scientifique
+  reponse_attendue: ''
+  solution: ''
+- code: N3
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.RAC
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Écrire √50 sous la forme a√2
+  reponse_attendue: ''
+  solution: ''
+- code: N4
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.SCI
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Simplifier (10^-3 x 10^5) / 10^4
+  reponse_attendue: b
+  solution: ''
+  options:
+  - lettre: a
+    texte: 10^2
+    correcte: false
+    type_erreur: PRC
+    erreur: Numérateur simplifié mais division par 10^4 oubliée
+  - lettre: b
+    texte: 10^-2
+    correcte: true
+  - lettre: c
+    texte: 10^6
+    correcte: false
+    type_erreur: CPT
+    erreur: Exposant du dénominateur ajoute au lieu d'être soustrait
+  - lettre: d
+    texte: 10^-6
+    correcte: false
+    type_erreur: PRQ
+    erreur: Erreur de signe dans -3 + 5, puis soustraction de 4
+- code: N5
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.PRIO
+  competence_secondaire: N.RELOP
+  domaine: Activites numeriques
+  objet: Calculer -3 + 4 x (-2)^2 - (-6)/3
+  reponse_attendue: ''
+  solution: ''
+- code: N6
+  partie: A
+  format: qcm
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.INT
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Écrire en intervalle l'ensemble des x tels que -2<=x<5
+  reponse_attendue: a
+  solution: ''
+  options:
+  - lettre: a
+    texte: '[-2 ; 5['
+    correcte: true
+  - lettre: b
+    texte: ']-2 ; 5]'
+    correcte: false
+    type_erreur: CPT
+    erreur: Correspondance large/strict inversée sur les deux bornes
+  - lettre: c
+    texte: '[-2 ; 5]'
+    correcte: false
+    type_erreur: CPT
+    erreur: Inégalité stricte x < 5 traitée comme une inégalité large
+  - lettre: d
+    texte: ']-2 ; 5['
+    correcte: false
+    type_erreur: CNS
+    erreur: Convention des crochets non mobilisée, intervalle ouvert par défaut
+- code: N7
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.RAC
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Écrire 6/√3 sous la forme a√3
+  reponse_attendue: ''
+  solution: ''
+- code: N8
+  partie: A
+  format: court
+  bareme: 0.333333
+  bareme_classeur: 1.0
+  competence: N.SCI
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Masse de 6x10^4 grains pesant chacun 1x10^-5 kg
+  reponse_attendue: ''
+  solution: ''
+- code: N9
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.RAC
+  competence_secondaire: L.IDR
+  domaine: Activites numeriques
+  objet: Simplifier P = √75 - 2√12 + √27 et calculer Q
+  reponse_attendue: ''
+  solution: ''
+- code: N10
+  partie: B
+  format: redige
+  bareme: 1.0
+  bareme_classeur: 3.0
+  competence: N.INT
+  competence_secondaire: null
+  domaine: Activites numeriques
+  objet: Encadrer 5-2x pour 2<=x<=3, puis donner l'intervalle
+  reponse_attendue: ''
+  solution: ''
