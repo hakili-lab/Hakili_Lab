@@ -258,3 +258,40 @@ class TestPerimetreUnique(BaseAuth):
         self.connecter("ADMIN", "Hakili", "9999")
         reponse = self.client.get(reverse("suivi_web:accueil"), {"q": "charles kabre"})
         self.assertEqual(self._noms_affiches(reponse), ["KABRE"])
+
+
+class ChaineDeBackendsTests(TestCase):
+    """Le SheetBackend ne doit pas casser la chaîne d'authentification Django.
+
+    `comptes.views.connexion` appelle le backend directement et compte sur ses
+    exceptions. Django, lui, essaie les backends l'un après l'autre : un backend
+    qui ne reconnaît pas les identifiants doit rendre la main. Lever à ce
+    moment-là interrompt la chaîne — et rendait l'administration Django
+    inaccessible par une erreur 500, alors qu'elle est le seul écran de
+    consultation des 11 tables du référentiel et du suivi.
+    """
+
+    def test_des_identifiants_qui_ne_sont_pas_les_siens_rendent_la_main(self) -> None:
+        from django.contrib.auth import authenticate
+
+        from comptes.backends import SheetBackend
+
+        self.assertIsNone(
+            SheetBackend().authenticate(None, username="demo", password="x")
+        )
+        self.assertIsNone(authenticate(None, username="inconnu", password="x"))
+
+    def test_un_nom_vide_garde_son_message(self) -> None:
+        """Le formulaire envoyé sans nom doit toujours expliquer pourquoi."""
+        from comptes.backends import EchecConnexion, SheetBackend
+
+        with self.assertRaises(EchecConnexion) as ctx:
+            SheetBackend().authenticate(None, cle="", pin="1234")
+        self.assertEqual(ctx.exception.code, "nom_absent")
+
+    def test_un_superutilisateur_atteint_l_administration(self) -> None:
+        from django.contrib.auth.models import User
+
+        User.objects.create_superuser("racine", "racine@local.test", "mdp-de-test")
+        self.assertTrue(self.client.login(username="racine", password="mdp-de-test"))
+        self.assertEqual(self.client.get("/admin/").status_code, 200)

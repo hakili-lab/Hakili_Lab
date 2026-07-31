@@ -63,15 +63,33 @@ def trouver_personne(cle: str) -> dict | None:
     return None
 
 
+#: Sentinelle : distingue « paramètre absent » de « paramètre vide ».
+_NON_FOURNI = object()
+
+
 class SheetBackend(BaseBackend):
     """Authentifie sur (clé de personne, PIN) en relisant le Sheet.
 
     Lève `EchecConnexion` avec un motif précis au lieu de retourner `None` sans
     explication : « aucun PIN configuré » et « PIN incorrect » demandent des
     messages différents, et « rôle non reconnu » doit renvoyer vers le docteur.
+    `comptes.views.connexion` appelle ce backend **directement** et compte
+    dessus.
+
+    Mais Django, lui, essaie les backends **en chaîne** : `/admin/login/` appelle
+    `authenticate(request, username=…, password=…)` et attend qu'un backend qui
+    ne reconnaît pas ces identifiants retourne `None`, pour laisser sa chance au
+    suivant — ici `ModelBackend`. Lever à ce moment-là interrompt la chaîne et
+    rend l'administration Django inaccessible par une erreur 500.
+
+    D'où la sentinelle : `cle` **absent** signifie « ce ne sont pas mes
+    identifiants » et retourne `None` ; `cle` **vide** signifie « le formulaire de
+    connexion a été envoyé sans nom » et mérite son message.
     """
 
-    def authenticate(self, request, cle=None, pin=None, **kwargs):  # noqa: D102
+    def authenticate(self, request, cle=_NON_FOURNI, pin=None, **kwargs):  # noqa: D102
+        if cle is _NON_FOURNI:
+            return None
         if not cle:
             raise EchecConnexion(
                 "nom_absent", "Veuillez sélectionner votre nom dans la liste."
