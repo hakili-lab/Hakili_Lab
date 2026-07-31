@@ -1,18 +1,14 @@
 # Hakili Lab — Makefile cross-platform (Windows + Unix)
 # Windows : installer make via `winget install GnuWin32.Make` ou utiliser setup.ps1
 
-.PHONY: setup test run lint clean
+.PHONY: setup run run-streamlit verifier importer test test-django lint collectstatic clean
 
 ifeq ($(OS),Windows_NT)
     PYTHON     = .venv\Scripts\python.exe
     PIP        = .venv\Scripts\pip.exe
-    ACTIVATE   = .venv\Scripts\activate.bat
-    SEP        = \\
 else
     PYTHON     = .venv/bin/python
     PIP        = .venv/bin/pip
-    ACTIVATE   = .venv/bin/activate
-    SEP        = /
 endif
 
 setup:
@@ -20,17 +16,38 @@ setup:
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
 	@echo ""
-	@echo "Environnement pret. Copiez .env.example en .env et renseignez vos cles API."
+	@echo "Environnement pret. Copiez .env.example en .env et renseignez vos cles."
 
+# Interface web Django. Streamlit reste disponible le temps de valider la
+# migration en conditions reelles — voir docs/urie_v2_roadmap.md.
 run:
+	$(PYTHON) manage.py runserver
+
+run-streamlit:
 	$(PYTHON) -m streamlit run src/ui/app.py
+
+# Controle avant mise en service : configuration, base, Sheets, cles, referentiel.
+# Ajouter un essai de correction reel :
+#   make verifier ARGS="--copie copie.pdf --test urie_3eme --eleve HAK-..."
+verifier:
+	$(PYTHON) manage.py verifier_installation $(ARGS)
+
+importer:
+	$(PYTHON) manage.py importer_referentiel
 
 test:
 	$(PYTHON) -m pytest tests/ -v --tb=short
+	$(PYTHON) manage.py test
+
+test-django:
+	$(PYTHON) manage.py test
 
 lint:
-	$(PYTHON) -m ruff check src/ tests/
+	$(PYTHON) -m ruff check src/ tests/ hakili/ comptes/ suivi_web/ correction_web/ referentiel/ suivi/
 	$(PYTHON) -m mypy src/ --ignore-missing-imports
+
+collectstatic:
+	$(PYTHON) manage.py collectstatic --noinput
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
