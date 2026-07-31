@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block titre %}Suivi des élèves — Hakili Lab{% endblock %}
+
+{% block contenu %}
+<h1>Suivi des élèves</h1>
+<p class="sous-titre">
+  {% if casquette == 'administrateur' %}Tous les centres
+  {% elif casquette == 'responsable' %}Votre centre
+  {% else %}Vos classes{% endif %}
+  · la pastille compare les deux dernières notes
+</p>
+
+{% if lecture_impossible %}
+  <div class="carte">
+    <p>La liste des élèves n'a pas pu être chargée.</p>
+    <a class="bouton discret" href="">Réessayer</a>
+  </div>
+{% else %}
+
+  {% if en_baisse %}
+    <div class="message warning">
+      {{ en_baisse }} élève{{ en_baisse|pluralize }} en baisse — affiché{{ en_baisse|pluralize }} en premier.
+    </div>
+  {% endif %}
+
+  <div class="carte">
+    <form method="get" style="display:flex;gap:8px;align-items:flex-end;">
+      <div style="flex:1;">
+        <label for="q">Rechercher</label>
+        {% comment %} La recherche ignore l'ordre des mots : « Sanou Feryel » retrouve
+           « Feryel SANOU » (bug corrigé une fois, voir identite_service). {% endcomment %}
+        <input type="search" id="q" name="q" value="{{ recherche }}"
+               placeholder="Nom ou prénom">
+      </div>
+      <button type="submit">Chercher</button>
+      {% if recherche %}<a class="bouton discret" href="?">Effacer</a>{% endif %}
+    </form>
+  </div>
+
+  <div class="carte">
+    {% if lignes %}
+      <div class="defilement">
+        <table>
+          <thead>
+            <tr>
+              <th>Élève</th>
+              <th>Classe</th>
+              <th>Centre</th>
+              <th>Copies</th>
+              <th>Dernière note</th>
+              <th>Tendance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {# `identifiant_hakili` et `contact_parents` ne sont jamais affichés. #}
+            {% for ligne in lignes %}
+              <tr>
+                <td>
+                  <a href="{% url 'suivi_web:eleve_detail' ligne.jeton %}">
+                    <strong>{{ ligne.eleve.nom }}</strong> {{ ligne.eleve.prenom }}
+                  </a>
+                </td>
+                <td>{{ ligne.eleve.classe|default:"—" }}</td>
+                <td>{{ ligne.eleve.centre|default:"—" }}</td>
+                <td>{{ ligne.nb_copies }}</td>
+                <td>
+                  {% if ligne.derniere_note is not None %}{{ ligne.derniere_note|floatformat:2 }}/20
+                  {% else %}<span style="color:var(--gris)">non notée</span>{% endif %}
+                </td>
+                <td><span class="pastille {{ ligne.tendance }}">{{ ligne.tendance_libelle }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="aide">{{ lignes|length }} élève{{ lignes|length|pluralize }} affiché{{ lignes|length|pluralize }}.</p>
+    {% elif recherche %}
+      <p>Aucun élève ne correspond à « {{ recherche }} ».</p>
+    {% else %}
+      <p>Aucun élève dans votre périmètre.</p>
+      <p class="aide">
+        Les élèves sont gérés dans le Google Sheet — si un élève manque, il doit y être ajouté.
+      </p>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

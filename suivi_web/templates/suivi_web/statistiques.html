@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titre %}Statistiques — Hakili Lab{% endblock %}
+
+{% block contenu %}
+<h1>Statistiques</h1>
+<p class="sous-titre">Vue d'ensemble — réservée aux administrateurs.</p>
+
+<div class="carte" style="display:flex;gap:32px;flex-wrap:wrap;">
+  <div>
+    <div class="aide">Élèves</div>
+    <div style="font-size:30px;font-weight:700;">{{ nb_eleves|default:"?" }}</div>
+  </div>
+  <div>
+    <div class="aide">Centres</div>
+    <div style="font-size:30px;font-weight:700;">{{ nb_centres }}</div>
+  </div>
+  <div>
+    <div class="aide">Copies corrigées</div>
+    <div style="font-size:30px;font-weight:700;">{{ nb_copies|default:"?" }}</div>
+  </div>
+</div>
+
+{% if centres %}
+  <div class="carte">
+    <h2 style="font-size:15px;margin-top:0;">Centres</h2>
+    <p class="aide">
+      Dérivés des Sheets, pas d'une liste figée : ajouter un centre se fait
+      en l'écrivant dans un Sheet, sans modification de code.
+    </p>
+    <ul>{% for c in centres %}<li>{{ c }}</li>{% endfor %}</ul>
+  </div>
+{% endif %}
+{% endblock %}

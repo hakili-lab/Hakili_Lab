@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block titre %}{{ eleve.nom }} {{ eleve.prenom }} — Hakili Lab{% endblock %}
+
+{% block contenu %}
+<p><a href="{% url 'suivi_web:accueil' %}">&larr; Retour à la liste</a></p>
+
+<h1>{{ eleve.nom }} {{ eleve.prenom }}</h1>
+<p class="sous-titre">
+  {{ eleve.classe|default:"classe non renseignée" }} ·
+  {{ eleve.centre|default:"centre non renseigné" }}
+</p>
+
+<div class="carte" style="display:flex;gap:32px;flex-wrap:wrap;">
+  <div>
+    <div class="aide">Tendance</div>
+    <div style="margin-top:6px;"><span class="pastille {{ tendance }}">{{ tendance_libelle }}</span></div>
+  </div>
+  <div>
+    <div class="aide">Copies</div>
+    <div style="font-size:26px;font-weight:700;">{{ nb_copies }}</div>
+  </div>
+  <div>
+    <div class="aide">Dernière note</div>
+    <div style="font-size:26px;font-weight:700;">
+      {% if derniere_note is not None %}
+        {{ derniere_note|floatformat:2 }}<span style="font-size:15px;">/20</span>
+      {% else %}—{% endif %}
+    </div>
+  </div>
+</div>
+
+{% if parcours %}
+  <h2 style="font-size:16px;">Parcours de remédiation</h2>
+  {% for p in parcours %}
+    <div class="carte" style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;">
+      <div>
+        <strong>{{ p.session.get_etat_display }}</strong>
+        <div class="aide">
+          Ouvert le {{ p.session.date_debut }}
+          {% if p.session.palier %} · palier {{ p.session.palier }}{% endif %}
+          {% if p.session.date_inscription %} · inscrit le {{ p.session.date_inscription }}{% endif %}
+        </div>
+      </div>
+      <a class="bouton discret" href="{% url 'suivi_web:session_detail' p.jeton %}">Voir le plan</a>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<h2 style="font-size:16px;">Copies, de la plus ancienne à la plus récente</h2>
+
+{% for entree in entrees %}
+  <div class="carte">
+    <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:baseline;">
+      <div>
+        <strong>{{ entree.copie.date_soumission }}</strong>
+        <span style="color:var(--gris);"> · {{ entree.copie.classe }}</span>
+      </div>
+      <div style="font-size:19px;font-weight:700;">
+        {% if entree.copie.notes_finales is not None %}
+          {{ entree.copie.notes_finales|floatformat:2 }}/20
+        {% else %}
+          <span style="font-size:14px;font-weight:400;color:var(--gris);">non notée</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      {% for doc in entree.documents %}
+        {% comment %} Le navigateur affiche PDF et images nativement : « Voir » ouvre
+           le document tel quel, sans conversion en PNG — ce que Streamlit était
+           obligé de faire faute de pouvoir embarquer un PDF. {% endcomment %}
+        <a class="bouton discret" style="padding:7px 12px;font-size:13px;"
+           href="{% url 'suivi_web:document' entree.jeton doc.type %}"
+           target="_blank" rel="noopener">Voir le {{ doc.libelle|lower }}</a>
+        <a class="bouton discret" style="padding:7px 12px;font-size:13px;"
+           href="{% url 'suivi_web:document' entree.jeton doc.type %}?telecharger=1"
+           >Télécharger</a>
+      {% empty %}
+        <span class="aide">Aucun document enregistré pour cette copie.</span>
+      {% endfor %}
+    </div>
+  </div>
+{% empty %}
+  {% if lecture_ok %}
+    <div class="carte"><p>Aucune copie enregistrée pour cet élève.</p></div>
+  {% endif %}
+{% endfor %}
+{% endblock %}

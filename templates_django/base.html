@@ -1,0 +1,172 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+{% comment %} Le module 8 exige qu'un tuteur remplisse sa fiche depuis son téléphone en
+   moins de deux minutes : la mise en page est pensée mobile d'abord. {% endcomment %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block titre %}Hakili Lab{% endblock %}</title>
+<style>
+  :root {
+    --marine: #001e4a;
+    --bleu: #4a90e2;
+    --vert: #27ae60;
+    --orange: #e67e22;
+    --rouge: #c0392b;
+    --gris: #5a7aa8;
+    --fond: #f0f4f8;
+    --bord: #d8e2ee;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--marine);
+    background: var(--fond);
+    line-height: 1.5;
+  }
+  a { color: var(--bleu); }
+
+  header.appbar {
+    background: var(--marine);
+    color: #fff;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .appbar .marque { font-weight: 700; letter-spacing: .4px; font-size: 15px; }
+  .appbar .marque span { display: block; font-size: 10px; color: #7a9fc8; font-weight: 400; }
+  .appbar nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  .appbar nav a {
+    color: #cfe0f5; text-decoration: none; padding: 6px 10px;
+    border-radius: 6px; font-size: 13px;
+  }
+  .appbar nav a:hover { background: rgba(255,255,255,.08); }
+  .appbar nav a.actif { background: var(--bleu); color: #fff; }
+  .appbar .compte { font-size: 12px; color: #cfe0f5; display: flex; align-items: center; gap: 8px; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 48px; }
+
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sous-titre { color: var(--gris); font-size: 13px; margin-bottom: 20px; }
+
+  .carte {
+    background: #fff; border: 1px solid var(--bord); border-radius: 8px;
+    padding: 18px; margin-bottom: 16px;
+  }
+
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  select, input[type=text], input[type=password], input[type=number], input[type=search], textarea {
+    width: 100%; padding: 10px 12px; font-size: 16px;  /* 16px : évite le zoom auto sur iOS */
+    border: 1px solid var(--bord); border-radius: 6px; background: #fff;
+    color: var(--marine); font-family: inherit;
+  }
+  .champ { margin-bottom: 16px; }
+  .aide { font-size: 12px; color: var(--gris); margin-top: 4px; }
+
+  button, .bouton {
+    background: var(--bleu); color: #fff; border: 0; border-radius: 6px;
+    padding: 11px 18px; font-size: 15px; font-weight: 600; cursor: pointer;
+    font-family: inherit; text-decoration: none; display: inline-block;
+  }
+  button:hover, .bouton:hover { filter: brightness(1.08); }
+  button.discret, .bouton.discret {
+    background: #fff; color: var(--marine); border: 1px solid var(--bord);
+  }
+
+  .messages { margin-bottom: 16px; }
+  .message {
+    padding: 11px 14px; border-radius: 6px; font-size: 14px; margin-bottom: 8px;
+    border-left: 4px solid;
+  }
+  .message.success { background: #eafaf1; border-color: var(--vert); }
+  .message.error   { background: #fdecea; border-color: var(--rouge); }
+  .message.warning { background: #fef5e7; border-color: var(--orange); }
+  .message.info    { background: #eef6ff; border-color: var(--bleu); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--bord); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .3px; color: var(--gris); }
+  .defilement { overflow-x: auto; }
+
+  .pastille {
+    display: inline-block; padding: 2px 9px; border-radius: 11px;
+    font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap;
+  }
+  .pastille.progresse { background: var(--vert); }
+  .pastille.stagne { background: var(--orange); }
+  .pastille.regresse { background: var(--rouge); }
+  .pastille.insuffisant { background: #95a5a6; }
+
+  .casquette form { display: flex; align-items: center; gap: 6px; }
+  .casquette select { width: auto; padding: 4px 8px; font-size: 12px; }
+
+  @media (max-width: 620px) {
+    header.appbar { flex-direction: column; align-items: flex-start; }
+    main { padding: 14px 12px 40px; }
+    h1 { font-size: 19px; }
+  }
+</style>
+{% block tete %}{% endblock %}
+</head>
+<body>
+
+<header class="appbar">
+  <div class="marque">HAKILI LAB<span>Évaluation IA · Maths 6e à la Tle</span></div>
+
+  {% if personne %}
+    <nav>
+      <a href="{% url 'correction_web:nouvelle' %}" class="{% if rubrique == 'correction' %}actif{% endif %}">Corriger</a>
+      <a href="{% url 'correction_web:lot' %}">Une classe</a>
+      <a href="{% url 'correction_web:liste' %}">Corrections</a>
+      <a href="{% url 'correction_web:sujets' %}" class="{% if rubrique == 'sujets' %}actif{% endif %}">Sujets</a>
+      <a href="{% url 'suivi_web:accueil' %}" class="{% if rubrique == 'accueil' %}actif{% endif %}">Suivi</a>
+      {% if casquette == 'administrateur' %}
+        <a href="{% url 'suivi_web:personnel' %}" class="{% if rubrique == 'personnel' %}actif{% endif %}">Accès</a>
+        <a href="{% url 'suivi_web:statistiques' %}" class="{% if rubrique == 'statistiques' %}actif{% endif %}">Statistiques</a>
+        <a href="/admin/">Référentiel</a>
+      {% endif %}
+    </nav>
+
+    <div class="compte">
+      <span>{{ personne.prenom }} {{ personne.nom }}</span>
+      {% if not acces_libre %}
+        <form method="post" action="{% url 'comptes:deconnexion' %}" style="margin:0">
+          {% csrf_token %}
+          <button type="submit" class="discret" style="padding:5px 10px;font-size:12px;">Quitter</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+</header>
+
+<main>
+  {% if acces_libre %}
+    {% comment %} Réglage de développement, verrouillé sur DEBUG côté settings.
+       Le bandeau est volontairement voyant : une application ouverte sur des
+       données d'élèves mineurs ne doit jamais pouvoir se faire oublier. {% endcomment %}
+    <div class="message error" style="border-left-width:6px;font-weight:600;">
+      Accès libre activé — aucun contrôle d'accès.
+      <span style="font-weight:400;">
+        Réglage de développement (<code>HAKILI_ACCES_LIBRE</code>), ignoré hors
+        <code>DEBUG</code>. À retirer dès que les Google Sheets sont configurés.
+      </span>
+    </div>
+  {% endif %}
+
+  {% if messages %}
+    <div class="messages">
+      {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% block contenu %}{% endblock %}
+</main>
+
+</body>
+</html>
