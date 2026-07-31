@@ -791,11 +791,19 @@ def run_phase_b(
     *,
     result: PipelineResult,
     on_progress: Callable[[str, int], None] | None = None,
+    ancrage: Callable[[list[str]], tuple[str, list[dict]]] | None = None,
 ) -> PipelineResult:
     """
-    Phase B : RAG + diagnostic + remédiation + export PDF + JSON.
+    Phase B : ancrage programme + diagnostic + remédiation + export PDF + JSON.
     Reçoit le PipelineResult de la Phase A après validation enseignant.
     result.grade doit avoir compute_final_score() déjà appelé.
+
+    `ancrage` : fonction qui, pour une liste de codes de questions échouées, rend
+    (contexte_texte, lacunes). Passée par l'appelant plutôt qu'importée ici, parce
+    que sa source — le référentiel — vit dans une application Django, et que ce
+    module doit rester indépendant de tout framework. Sans elle, on retombe sur
+    l'ancrage historique par `chunk_ids`, qui ne couvre que les tests d'avant le
+    référentiel Urie.
     """
     if result.grade is None:
         result.errors.append("Phase B impossible : aucune correction disponible.")
@@ -807,7 +815,7 @@ def run_phase_b(
 
     sentinel = result
     try:
-        return _run_phase_b(result=result, on_progress=on_progress)
+        return _run_phase_b(result=result, on_progress=on_progress, ancrage=ancrage)
     except Exception as exc:
         logger.exception("[%s] Erreur Phase B : %s", result.copy_id, exc)
         sentinel.errors.append(f"Erreur Phase B : {exc}")
@@ -818,6 +826,7 @@ def _run_phase_b(
     *,
     result: PipelineResult,
     on_progress: Callable[[str, int], None] | None,
+    ancrage: Callable[[list[str]], tuple[str, list[dict]]] | None = None,
 ) -> PipelineResult:
 
     def _progress(step: str, pct: int) -> None:
@@ -866,19 +875,45 @@ def _run_phase_b(
             if _effective_score(q) == 0
         ]
 
-        # 4. RAG curriculum
+        # 4. Ancrage sur le programme officiel
         _progress("rag", 65)
-        retriever = _get_retriever()
         curriculum_context = ""
         competency_gaps: list[CompetencyGap] = []
-        if bareme_id and failed_ids:
-            curriculum_context = retriever.get_diagnostic_context(failed_ids, bareme_id)
-            raw_gaps = retriever.get_competency_gaps(failed_ids, bareme_id)
-            competency_gaps = [CompetencyGap(**g) for g in raw_gaps]
-            logger.info(
-                "[%s] RAG — %d lacunes pour %d questions échouées (barème: %s)",
-                copy_id, len(competency_gaps), len(failed_ids), bareme_id,
-            )
+
+        if failed_ids:
+            # `ancrage` est fourni par l'appelant quand le référentiel est
+            # disponible (voir referentiel/contexte.py). Ce module ne l'importe
+            # pas lui-même : `src/` ne doit dépendre ni de Django ni d'aucun
+            # framework — c'est ce qui lui permet de servir les deux interfaces
+            # pendant la migration.
+            if ancrage is not None:
+                curriculum_context, raw_gaps = ancrage(failed_ids)
+                competency_gaps = [CompetencyGap(**g) for g in raw_gaps]
+                source = "référentiel"
+            elif bareme_id:
+                # Chemin historique : les anciens barèmes portent des `chunk_ids`
+                # vers les leçons du curriculum. Les barèmes générés depuis le
+                # classeur n'en ont pas — sans `ancrage`, le diagnostic tournerait
+                # sans aucun contexte programme.
+                retriever = _get_retriever()
+                curriculum_context = retriever.get_diagnostic_context(failed_ids, bareme_id)
+                raw_gaps = retriever.get_competency_gaps(failed_ids, bareme_id)
+                competency_gaps = [CompetencyGap(**g) for g in raw_gaps]
+                source = "curriculum (chunk_ids)"
+            else:
+                source = "aucun"
+
+            if not curriculum_context:
+                logger.warning(
+                    "[%s] Diagnostic SANS ancrage programme (source: %s, barème: %s) — "
+                    "les lacunes ne seront pas rattachées à une compétence.",
+                    copy_id, source, bareme_id or "aucun",
+                )
+            else:
+                logger.info(
+                    "[%s] Ancrage %s — %d lacunes pour %d questions échouées.",
+                    copy_id, source, len(competency_gaps), len(failed_ids),
+                )
 
         # 5. Diagnostic
         _progress("diagnostic", 75)

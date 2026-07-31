@@ -1625,59 +1625,16 @@ def _admin_view_stats(db) -> None:
             st.write(f"- {p.get('prenom', '')} {p.get('nom', '')} ({role_txt}){_mention_pin(p)}")
 
 
-def _nettoyer_pour_nom_fichier(text: str) -> str:
-    """Retire accents/espaces/apostrophes/slashes et tout caractère non
-    alphanumérique (remplacé par un underscore) — pour rester un nom de
-    fichier valide à la fois sous Windows et sous Linux."""
-    normalized = unicodedata.normalize("NFD", text or "")
-    ascii_text = normalized.encode("ascii", "ignore").decode("ascii")
-    return re.sub(r"[^A-Za-z0-9]+", "_", ascii_text).strip("_")
-
-
-def nom_fichier_document(*, nom: str, prenom: str, doc_type: str, date) -> str:
-    """Nom de fichier lisible pour un document téléchargé (scan/rapport/
-    remédiation) : NOM_Prenom_type_date (sans extension — l'appelant ajoute
-    .pdf/.jpg/...). Ne contient JAMAIS contact_parents (le numéro du parent
-    ne doit pas voyager dans des fichiers qui circulent — WhatsApp, email)
-    ni identifiant_hakili — seuls nom et prénom, comme affichés à l'écran.
-
-    À appliquer PARTOUT où un document est proposé au téléchargement
-    (traitement unique, traitement batch, vue Suivi)."""
-    nom_c = _nettoyer_pour_nom_fichier(nom).upper()
-    prenom_c = _nettoyer_pour_nom_fichier(prenom)
-    parts = [p for p in (nom_c, prenom_c) if p]
-    base = "_".join(parts) if parts else "eleve"
-    return f"{base}_{doc_type}_{date}"
-
-
-def _fold_token(text: str) -> str:
-    """Minuscule, sans accents, lettres/chiffres uniquement — pour comparer
-    un nom de fichier au nom/prénom d'un élève sans se soucier de la casse,
-    des accents ou du séparateur utilisé."""
-    normalized = unicodedata.normalize("NFD", text or "")
-    ascii_text = normalized.encode("ascii", "ignore").decode("ascii").lower()
-    return re.sub(r"[^a-z0-9]", "", ascii_text)
-
-
-def _fold_texte(text: str) -> str:
-    """Comme _fold_token mais CONSERVE un espace entre les mots — sert de
-    base à une recherche insensible à l'ORDRE des mots (voir
-    _correspond_recherche) : "Sanou Feryel" doit retrouver "Feryel SANOU"
-    même si l'affichage montre le prénom avant le nom."""
-    normalized = unicodedata.normalize("NFD", text or "")
-    ascii_text = normalized.encode("ascii", "ignore").decode("ascii").lower()
-    return re.sub(r"[^a-z0-9]+", " ", ascii_text).strip()
-
-
-def _correspond_recherche(requete: str, cible: str) -> bool:
-    """Vrai si chaque mot de `requete` apparaît (comme sous-chaîne, ordre
-    des mots ignoré) dans `cible` — insensible casse/accents. Une requête
-    vide correspond toujours. Utilisé par toutes les recherches nom/prénom
-    du projet (élèves, personnel) pour un comportement cohérent, qu'on
-    tape "Sanou Feryel" ou "Feryel Sanou"."""
-    mots_requete = _fold_texte(requete).split()
-    cible_repliee = _fold_texte(cible)
-    return all(mot in cible_repliee for mot in mots_requete)
+# Repliage, recherche et nommage des documents vivent désormais dans
+# src/services/identite_service.py — ce sont des décisions, pas de l'affichage,
+# et elles servent aussi aux vues Django. Alias conservés pour ne pas toucher
+# aux appels existants de ce fichier, qui est sortant.
+from src.services.identite_service import (  # noqa: E402
+    correspond_recherche as _correspond_recherche,
+)
+from src.services.identite_service import fold_texte as _fold_texte  # noqa: E402
+from src.services.identite_service import fold_token as _fold_token  # noqa: E402
+from src.services.identite_service import nom_fichier_document  # noqa: E402,F401
 
 
 def _selectbox_recherchable(
@@ -1703,79 +1660,24 @@ def _selectbox_recherchable(
     return items[options.index(selection) - 1]
 
 
-def _match_eleve_par_nom_fichier(filename_stem: str, eleves: list[dict]) -> dict | None:
-    """Mode batch : fait correspondre un fichier uploadé (nommé par convention
-    avec le nom et prénom de l'élève) à un élève des Google Sheets, sans
-    dépendre d'une sélection manuelle par fichier (peu pertinente pour 30
-    copies d'un coup — voir chantier pipeline/Sheets).
-
-    Retourne l'élève UNIQUEMENT si son nom ET son prénom (repliés, sans
-    accents/casse) apparaissent tous les deux dans les tokens du nom de
-    fichier, et qu'un seul élève correspond — sinon None (introuvable ou
-    ambigu), auquel cas l'appelant doit bloquer cette copie plutôt que deviner.
-    """
-    tokens_fichier = {
-        _fold_token(t) for t in re.split(r"[_\-\s]+", filename_stem) if t
-    }
-    matches = []
-    for eleve in eleves:
-        tokens_eleve = {_fold_token(eleve.get("nom", "")), _fold_token(eleve.get("prenom", ""))}
-        if all(tokens_eleve) and tokens_eleve <= tokens_fichier:
-            matches.append(eleve)
-    return matches[0] if len(matches) == 1 else None
-
-
-# ── Double rôle — sélecteur de casquette ─────────────────────────────────────
-
-_ROLES_VALIDES = {r.value for r in UserRole}
-_LABELS_CASQUETTE = {
-    UserRole.responsable_centre.value: "Responsable",
-    UserRole.enseignant.value: "Enseignant",
-    UserRole.admin.value: "Administrateur",
-}
-
-
-def _roles_valides_de(personne: dict) -> list[str]:
-    """Rôles reconnus (valeurs UserRole) d'une personne du Sheet personnel —
-    à partir de personne["roles"] (double rôle possible, voir
-    google_sheets._load_personnel) avec repli sur personne["role"] (rôle
-    principal) si "roles" est absent. Un rôle du Sheet non reconnu par
-    UserRole est simplement ignoré ici plutôt que de faire planter
-    l'aiguillage — l'erreur claire est déjà montrée à la connexion."""
-    roles = personne.get("roles") or ([personne["role"]] if personne.get("role") else [])
-    return [r for r in roles if r in _ROLES_VALIDES]
-
-
-def _vue_utilisateur_pour_casquette(personne: dict, casquette: str) -> dict:
-    """Construit le dict "utilisateur" attendu par les fonctions de
-    permission EXISTANTES (get_accessible_eleves/can_access_eleve) à partir
-    de la personne connectée et de la casquette ACTIVE choisie — pertinent
-    seulement en double rôle, voir chantier sélecteur de casquette.
-
-    N'aiguille QUE role_enum et affectations vers le périmètre de la
-    casquette choisie ; ne duplique aucune logique de permission ni aucune
-    vue.
-
-    Correction (audit) : la casquette Responsable donne accès à TOUT LE
-    CENTRE où la personne porte le rôle responsable — voir
-    personne["centres_responsable"] (google_sheets._load_personnel),
-    construit à partir du RÔLE de chaque ligne du Sheet, jamais de la
-    présence ou de l'absence d'une classe sur cette ligne. Dans les
-    données réelles, une ligne responsable porte quasi toujours aussi une
-    classe (ex. DIANE Abasse) : filtrer sur "classe is None" (ancienne
-    logique) ne retenait alors AUCUNE affectation et vidait silencieusement
-    l'accès du responsable à son propre centre. La casquette Enseignant,
-    elle, reste basée sur les affectations précises (centre + classe),
-    inchangée."""
-    vue = dict(personne)
-    vue["role_enum"] = UserRole(casquette)
-    if casquette == UserRole.enseignant.value:
-        vue["affectations"] = [a for a in personne.get("affectations", []) if a[1] is not None]
-    elif casquette == UserRole.responsable_centre.value:
-        vue["affectations"] = [
-            (centre, None) for centre in personne.get("centres_responsable", [])
-        ]
-    return vue
+# Appariement batch et logique de casquettes : voir
+# src/services/identite_service.py (extrait pour être testable et réutilisable
+# par les vues Django). Alias conservés pour les appels de ce fichier sortant.
+from src.services.identite_service import (  # noqa: E402
+    LIBELLES_CASQUETTE as _LABELS_CASQUETTE,
+)
+from src.services.identite_service import (  # noqa: E402
+    ROLES_VALIDES as _ROLES_VALIDES,  # noqa: F401
+)
+from src.services.identite_service import (  # noqa: E402
+    apparier_eleve_par_nom_fichier as _match_eleve_par_nom_fichier,
+)
+from src.services.identite_service import (  # noqa: E402
+    roles_valides_de as _roles_valides_de,
+)
+from src.services.identite_service import (  # noqa: E402
+    vue_utilisateur_pour_casquette as _vue_utilisateur_pour_casquette,
+)
 
 
 # ── Échec doux sur coupure Google Sheets ─────────────────────────────────────

@@ -7,11 +7,11 @@ _mh : HTML (st.markdown unsafe_allow_html=True) — symboles Unicode natifs
 _mt : texte pur (labels d'expander) — symboles Unicode + exposants ²³,
       jamais de balises HTML.
 """
-import pytest
-
-pytest.importorskip("streamlit")
-
-from src.ui.app import _mh, _mt  # noqa: E402
+# Ces fonctions vivaient dans src/ui/app.py et exigeaient Streamlit pour être
+# importées. Elles sont désormais dans src/services/affichage_math.py : le test
+# ne dépend plus d'aucun framework d'interface.
+from src.services.affichage_math import math_html as _mh  # noqa: E402
+from src.services.affichage_math import math_texte as _mt  # noqa: E402
 
 
 # ── _mh : rendu HTML ──────────────────────────────────────────────────────────

@@ -228,6 +228,18 @@ _retry = retry(
 class ClaudeClient:
     def __init__(self) -> None:
         import anthropic
+
+        # `anthropic_api_key` est facultative à l'import de la configuration (voir
+        # src/core/config.py) pour que les chemins sans IA — migrations Django,
+        # lecture des Sheets, affichage d'une liste d'élèves — n'exigent pas de
+        # clé. L'exigence est donc rétablie ici, au seul endroit où elle sert.
+        if not settings.anthropic_api_key:
+            raise RuntimeError(
+                "ANTHROPIC_API_KEY est absente de l'environnement. Claude est le "
+                "filet de secours de toutes les étapes du pipeline et le seul "
+                "provider de l'extraction de barème : la correction ne peut pas "
+                "démarrer sans. Renseigner la clé dans .env."
+            )
         self.client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
         self._transcription_prompt = self._load_prompt("transcription_prompt.md")
         self._grading_prompt = self._load_prompt("grading_prompt.md")

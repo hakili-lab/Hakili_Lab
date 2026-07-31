@@ -9,7 +9,14 @@ class Settings(BaseSettings):
     )
 
     # Anthropic Claude
-    anthropic_api_key: str
+    # Facultative à l'IMPORT, obligatoire à l'USAGE. Sans valeur par défaut, le
+    # simple fait d'importer ce module exigeait la clé — or `src/integrations/
+    # google_sheets.py` et `src/db/database.py` en dépendent, ce qui faisait
+    # échouer `manage.py migrate`, `manage.py check` et l'affichage d'une liste
+    # d'élèves sur une machine sans clé LLM, alors qu'aucun de ces chemins
+    # n'appelle un modèle. L'échec reste net là où la clé sert réellement :
+    # `ClaudeClient.__init__` refuse de se construire si elle est vide.
+    anthropic_api_key: str = ""
     claude_model_heavy: str = "claude-sonnet-4-6"   # Sonnet 4.6 — transcription, correction, remédiation
     claude_model_light: str = "claude-sonnet-4-6"   # tâches légères (nom, JSON repair)
     claude_model_opus: str = "claude-opus-4-7"      # Opus 4.7 — diagnostic (raisonnement approfondi)
