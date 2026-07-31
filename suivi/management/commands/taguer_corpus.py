@@ -14,11 +14,24 @@ fichier se relit, se compare, se reprend le lendemain ; un formulaire perd tout 
 la première fermeture d'onglet. Et chaque problème doit porter sa **justification**
 — sans elle, un désaccord entre le corpus et le module 4 serait inarbitrable.
 
+Le trou que la validation ne bouche pas
+---------------------------------------
+Un code **inventé** est rejeté. Un code **existant mais mal choisi** passe sans
+un mot — et pollue l'étalon de façon invisible. Aucun contrôle automatique ne
+peut trancher à la place d'un humain ; trois choses réduisent le risque :
+
+· `--chercher` donne le référentiel sous la main, pour ne pas taguer de mémoire ;
+· un code rejeté fait proposer les codes les plus proches ;
+· le compte rendu **rappelle le libellé** de chaque code retenu, pour qu'une
+  relecture rapide fasse ressortir un mauvais choix.
+
 Usage
 -----
-    python manage.py taguer_corpus --fichier data/corpus/copie_3e_kere.yaml
+    python manage.py taguer_corpus --fichier data/corpus/copie_3e.yaml
     python manage.py taguer_corpus --fichier … --a-blanc     # contrôle sans écrire
     python manage.py taguer_corpus --fichier … --remplacer   # refaire un tagage
+    python manage.py taguer_corpus --chercher symetrie       # trouver un code
+    python manage.py taguer_corpus --chercher --niveau 5eme  # tout un niveau
 
 Format attendu (voir `data/corpus/exemple.yaml`)
 -----------------------------------------------
@@ -48,6 +61,10 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from difflib import get_close_matches
+
+from django.db import models
+
 from referentiel.couts import cout_precalcule
 from referentiel.models import Competence, TypeErreur
 from suivi.models import (
@@ -63,12 +80,19 @@ from suivi.models import (
 #: de remédiation. Un problème `resolu` dans un corpus n'aurait aucun sens.
 ETATS_TAGABLES = {EtatProbleme.HYPOTHESE, EtatProbleme.CONFIRME}
 
+#: Ordre des niveaux, pour signaler une compétence taguée alors qu'elle n'a pas
+#: encore été enseignée. Un test d'entrée en 5ème évalue ce qui précède la 5ème.
+ORDRE_NIVEAUX = {
+    "Primaire": 0, "6eme": 1, "5eme": 2, "4eme": 3,
+    "3eme": 4, "2ndeC": 5, "1ereD": 6, "tleD": 7,
+}
+
 
 class Command(BaseCommand):
     help = "Enregistre une copie taguée à la main dans le corpus de référence (module 3)."
 
     def add_arguments(self, parser) -> None:
-        parser.add_argument("--fichier", required=True, help="Fichier YAML du tagage.")
+        parser.add_argument("--fichier", help="Fichier YAML du tagage.")
         parser.add_argument(
             "--a-blanc",
             action="store_true",
@@ -80,8 +104,25 @@ class Command(BaseCommand):
             help="Refait le tagage d'une copie déjà enregistrée : ses problèmes "
             "et leurs transitions sont supprimés puis recréés.",
         )
+        parser.add_argument(
+            "--chercher",
+            nargs="?",
+            const="",
+            help="Cherche une compétence par mot du libellé ou de la description, "
+            "au lieu de taguer. Sans mot, liste tout (à combiner avec --niveau).",
+        )
+        parser.add_argument(
+            "--niveau",
+            help="Restreint --chercher à un niveau d'introduction (Primaire, 6eme…).",
+        )
 
     def handle(self, *args, **options) -> None:
+        if options.get("chercher") is not None:
+            self._chercher(options["chercher"], options.get("niveau"))
+            return
+
+        if not options.get("fichier"):
+            raise CommandError("--fichier est obligatoire (ou --chercher pour consulter).")
         chemin = Path(options["fichier"])
         if not chemin.exists():
             raise CommandError(f"{chemin} est introuvable.")
@@ -97,6 +138,42 @@ class Command(BaseCommand):
         with transaction.atomic():
             evaluation = self._enregistrer(tagage, remplacer=options["remplacer"])
         self._rendre_compte(tagage, ecrit=True, evaluation=evaluation)
+
+    # ── Consultation ─────────────────────────────────────────────────────────
+
+    def _chercher(self, mot: str, niveau: str | None) -> None:
+        """Donne le référentiel sous la main pendant le tagage.
+
+        Sans ça, on tague de mémoire — et on se trompe : le tagage des premières
+        copies a conclu à tort qu'aucune compétence ne couvrait le vocabulaire
+        géométrique, alors que `G.VOC` existe. Une erreur de ce genre ne se voit
+        pas ensuite : le code est valide, il est simplement faux.
+        """
+        qs = Competence.objects.all()
+        if niveau:
+            qs = qs.filter(niveau_intro__iexact=niveau)
+        if mot:
+            qs = qs.filter(
+                models.Q(libelle__icontains=mot)
+                | models.Q(description__icontains=mot)
+                | models.Q(code__icontains=mot)
+            )
+        qs = qs.order_by("niveau_intro", "code")
+
+        if not qs.exists():
+            self.stdout.write(self.style.WARNING("Aucune compétence ne correspond."))
+            return
+
+        self.stdout.write(self.style.SUCCESS(f"{qs.count()} compétence(s)\n"))
+        for c in qs:
+            self.stdout.write(f"  {c.code:12} {c.niveau_intro:10} {c.libelle}")
+            if c.description:
+                self.stdout.write(f"  {'':12} {'':10} └ {c.description[:100]}")
+
+        self.stdout.write(self.style.SUCCESS("\nTypes d'erreur (liste fermée)"))
+        for t in TypeErreur.objects.all():
+            self.stdout.write(f"  {t.code:5} {t.libelle}")
+            self.stdout.write(f"  {'':5} └ {t.signature[:110]}")
 
     # ── Validation ───────────────────────────────────────────────────────────
 
@@ -150,8 +227,14 @@ class Command(BaseCommand):
             etat = item.get("etat", EtatProbleme.HYPOTHESE)
 
             if competence not in codes_competences:
+                # Proposer les codes proches plutôt que de renvoyer l'utilisateur
+                # au classeur : une faute de frappe se corrige en une seconde, et
+                # un code cherché de mémoire trouve souvent son voisin ici.
+                proches = get_close_matches(str(competence), sorted(codes_competences), n=4, cutoff=0.4)
+                indice = f" Peut-être : {', '.join(proches)}." if proches else ""
                 erreurs.append(
                     f"{prefixe} : compétence {competence!r} absente du référentiel."
+                    f"{indice} (`--chercher <mot>` pour la liste.)"
                 )
             if type_erreur not in codes_types:
                 erreurs.append(
@@ -188,16 +271,83 @@ class Command(BaseCommand):
                 + "\n  - ".join(erreurs)
             )
 
+        donnees["_avertissements"] = self._avertir(donnees)
         return donnees
+
+    def _avertir(self, donnees: dict) -> list[str]:
+        """Signale ce qui est suspect sans être faux. N'empêche jamais d'écrire.
+
+        Deux contrôles, tous deux issus du tagage des premières copies :
+
+        · **Niveau.** Une compétence introduite au niveau du test, ou plus tard,
+          n'a pas encore été enseignée — l'échec y est normal et ne devrait pas
+          compter comme lacune. Relevé à la main sur une copie d'entrée en 5ème
+          taguée `N.FRA2`, compétence de 5ème.
+        · **Compétence taguée plusieurs fois.** Deux types d'erreur sur une même
+          compétence sont permis et parfois justes, mais ça double le coût :
+          autant le voir.
+        """
+        avertissements: list[str] = []
+        niveau = donnees.get("niveau")
+        problemes = donnees["problemes"]
+
+        if niveau:
+            rang_test = ORDRE_NIVEAUX.get(str(niveau))
+            if rang_test is None:
+                avertissements.append(
+                    f"Niveau {niveau!r} inconnu — contrôle de niveau non effectué. "
+                    f"Attendu parmi {', '.join(ORDRE_NIVEAUX)}."
+                )
+            else:
+                niveaux = dict(
+                    Competence.objects.filter(
+                        code__in=[p["competence"] for p in problemes]
+                    ).values_list("code", "niveau_intro")
+                )
+                for p in problemes:
+                    rang = ORDRE_NIVEAUX.get(niveaux.get(p["competence"], ""), -1)
+                    if rang >= rang_test:
+                        avertissements.append(
+                            f"{p['competence']} est introduite en "
+                            f"{niveaux[p['competence']]}, or le test est de niveau "
+                            f"{niveau} : la compétence n'a pas encore été enseignée, "
+                            f"l'échec y est peut-être normal."
+                        )
+
+        vus: dict[str, list[str]] = {}
+        for p in problemes:
+            vus.setdefault(p["competence"], []).append(p["type_erreur"])
+        for code, types in vus.items():
+            if len(types) > 1:
+                avertissements.append(
+                    f"{code} est tagué {len(types)} fois ({', '.join(types)}) : "
+                    f"légitime si les échecs sont de natures différentes, mais le "
+                    f"coût est compté autant de fois."
+                )
+        return avertissements
 
     # ── Écriture ─────────────────────────────────────────────────────────────
 
     def _enregistrer(self, tagage: dict, *, remplacer: bool) -> Evaluation:
         infos = tagage["evaluation"]
-        session, _ = Session.objects.get_or_create(
+        session, creee = Session.objects.get_or_create(
             identifiant_hakili=tagage["identifiant_hakili"],
-            defaults={"date_debut": infos.get("date") or tagage["date_tagage"]},
+            defaults={
+                "date_debut": infos.get("date") or tagage["date_tagage"],
+                "corpus_reference": True,
+            },
         )
+        # Une session existante qui n'est pas de corpus est le parcours réel d'un
+        # élève : y déposer des problèmes d'archive fausserait son coût total,
+        # son palier, et ce que sa famille paierait.
+        if not creee and not session.corpus_reference:
+            raise CommandError(
+                f"L'identifiant {session.identifiant_hakili!r} désigne une session "
+                f"de suivi réel (créée le {session.date_debut}), pas une session de "
+                f"corpus. Taguer une copie d'archive dessus ferait entrer ces "
+                f"problèmes dans le palier de cet élève. Employer un identifiant "
+                f"de corpus non nominatif (CORPUS-…)."
+            )
 
         existante = Evaluation.objects.filter(
             session=session,
@@ -270,13 +420,26 @@ class Command(BaseCommand):
                 f"\n{len(problemes)} problème(s) — {cout:g} h de remédiation estimées"
             )
         )
+
+        # Les libellés sont rappelés à dessein. Un code valide mais mal choisi
+        # passe toute la validation sans un mot ; relu en toutes lettres, il a
+        # une chance de sauter aux yeux — c'est le seul filet contre l'erreur
+        # qui compte vraiment, celle qui salit l'étalon sans rien casser.
+        libelles = dict(Competence.objects.values_list("code", "libelle"))
+        types = dict(TypeErreur.objects.values_list("code", "libelle"))
         for item in problemes:
             etat = item.get("etat", EtatProbleme.HYPOTHESE)
-            unitaire = cout_precalcule(item["competence"], item["type_erreur"])
+            code, type_erreur = item["competence"], item["type_erreur"]
+            unitaire = cout_precalcule(code, type_erreur)
             self.stdout.write(
-                f"  {item['competence']:12} × {item['type_erreur']:4} "
-                f"[{etat:9}] {unitaire:g} h"
+                f"  {code:12} × {type_erreur:4} [{etat:9}] {unitaire:g} h"
             )
+            self.stdout.write(
+                f"  {'':12}   └ {libelles.get(code, '?')} × {types.get(type_erreur, '?')}"
+            )
+
+        for message in tagage.get("_avertissements", []):
+            self.stdout.write(self.style.WARNING(f"\n⚠ {message}"))
 
         hesitations = tagage.get("hesitations") or []
         if hesitations:

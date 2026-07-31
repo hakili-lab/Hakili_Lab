@@ -181,6 +181,14 @@ class Session(models.Model):
         "le décompte du volume horaire — et vraisemblablement la facturation.",
     )
     date_cloture = models.DateField(null=True, blank=True)
+    corpus_reference = models.BooleanField(
+        "session du corpus de référence",
+        default=False,
+        db_index=True,
+        help_text="Session ouverte pour taguer une copie du corpus (module 3). "
+        "Ce n'est pas le parcours d'un élève : elle ne peut ni établir de plan ni "
+        "inscrire au programme.",
+    )
 
     class Meta:
         db_table = "session_urie"
@@ -215,6 +223,22 @@ class Session(models.Model):
 
     # ── Décisions du cycle ───────────────────────────────────────────────────
 
+    def _refuser_si_corpus(self) -> None:
+        """Une session de corpus n'est le parcours de personne.
+
+        Les problèmes du corpus décrivent ce qu'un humain a lu sur une copie
+        d'archive ; ils ne décrivent pas la situation d'un élève à accompagner.
+        Sans ce garde-fou, taguer une copie sous l'identifiant d'un élève
+        réellement suivi ferait entrer ces problèmes dans son coût total, donc
+        dans son palier, donc dans ce que sa famille paierait.
+        """
+        if self.corpus_reference:
+            raise ValidationError(
+                "Cette session appartient au corpus de référence (module 3) : "
+                "elle sert à mesurer le diagnostic, pas à accompagner un élève. "
+                "Ni plan ni inscription ne peuvent en sortir."
+            )
+
     def calculer_palier(self) -> str:
         """Palier d'après le coût total des problèmes confirmés (protocole §7)."""
         total = self.cout_total_confirme
@@ -233,6 +257,7 @@ class Session(models.Model):
         palier C → orientation hors dispositif ;
         sinon → en attente de la décision d'inscription.
         """
+        self._refuser_si_corpus()
         confirmes = self.problemes.filter(etat=EtatProbleme.CONFIRME).count()
         if not confirmes:
             self.palier = ""
@@ -263,6 +288,7 @@ class Session(models.Model):
         permet de passer outre, mais exige un motif : la décision est alors tracée
         dans les transitions, pas seulement dans la tête de celui qui l'a prise.
         """
+        self._refuser_si_corpus()
         if self.etat == EtatSession.REMEDIATION:
             raise ValidationError("Cet élève est déjà inscrit au programme.")
 

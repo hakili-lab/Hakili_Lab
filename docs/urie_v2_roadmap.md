@@ -4,7 +4,7 @@
 **Dernière mise à jour :** 2026-07-31 (module 2 entamé — gabarit et découpe ; travail versionné sur `chantier/urie-v2-django`)
 **Où en est-on (résumé en une ligne) :** Modules 0 et **1 ✅ faits** · **Module 2 🟨 gabarit lu dans le PDF source, 280/280 cadres, découpe et nettoyage faits** — reste le recalage · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. Trois choses bloquent, toutes hors code : une **copie scannée** (module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit. Le **Module 3** (corpus de référence) est le seul chantier qui avance sans rien attendre.
 
-**État vérifié le 2026-07-31 : 186 tests Django + 242 pytest = 428 tests passent.**
+**État vérifié le 2026-07-31 : 204 tests Django + 242 pytest = 446 tests passent.**
 
 **Pour reprendre le travail sur Django :**
 ```bash
@@ -164,7 +164,9 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - [x] **Outil de saisie : `manage.py taguer_corpus --fichier …`** (arbitrage rendu : un fichier YAML plutôt qu'un écran — le tagage est lent et discutable, un fichier se relit, se compare et se reprend le lendemain ; un formulaire perd tout à la première fermeture d'onglet). Options `--a-blanc` et `--remplacer`.
 - [x] **Validation complète avant toute écriture** : aucun code inventé, justification obligatoire, `ATT` non confirmable, couple en double refusé. Un corpus à moitié écrit serait pire que pas de corpus — il aurait l'air complet.
 - [x] Rassembler ≥5 anciennes copies d'élèves Hakili Lab — **5 réunies** (2 en 3ème, 2 en 5ème, 1 en 6ème).
-- [ ] Taguer les 5 copies — **2 sur 5 faites** (`corpus_3e_01`, `corpus_3e_02`). Restent 2 copies de 5ème et 1 de 6ème.
+- [ ] Taguer les 5 copies — **3 sur 5 faites** (`corpus_3e_01`, `corpus_3e_02`, `corpus_5e_03`). Restent 1 copie de 5ème et 1 de 6ème.
+- [x] **Outil durci après trois copies** (voir le journal du 2026-07-31) : consultation du référentiel pendant le tagage, libellés rappelés au compte rendu, codes proches suggérés, contrôle de niveau, étanchéité avec le suivi réel, `manage.py corpus` pour relire l'étalon, rapport d'hésitations.
+- [ ] **Deux types d'erreur manquent au corpus : `PRQ` et `RED`.** Signalé par `manage.py corpus` — le module 4 ne pourra pas être mesuré sur eux. À chercher explicitement dans les deux dernières copies : `RED` est un résultat juste sans justification (partie B), `PRQ` un échec corrélé sur plusieurs compétences partageant un prérequis.
 - [ ] Pour chaque copie : relever chaque réponse fausse, chercher la signature correspondante dans `05_Grille_diagnostic`, noter le problème (`code_competence` + `code_type_erreur`).
 - [ ] Enregistrer chaque problème taggé dans les tables du Module 1 (`probleme`, `transition` en état `hypothese` ou directement `confirme` selon le protocole retenu pour le tagage manuel).
 - [ ] Noter chaque cas d'hésitation et pourquoi — ce sont des défauts potentiels du référentiel, à remonter à l'utilisateur (pas à corriger seul, cf. `CLAUDE.md` "ce qui n'est pas de ton ressort").
@@ -564,6 +566,23 @@ Trois décisions de fond ont été prises après confrontation du protocole à l
 
 > ⚠ **Un point de gestion, hors code, qui pèse plus que le prochain module :**
 > **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+
+### 2026-07-31 (suite) — L'outil de tagage durci par l'usage
+Trois copies taguées ont montré où l'outil laissait passer. Six correctifs, dans l'ordre du risque.
+
+**1. La validation attrapait les codes inventés, pas les codes faux.** C'est le trou principal, et il s'est refermé sur moi : le tagage de la copie 1 a conclu qu'aucune compétence ne couvrait le vocabulaire géométrique, alors que `G.VOC` existe — 17 compétences de niveau primaire avaient échappé à ma lecture. Un code inventé est rejeté ; un code **valide mais mal choisi** passait sans un mot et salissait l'étalon de façon invisible. Trois parades : `--chercher <mot>` et `--chercher --niveau <niveau>` mettent le référentiel sous la main pendant le tagage ; un code rejeté fait proposer les codes proches ; le compte rendu **rappelle le libellé en toutes lettres** de chaque code retenu — relu, un mauvais choix a une chance de sauter aux yeux.
+
+**2. Un problème de corpus pouvait contaminer le suivi réel d'un élève.** `cout_total_confirme` et `inscrire()` filtrent par **session**, pas par évaluation. Taguer une copie d'archive sous l'identifiant d'un élève réellement suivi aurait fait entrer ces problèmes dans son palier — donc dans ce que sa famille paierait. Trois verrous : la session de tagage est marquée `corpus_reference`, elle refuse `etablir_le_plan()` et `inscrire()`, et le tagage **refuse** une session de suivi réel en le disant clairement. Une reprise de données marque les sessions taguées avant l'existence du drapeau — sans elle, les trois premières copies seraient devenues des sessions « réelles ».
+
+**3. Aucun contrôle de cohérence de niveau.** `N.FRA2` (5ème) avait été tagué sur une copie d'entrée **en** 5ème : la compétence n'est pas encore enseignée, l'échec y est normal. Un avertissement le signale désormais — sans refuser, parce que c'est un jugement.
+
+**4. Le coût était figé au tagage.** Les 27 volumes de lycée sont des valeurs de repli (D-CEO-29) ; le jour où les vrais arriveront, les coûts du corpus resteraient faux en silence. `manage.py corpus` détecte l'écart, `--recalculer` le corrige.
+
+**5. On ne pouvait pas relire le corpus.** `manage.py corpus` donne la composition, la répartition des sept types, et les compétences taguées plusieurs fois sur une même copie. **Premier résultat utile, immédiatement :** le corpus ne contient **aucun `PRQ` ni `RED`** — le module 4 ne pourrait pas être mesuré sur ces deux types. C'est une consigne concrète pour les deux dernières copies.
+
+**6. Les hésitations étaient éparpillées.** `manage.py corpus --hesitations` les rassemble depuis les fichiers — 11 sur 3 copies. Elles restent en YAML à dessein : une hésitation est un jugement en attente d'arbitrage, la mettre en base lui donnerait un statut qu'elle n'a pas.
+
+**Vérifié :** 34 tests sur le corpus, cycle de migration testé dans les deux sens, `makemigrations --check` stable. **204 Django + 242 pytest = 446 tests passent.** L'outil est ensuite repassé sur le corpus réel : les 3 copies ressortent intactes.
 
 ### 2026-07-31 (suite) — Deux premières copies taguées, et un contraste qui valide la démarche
 Les 5 copies sont réunies (2 en 3ème, 2 en 5ème, 1 en 6ème). Les **deux copies de 3ème** — même sujet, même correcteur — sont taguées.
