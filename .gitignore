@@ -17,6 +17,11 @@ build/
 runs/
 data/copies/
 data/outputs/
+
+# Corpus de référence (module 3) — les fichiers de tagage portent l'identifiant
+# d'un élève. Seul l'exemple est versionné.
+data/corpus/*
+!data/corpus/exemple.yaml
 *.pdf
 !docs/*.pdf
 

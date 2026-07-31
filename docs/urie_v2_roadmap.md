@@ -4,7 +4,7 @@
 **Dernière mise à jour :** 2026-07-31 (module 2 entamé — gabarit et découpe ; travail versionné sur `chantier/urie-v2-django`)
 **Où en est-on (résumé en une ligne) :** Modules 0 et **1 ✅ faits** · **Module 2 🟨 gabarit lu dans le PDF source, 280/280 cadres, découpe et nettoyage faits** — reste le recalage · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. Trois choses bloquent, toutes hors code : une **copie scannée** (module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit. Le **Module 3** (corpus de référence) est le seul chantier qui avance sans rien attendre.
 
-**État vérifié le 2026-07-31 : 170 tests Django + 242 pytest = 412 tests passent.**
+**État vérifié le 2026-07-31 : 186 tests Django + 242 pytest = 428 tests passent.**
 
 **Pour reprendre le travail sur Django :**
 ```bash
@@ -38,7 +38,7 @@ Note : `DATABASE_URL` suit la convention SQLAlchemy — `sqlite:///:memory:`, **
 | 0 | Appropriation du référentiel | ✅ Fait (2026-07-30) | — |
 | 1 | Socle de données (Neon, Django) | ✅ Fait (2026-07-30) | — |
 | 2 | Lecture des copies par zones | 🟨 En cours (2026-07-31) — gabarit et découpe faits | Un **sujet Urie** imprimé, rempli et scanné, pour le recalage |
-| 3 | Corpus de référence | ⬜ À faire | Module 1 |
+| 3 | Corpus de référence | 🟨 En cours (2026-07-31) — outil de tagage prêt | 5 copies à réunir (1/5) |
 | 4 | Diagnostic contraint | ⬜ À faire | Module 2, Module 3 |
 | 5 | Composition du test de confirmation (T1) | ⬜ À faire | Module 4 |
 | 6 | Palier et plan de remédiation | 🟨 En cours (2026-07-30) — moteur fait, séances à planifier | Module 4 pour l'alimenter en vrais problèmes |
@@ -156,17 +156,26 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 
 ---
 
-### Module 3 — Corpus de référence
+### Module 3 — Corpus de référence 🟨 **EN COURS (2026-07-31) — l'outil de tagage est prêt**
 **Objectif :** un jeu de copies taguées à la main pour mesurer objectivement le Module 4.
 
-- [ ] Rassembler ≥5 anciennes copies d'élèves Hakili Lab.
+- [x] **Marquer les copies du corpus** — `Evaluation.corpus_reference`, avec `tague_par` et `date_tagage`. Une contrainte en base refuse un marquage sans auteur ni date : on ne saurait ni qui interroger sur un tagage discutable, ni à quelle version du référentiel il se rapporte. *(Le module 1 avait laissé ce point « à définir ».)*
+- [x] **Deux champs ajoutés à `Probleme`**, dont le module 4 a besoin autant que le module 3 : `evaluation_origine` (la passation qui a révélé le problème) et `justification` (ce qu'on a lu sur la copie). La justification est ce qui rend un désaccord entre le corpus et le module 4 **arbitrable**, au lieu d'un simple écart de comptage.
+- [x] **Outil de saisie : `manage.py taguer_corpus --fichier …`** (arbitrage rendu : un fichier YAML plutôt qu'un écran — le tagage est lent et discutable, un fichier se relit, se compare et se reprend le lendemain ; un formulaire perd tout à la première fermeture d'onglet). Options `--a-blanc` et `--remplacer`.
+- [x] **Validation complète avant toute écriture** : aucun code inventé, justification obligatoire, `ATT` non confirmable, couple en double refusé. Un corpus à moitié écrit serait pire que pas de corpus — il aurait l'air complet.
+- [ ] Rassembler ≥5 anciennes copies d'élèves Hakili Lab. **1 sur 5** (`TEST 4 3e.pdf`).
 - [ ] Pour chaque copie : relever chaque réponse fausse, chercher la signature correspondante dans `05_Grille_diagnostic`, noter le problème (`code_competence` + `code_type_erreur`).
 - [ ] Enregistrer chaque problème taggé dans les tables du Module 1 (`probleme`, `transition` en état `hypothese` ou directement `confirme` selon le protocole retenu pour le tagage manuel).
 - [ ] Noter chaque cas d'hésitation et pourquoi — ce sont des défauts potentiels du référentiel, à remonter à l'utilisateur (pas à corriger seul, cf. `CLAUDE.md` "ce qui n'est pas de ton ressort").
-- [ ] Marquer explicitement ces 5+ copies comme "corpus de référence" (champ ou table à définir dans le Module 1 si pas déjà prévu).
+- [x] Marquer explicitement ces copies comme « corpus de référence » — fait, voir ci-dessus.
 
 **Critère de fin :** au moins 5 copies entièrement taguées en base et marquées comme corpus de référence.
-**Fichiers concernés :** aucun nouveau fichier de code nécessairement — principalement de la saisie de données via un outil simple (CLI ou petit écran admin, à arbitrer au moment venu).
+**Fichiers concernés :** `suivi/models.py` (marqueur + `evaluation_origine`, `justification`), `suivi/management/commands/taguer_corpus.py`, `referentiel/couts.py` (`cout_precalcule`), `data/corpus/exemple.yaml`.
+**Tests :** `suivi/tests_corpus.py` (16).
+
+**⚠ Une règle à ne pas enfreindre plus tard :** le module 4 **ne doit jamais écrire** dans les problèmes d'une évaluation marquée `corpus_reference`. La mesure se fait en comparant sa sortie à ces problèmes, pas en les mettant à jour — un étalon qu'on corrige au fur et à mesure ne mesure plus rien.
+
+**⚠ Ce que le corpus ne peut pas porter pour une copie de l'ancien format.** `Reponse` exige une clé étrangère vers les 280 questions Urie : une copie de l'ancien format n'en a aucune, donc **aucune `Reponse` n'est enregistrable** pour elle. Seuls les `Probleme` le sont — et c'est suffisant, puisque le problème est précisément l'unité que le module 4 produit et contre laquelle il sera mesuré.
 
 ---
 
@@ -554,6 +563,27 @@ Trois décisions de fond ont été prises après confrontation du protocole à l
 
 > ⚠ **Un point de gestion, hors code, qui pèse plus que le prochain module :**
 > **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+
+### 2026-07-31 (suite) — Module 3 : l'étalon a maintenant où se poser
+Le module 1 avait laissé le marqueur du corpus « à définir ». Il est défini, et deux manques sont apparus en le posant.
+
+**Ce qui a été ajouté au socle**
+- `Evaluation.corpus_reference`, `tague_par`, `date_tagage`, avec une **contrainte en base** : pas de marquage sans auteur ni date. Un corpus anonyme n'est pas discutable — deux personnes ne taguent pas tout à fait pareil, et c'est une information, pas un défaut.
+- **`Probleme.evaluation_origine` et `Probleme.justification`.** Le premier relie un problème à la passation qui l'a révélé — sans lui, refaire un tagage aurait obligé à supprimer *tous* les problèmes de la session, y compris le suivi réel de l'élève. Le second porte ce qu'on a lu sur la copie : c'est ce qui rendra un désaccord entre le corpus et le module 4 **arbitrable**, au lieu d'un écart de comptage muet. Le module 4 en a besoin autant que le module 3 — c'est la « citation » que le guide lui demande de produire.
+
+**Arbitrage rendu : un fichier, pas un écran.** Le tagage est lent et discutable — on relit, on hésite, on corrige. Un fichier se relit, se compare, se reprend le lendemain ; un formulaire perd tout à la première fermeture d'onglet. `manage.py taguer_corpus --fichier … [--a-blanc] [--remplacer]`.
+
+**La validation est complète avant toute écriture**, et c'est le point qui compte : un corpus à moitié écrit serait pire que pas de corpus du tout — il aurait l'air complet. Sont refusés : un code de compétence ou de type d'erreur absent du référentiel, une justification vide, un `ATT` confirmé, un couple en double, un état autre qu'hypothèse ou confirmation.
+
+**Un bug de fond corrigé au passage.** `Session.Meta` construisait une contrainte à partir d'un `frozenset` : l'ordre d'itération changeant d'une exécution à l'autre, `makemigrations` croyait la contrainte modifiée **à chaque appel** et produisait une migration parasite — c'est l'origine des migrations 0003 et 0004, qui ne font rien d'autre. `sorted()` au lieu de `list()` : un second `makemigrations` ne détecte plus rien.
+
+**Deux limites à connaître, consignées dans la fiche du module :**
+1. Le module 4 **ne devra jamais écrire** dans les problèmes d'une évaluation du corpus. Un étalon qu'on corrige au fur et à mesure ne mesure plus rien.
+2. Pour une copie de l'**ancien format**, aucune `Reponse` n'est enregistrable — ce modèle exige une clé étrangère vers les 280 questions Urie, qu'une ancienne copie n'a pas. Seuls les `Probleme` le sont, et c'est suffisant : c'est l'unité que le module 4 produit.
+
+**Vérifié :** 16 tests dédiés, cycle de migration testé dans les deux sens. **186 Django + 242 pytest = 428 tests passent.**
+
+**Reste :** réunir les copies (**1 sur 5**) et faire le tagage lui-même.
 
 ### 2026-07-31 (suite) — Format des sujets confirmé, lecture rendue tolérante (D-CEO-35)
 **Question posée, réponse obtenue :** les sujets v2 **conservent leurs cadres ancrés et leurs codes de question**. `TEST 4 3e.pdf` était une copie d'archive de l'ancien format, pas une préfiguration des sujets à venir. La conception du module 2 tient donc telle quelle — il ne lui manque que le recalage.

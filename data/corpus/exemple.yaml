@@ -1,0 +1,48 @@
+# Exemple de fichier de tagage — corpus de référence (module 3).
+#
+#   python manage.py taguer_corpus --fichier data/corpus/exemple.yaml --a-blanc
+#
+# Les fichiers réels de ce dossier ne sont PAS versionnés : ils portent
+# l'identifiant d'un élève. Seul cet exemple l'est.
+#
+# Le corpus est l'étalon du module 4. Trois règles tiennent tout :
+#   1. Aucun code inventé — compétence et type d'erreur viennent du référentiel.
+#      Un code absent est un bug, pas une variante.
+#   2. Chaque problème porte sa justification : ce qu'on a lu sur la copie. Sans
+#      elle, un désaccord entre le corpus et le module 4 est inarbitrable.
+#   3. Les hésitations se notent. Ce sont des défauts possibles du référentiel,
+#      à remonter — pas des erreurs de tagage à corriger seul.
+
+identifiant_hakili: HK-EXEMPLE
+tague_par: Prénom Nom
+date_tagage: 2026-07-31
+
+evaluation:
+  type: T0                    # T0, T1, T3, T4, T5
+  date: 2025-11-01
+  support: scan 200 DPI — sujet de l'ancien format
+  copy_id: ""                 # facultatif : la copie déjà persistée par le pipeline
+
+problemes:
+  - competence: N.ENS         # code canonique de l'onglet 02_Competences
+    type_erreur: CPT          # liste fermée : PRQ CPT MOD PRC CNS RED ATT
+    etat: hypothese           # `hypothese` par défaut, ou `confirme`
+    justification: >
+      Écrit « D est l'ensemble des entiers décimaux » : confond la définition
+      des décimaux avec celle des entiers. La notion elle-même n'est pas en
+      place, ce n'est pas une erreur d'exécution.
+
+  - competence: N.REL
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      (-22,2) + (-46,7) donne -68,7 : le résultat est juste au signe près mais
+      la règle des signes est appliquée de travers une fois sur deux — geste mal
+      automatisé, pas notion absente.
+
+# Facultatif, et précieux. Chaque hésitation dit quelque chose du référentiel.
+hesitations:
+  - sur: question 2f
+    pourquoi: >
+      Aucune signature du référentiel ne couvre « suite décimale illimitée
+      périodique ». La compétence existe-t-elle sous un autre libellé ?

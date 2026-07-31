@@ -192,7 +192,11 @@ class Session(models.Model):
             # à l'écran et fausserait les indicateurs de durée.
             models.CheckConstraint(
                 condition=(
-                    models.Q(etat__in=list(ETATS_SESSION_TERMINES))
+                    # `sorted` et non `list` : l'ordre d'itération d'un frozenset
+                    # varie d'une exécution à l'autre, si bien que `makemigrations`
+                    # croyait la contrainte modifiée à chaque appel et produisait
+                    # une migration parasite (c'est l'origine de 0003 et 0004).
+                    models.Q(etat__in=sorted(ETATS_SESSION_TERMINES))
                     | models.Q(date_cloture__isnull=True)
                 ),
                 name="session_en_cours_sans_date_cloture",
@@ -406,6 +410,28 @@ class Evaluation(models.Model):
         "session. Le premier T3 porte 1, le suivant 2, etc.",
     )
 
+    # ── Corpus de référence (module 3) ───────────────────────────────────────
+    # Le corpus est l'étalon du module 4 : des copies dont les problèmes ont été
+    # relevés **à la main**, pour mesurer l'écart du diagnostic automatique. Sans
+    # lui, on ne saurait pas si le module 4 fonctionne — seulement qu'il produit
+    # quelque chose.
+    corpus_reference = models.BooleanField(
+        "copie du corpus de référence",
+        default=False,
+        db_index=True,
+        help_text="Les problèmes de cette évaluation ont été relevés par un humain "
+        "et font foi. Le module 4 se mesure contre eux, il ne les écrase jamais.",
+    )
+    tague_par = models.CharField(
+        "tagué par",
+        max_length=120,
+        blank=True,
+        help_text="Qui a fait le relevé. Un corpus sans auteur n'est pas "
+        "discutable : deux personnes ne tagueront pas tout à fait pareil, et c'est "
+        "une information, pas un défaut.",
+    )
+    date_tagage = models.DateField("date du relevé", null=True, blank=True)
+
     class Meta:
         verbose_name = "évaluation"
         ordering = ["session", "date", "type", "numero"]
@@ -417,7 +443,17 @@ class Evaluation(models.Model):
             models.UniqueConstraint(
                 fields=["session", "type", "numero"],
                 name="evaluation_unique_par_rang",
-            )
+            ),
+            # Une copie du corpus sans auteur ni date n'est pas exploitable : on ne
+            # saurait ni qui interroger sur un tagage discutable, ni à quelle
+            # version du référentiel il se rapporte.
+            models.CheckConstraint(
+                condition=(
+                    models.Q(corpus_reference=False)
+                    | (~models.Q(tague_par="") & models.Q(date_tagage__isnull=False))
+                ),
+                name="corpus_reference_trace",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -542,6 +578,24 @@ class Probleme(models.Model):
         validators=[MinValueValidator(0)],
         help_text="Lu dans CoutRemediation. Vaut 0 pour ATT (non remédiable) et pour "
         "les compétences de lycée sans volume horaire — cas normaux.",
+    )
+    evaluation_origine = models.ForeignKey(
+        Evaluation,
+        on_delete=models.SET_NULL,
+        related_name="problemes_reveles",
+        null=True,
+        blank=True,
+        verbose_name="révélé par",
+        help_text="La passation qui a fait apparaître ce problème. Nul pour un "
+        "problème saisi hors évaluation.",
+    )
+    justification = models.TextField(
+        "ce qui a été lu sur la copie",
+        blank=True,
+        help_text="La production de l'élève qui a conduit à relever ce problème. "
+        "Saisie à la main pour le corpus de référence (module 3), remplie par la "
+        "citation du diagnostic pour le module 4 — c'est ce qui rend un désaccord "
+        "entre les deux arbitrable plutôt qu'un simple écart de comptage.",
     )
 
     class Meta:

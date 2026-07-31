@@ -41,6 +41,24 @@ COUT_PLANCHER = Decimal("0.5")
 COUT_PLAFOND = Decimal("4")
 
 
+def cout_precalcule(code_competence: str, code_type_erreur: str) -> Decimal:
+    """Coût d'un couple compétence × type d'erreur, lu dans `CoutRemediation`.
+
+    **Une ligne absente n'est pas une anomalie** : `ATT` n'en a aucune par
+    construction — l'inattention ne donne jamais lieu à remédiation. Renvoyer 0
+    plutôt que lever est donc le comportement juste, et c'est la raison d'être de
+    cette fonction : chaque appelant qui referait la lecture à la main
+    retomberait sur ce piège, et un `DoesNotExist` sur un cas parfaitement normal
+    ferait échouer un tagage ou un diagnostic entier.
+    """
+    from referentiel.models import CoutRemediation
+
+    ligne = CoutRemediation.objects.filter(
+        competence_id=code_competence, type_erreur_id=code_type_erreur
+    ).first()
+    return ligne.cout_heures if ligne else Decimal("0")
+
+
 def cout_remediation(volume_horaire: Decimal, coefficient: Decimal) -> Decimal:
     """Coût d'un problème, arrondi à la demi-heure, borné.
 
