@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block titre %}Corriger une classe — Hakili Lab{% endblock %}
+
+{% block contenu %}
+<h1>Corriger une classe</h1>
+<p class="sous-titre">Déposez toutes les copies d'un coup ; vous validerez les notes ensuite, copie par copie.</p>
+
+<div class="message info">
+  <strong>Nommez chaque fichier avec le nom et le prénom de l'élève</strong>
+  (par exemple <code>KABRE_Charles.pdf</code>). C'est ce qui permet d'attribuer
+  chaque copie au bon élève. Une copie dont l'élève ne peut pas être identifié
+  sans ambiguïté est écartée et signalée — jamais attribuée au hasard.
+</div>
+
+<div class="carte" style="max-width:640px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="champ">
+      <label for="test">Test passé par la classe</label>
+      <select id="test" name="test" required>
+        <option value="">Sélectionner le test</option>
+        {% for t in tests %}
+          <option value="{{ t.id }}">{{ t.label }} ({{ t.questions }} questions)</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="champ">
+      <label for="copies">Copies scannées</label>
+      <input type="file" id="copies" name="copies" multiple required
+             accept=".pdf,.jpg,.jpeg,.png">
+      <p class="aide">PDF ou photos, 50 Mo maximum par fichier.</p>
+    </div>
+
+    <div class="champ">
+      <label for="instructions">Consignes particulières (facultatif)</label>
+      <textarea id="instructions" name="instructions" rows="3"
+                placeholder="Appliquées à toutes les copies du lot"></textarea>
+    </div>
+
+    <button type="submit">Lancer la correction du lot</button>
+  </form>
+</div>
+
+<div class="carte" style="max-width:640px;">
+  <h2 style="font-size:15px;margin-top:0;">Ce qui se passe ensuite</h2>
+  <p style="font-size:14px;">
+    Chaque copie est transcrite et corrigée automatiquement, puis vous attend dans
+    la liste des corrections avec sa proposition de notes. La transcription n'est
+    pas soumise à relecture en mode lot — la relire trente fois coûterait plus de
+    temps que la correction elle-même.
+  </p>
+  <p style="font-size:14px;">
+    <strong>Le tableau de validation, lui, est conservé :</strong> aucune note ne
+    devient définitive sans votre accord.
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load maths %}
+{% block titre %}Résultats — {{ correction.eleve_nom }}{% endblock %}
+
+{% block contenu %}
+<h1>{{ correction.eleve_nom }} {{ correction.eleve_prenom }}</h1>
+<p class="sous-titre">Correction validée et diagnostic établi.</p>
+
+<div class="carte" style="display:flex;gap:32px;flex-wrap:wrap;">
+  <div>
+    <div class="aide">Note finale</div>
+    <div style="font-size:34px;font-weight:700;">
+      {{ note|floatformat:2 }}<span style="font-size:17px;">/20</span>
+    </div>
+  </div>
+  <div>
+    <div class="aide">Réussies</div>
+    <div style="font-size:26px;font-weight:700;color:var(--vert);">{{ reussies|length }}</div>
+  </div>
+  <div>
+    <div class="aide">Ratées</div>
+    <div style="font-size:26px;font-weight:700;color:var(--rouge);">{{ ratees|length }}</div>
+  </div>
+</div>
+
+{% if diagnostic %}
+  <div class="carte">
+    <h2 style="font-size:16px;margin-top:0;">Diagnostic</h2>
+    {% if diagnostic.academic_profile %}<p>{{ diagnostic.academic_profile }}</p>{% endif %}
+
+    {% if diagnostic.competency_gaps %}
+      <h3 style="font-size:14px;">Lacunes ancrées sur le programme officiel</h3>
+      {% for lacune in diagnostic.competency_gaps %}
+        <div style="border-left:3px solid var(--rouge);padding-left:12px;margin-bottom:12px;">
+          <strong>{{ lacune.lecon }}</strong>
+          <span class="aide">{{ lacune.classe }} · {{ lacune.chapitre }}</span>
+          <p style="margin:4px 0;font-size:14px;">{{ lacune.description|math }}</p>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if diagnostic.root_causes %}
+      <h3 style="font-size:14px;">Causes derrière les erreurs visibles</h3>
+      <ul>
+        {% for cause in diagnostic.root_causes %}
+          <li><strong>{{ cause.visible_error|math }}</strong> — {{ cause.hidden_cause|math }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+{% endif %}
+
+<div class="carte">
+  <h2 style="font-size:16px;margin-top:0;">Documents</h2>
+  <p class="aide">
+    Le rapport et le sujet de remédiation sont enregistrés avec la copie : ils se
+    téléchargent depuis la fiche de l'élève.
+  </p>
+  <a class="bouton discret" href="{% url 'suivi_web:accueil' %}">Voir la fiche de l'élève</a>
+  <a class="bouton" href="{% url 'correction_web:nouvelle' %}">Corriger une autre copie</a>
+</div>
+{% endblock %}

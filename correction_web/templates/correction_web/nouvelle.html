@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block titre %}Corriger une copie — Hakili Lab{% endblock %}
+
+{% block contenu %}
+<h1>Corriger une copie</h1>
+<p class="sous-titre">L'IA propose une note par question ; vous validez chacune d'elles.</p>
+
+<div class="carte" style="max-width:640px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="champ">
+      <label for="eleve">Élève</label>
+      <select id="eleve" name="eleve" required>
+        <option value="">Sélectionner l'élève</option>
+        {% for e in eleves %}
+          <option value="{{ e.identifiant_hakili }}">{{ e.nom }} {{ e.prenom }} — {{ e.classe|default:"?" }}</option>
+        {% endfor %}
+      </select>
+      <p class="aide">Les élèves sont gérés dans le Google Sheet. Un élève absent doit y être ajouté.</p>
+    </div>
+
+    <div class="champ">
+      <label for="test">Test passé</label>
+      <select id="test" name="test" required>
+        <option value="">Sélectionner le test</option>
+        {% for t in tests %}
+          <option value="{{ t.id }}">{{ t.label }} ({{ t.questions }} questions)</option>
+        {% endfor %}
+        <option value="libre">Test personnalisé (votre propre sujet)</option>
+      </select>
+      <p class="aide">
+        Avec un test du catalogue, l'énoncé et le barème se chargent tout seuls.
+        Avec un test personnalisé, ajoutez le sujet ci-dessous : le barème en est
+        déduit.
+      </p>
+    </div>
+
+    <div class="champ">
+      <label for="sujet">Sujet du devoir <span style="font-weight:400;">— test personnalisé uniquement</span></label>
+      <input type="file" id="sujet" name="sujet" accept=".pdf,.jpg,.jpeg,.png">
+      <p class="aide">Laissez vide si vous avez choisi un test du catalogue.</p>
+    </div>
+
+    <div class="champ">
+      <label for="copie">Copie scannée</label>
+      <input type="file" id="copie" name="copie" multiple required
+             accept=".pdf,.jpg,.jpeg,.png">
+      <p class="aide">PDF ou photos, 50 Mo maximum par fichier. Scan à 150 DPI en niveaux de gris recommandé.</p>
+    </div>
+
+    <div class="champ">
+      <label for="instructions">Consignes particulières (facultatif)</label>
+      <textarea id="instructions" name="instructions" rows="3"
+                placeholder="Points de vigilance, tolérances, attentes propres à ce devoir"></textarea>
+    </div>
+
+    <button type="submit">Lancer la correction</button>
+  </form>
+</div>
+{% endblock %}

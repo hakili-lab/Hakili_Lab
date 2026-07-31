@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block titre %}Corrections — Hakili Lab{% endblock %}
+
+{% block contenu %}
+<h1>Corrections</h1>
+<p class="sous-titre">Les cinquante dernières copies de votre périmètre.</p>
+
+<p><a class="bouton" href="{% url 'correction_web:nouvelle' %}">Corriger une copie</a></p>
+
+<div class="carte">
+  {% if corrections %}
+    <div class="defilement">
+      <table>
+        <thead>
+          <tr><th>Élève</th><th>Lancée le</th><th>État</th><th>Avancement</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for ligne in corrections %}
+            <tr>
+              <td><strong>{{ ligne.correction.eleve_nom }}</strong> {{ ligne.correction.eleve_prenom }}</td>
+              <td>{{ ligne.correction.cree_le|date:"d/m/Y H:i" }}</td>
+              <td>
+                {% if ligne.correction.terminee %}
+                  <span class="pastille progresse">Terminée</span>
+                {% elif ligne.correction.echouee %}
+                  <span class="pastille regresse">Échec</span>
+                {% elif ligne.correction.en_attente %}
+                  <span class="pastille stagne">Vous attend</span>
+                {% else %}
+                  <span class="pastille insuffisant">En cours</span>
+                {% endif %}
+              </td>
+              <td>{{ ligne.correction.progression }} %</td>
+              <td><a href="{% url 'correction_web:suivre' ligne.jeton %}">Ouvrir</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>Aucune correction pour l'instant.</p>
+  {% endif %}
+</div>
+{% endblock %}

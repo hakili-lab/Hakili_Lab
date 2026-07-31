@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titre %}Relire la transcription — {{ correction.eleve_nom }}{% endblock %}
+
+{% block contenu %}
+<h1>Relire la transcription</h1>
+<p class="sous-titre">
+  {{ correction.eleve_nom }} {{ correction.eleve_prenom }} ·
+  corrigez ce que l'IA a mal lu avant de lancer la correction.
+</p>
+
+<div class="message info">
+  Les zones marquées <code>[ILLISIBLE]</code> n'ont pas pu être déchiffrées.
+  Ce que vous écrivez ici sert de base à la correction.
+</div>
+
+<form method="post" action="{% url 'correction_web:valider_transcription' jeton %}">
+  {% csrf_token %}
+  {% for page in pages %}
+    <div class="carte">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <strong>Page {{ page.page_number }}</strong>
+        <span class="aide">confiance {{ page.confidence|floatformat:2 }}</span>
+      </div>
+      <textarea name="page_{{ page.page_number }}" rows="14"
+                style="font-family:ui-monospace,Menlo,monospace;font-size:14px;margin-top:8px;"
+                >{{ page.content }}</textarea>
+      {% if page.uncertainties %}
+        <p class="aide">Zones incertaines : {{ page.uncertainties|join:" · " }}</p>
+      {% endif %}
+    </div>
+  {% endfor %}
+  <button type="submit">Valider la transcription et corriger</button>
+</form>
+{% endblock %}

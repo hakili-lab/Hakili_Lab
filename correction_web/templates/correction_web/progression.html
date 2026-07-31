@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block titre %}{{ correction.eleve_nom }} — correction en cours{% endblock %}
+
+{% block tete %}
+{% if correction.en_cours %}
+  {% comment %} Rafraîchissement piloté en JavaScript simple, sans dépendance
+     extérieure : la page interroge son propre état et se recharge quand il
+     change. Repli en <noscript> par méta-rafraîchissement. {% endcomment %}
+  <script>
+    setTimeout(function () { window.location.reload(); }, 3000);
+  </script>
+  <noscript><meta http-equiv="refresh" content="3"></noscript>
+{% endif %}
+{% endblock %}
+
+{% block contenu %}
+<h1>{{ correction.eleve_nom }} {{ correction.eleve_prenom }}</h1>
+<p class="sous-titre">{{ correction.get_etat_display }}</p>
+
+{% if correction.echouee %}
+  <div class="carte">
+    <div class="message error">La correction n'a pas abouti.</div>
+    {% for erreur in correction.erreurs %}
+      <p style="font-size:13px;color:var(--gris);">{{ erreur }}</p>
+    {% endfor %}
+    <a class="bouton" href="{% url 'correction_web:nouvelle' %}">Relancer une correction</a>
+  </div>
+{% else %}
+  <div class="carte">
+    <p style="font-weight:600;margin-top:0;">{{ correction.etape }}</p>
+    <div style="background:var(--fond);border-radius:6px;height:12px;overflow:hidden;">
+      <div style="width:{{ correction.progression }}%;height:100%;background:var(--bleu);
+                  transition:width .4s ease;"></div>
+    </div>
+    <p class="aide">{{ correction.progression }} % — cette page se met à jour toute seule.</p>
+  </div>
+{% endif %}
+
+<p><a href="{% url 'correction_web:liste' %}">Voir toutes les corrections</a></p>
+{% endblock %}

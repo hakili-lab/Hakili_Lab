@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titre %}Sujets à imprimer — Hakili Lab{% endblock %}
+
+{% block contenu %}
+<h1>Sujets des tests</h1>
+<p class="sous-titre">À imprimer et à distribuer : l'élève compose directement sur le sujet.</p>
+
+<div class="message info">
+  Impression recommandée en <strong>noir et blanc, recto seul</strong>. Chaque réponse
+  a son cadre, avec le code de la question imprimé dans le coin — c'est ce code qui
+  permet ensuite de retrouver automatiquement chaque réponse sur la copie scannée.
+  Ne réduisez pas la page à l'impression : les cadres doivent garder leur taille.
+</div>
+
+<div class="carte">
+  <div class="defilement">
+    <table>
+      <thead>
+        <tr><th>Test</th><th>Classe</th><th>Questions</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for t in tests %}
+          <tr>
+            <td><strong>{{ t.label }}</strong></td>
+            <td>{{ t.niveaux }}</td>
+            <td>{{ t.questions }}</td>
+            <td style="white-space:nowrap;">
+              {% if t.imprimable %}
+                <a class="bouton discret" style="padding:6px 12px;font-size:13px;"
+                   href="{% url 'correction_web:sujet' t.id %}" target="_blank" rel="noopener">Ouvrir</a>
+                <a class="bouton discret" style="padding:6px 12px;font-size:13px;"
+                   href="{% url 'correction_web:sujet' t.id %}?telecharger=1">Télécharger</a>
+              {% else %}
+                <span class="aide">sujet non disponible</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
