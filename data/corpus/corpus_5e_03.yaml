@@ -31,8 +31,17 @@ problemes:
     type_erreur: CNS
     etat: hypothese
     justification: >
-      5537 + 319 et 290 + … = 3028 laissées entièrement vides. Voir l'hésitation
-      sur la page sautée : ce classement est le moins sûr de la copie.
+      5537 + 319 laissée entièrement vide. Voir l'hésitation sur la page sautée :
+      ce classement est le moins sûr de la copie.
+
+  - competence: N.EGT
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      290 + … = 3028 laissée vide. Rattaché à N.EGT — Égalités à trous — et non
+      à N.ADD : chercher un terme manquant demande de retourner l'opération, ce
+      qui est une autre compétence que l'addition posée. Harmonisé après coup
+      avec la copie 5, où la même question avait d'abord été taguée autrement.
 
   - competence: N.MUL
     type_erreur: CNS
@@ -134,6 +143,14 @@ problemes:
       correctement tracé au rapporteur.
 
 hesitations:
+  - sur: harmonisation faite après le tagage de la copie 5
+    pourquoi: >
+      « Complète l'opération : 290 + … = 3028 » était initialement rattachée à
+      `N.ADD` ici et à `N.EGT` sur la copie 5 — deux codes valides, donc invisible
+      à la validation. Harmonisé sur `N.EGT` (Égalités à trous), qui décrit
+      exactement le retournement demandé. Sans cette reprise, le module 4 aurait
+      été mesuré contre deux réponses différentes à la même question.
+
   - sur: une page entière sautée — N.ADD et N.MUL
     pourquoi: >
       Les quatre items de la page 2 du sujet sont vides, dont une addition posée

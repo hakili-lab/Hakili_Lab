@@ -1,0 +1,162 @@
+# Corpus de référence — copie 5/5
+# Source : « TEST N°2 6e.pdf » — évaluation d'entrée en 6ème, 14 pages.
+#
+# Troisième profil du corpus, et le plus tranché : 8 problèmes sur 11 sont des
+# CNS. Cet élève réussit ce qu'il entreprend — opérations posées, fractions,
+# constructions — et laisse vide tout ce dont la formule ou le mot lui manque.
+# Presque aucune erreur de raisonnement : des absences.
+
+identifiant_hakili: CORPUS-6E-05
+niveau: 6eme
+tague_par: Claude (relecture humaine requise)
+date_tagage: 2026-07-31
+
+evaluation:
+  type: T0
+  date: 2025-11-01
+  support: scan 200 DPI — évaluation de l'ancien format, corrigée au stylo rouge
+
+problemes:
+  # ── Activités numériques ────────────────────────────────────────────────
+  - competence: N.NUM
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      « Quelle place occupe chaque chiffre dans 175,62 » : laissé entièrement
+      vide, alors que la question précédente — partie entière et partie décimale
+      de 37,907 — est juste, et que 26,1893 est correctement écrit en lettres,
+      virgule comprise. Nommer les rangs (centaine, dixième, centième) n'est pas
+      disponible ; distinguer les deux parties du nombre l'est.
+
+  - competence: N.EGT
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      290 + … = 3028 : un nombre est écrit puis raturé, la case reste fausse,
+      alors que l'addition posée 5537 + 319 juste au-dessus est exacte et que la
+      multiplication décimale 15,345 × 53,5 = 820,9575 est **entièrement juste**,
+      preuve par 9 comprise. Chercher le terme manquant demande de soustraire :
+      c'est ce retournement qui échoue, pas l'addition.
+
+  - competence: N.DIVE
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      1093 ÷ 15 : la potence est posée, quelques restes apparaissent, mais aucun
+      quotient n'est produit. Plus loin, 8 × 3/4 est correctement mis en place
+      puis 24 ÷ 4 donne 8. La division est engagée à chaque fois et n'aboutit
+      jamais.
+
+  - competence: N.FRA1
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      « Donne le numérateur et le dénominateur de 9/16 » : l'élève recopie la
+      fraction et répond « 9 est inférieur à 16 » — les deux mots ne lui sont pas
+      disponibles, il répond par ce qu'il sait dire. Et 0,27 en fraction donne
+      « 0/27 ». Pourtant la lecture d'une fraction sur une figure (9 parties sur
+      16) est juste, et 5/7 − 2/3 = 1/21 est **entièrement réussi** — mieux que
+      sur les deux copies de 5ème.
+
+  - competence: D.PROP
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      Tableau de proportionnalité ×4 : les deux cases qui se remplissent en
+      multipliant (1 → 4 et 5 → 20) sont justes ; la troisième, celle qui demande
+      de remonter de 16 vers 4 donc de diviser, est fausse. Le sens direct est
+      acquis, le sens inverse non — même retournement que sur l'égalité à trous.
+
+  - competence: D.POUR
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      6 œufs cassés sur 30 : écrit « 30 − 6 = 24 ». Le pourcentage est confondu
+      avec ce qui reste ; aucun rapport n'est formé, aucun 100 n'apparaît. À
+      comparer avec la copie 3, qui sur la même question calcule 30 × 6 / 100 —
+      deux modèles faux différents pour une même notion absente.
+
+  # ── Mesures et grandeurs ────────────────────────────────────────────────
+  - competence: M.AIRE
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Aire du disque donnée comme « Diamètre × π » — c'est la formule du
+      périmètre, énoncée de façon fausse mais assumée — et aire du trapèze
+      laissée vide. Les deux réponses relèvent de la même absence : la formule
+      n'est pas mobilisable, qu'on la choisisse au hasard ou qu'on renonce.
+
+  - competence: M.PER
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Périmètre d'une table circulaire de 1,3 m : rien, alors que π = 3,14 est
+      donné dans l'énoncé. Longueur d'un champ dont on connaît le périmètre :
+      rien non plus. Aucune formule de périmètre n'est disponible, dans un sens
+      comme dans l'autre.
+
+  # ── Activités géométriques ──────────────────────────────────────────────
+  - competence: G.VOC
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Cinq omissions du même registre : le point I milieu de [EF] n'est pas
+      placé, les trois droites à nommer restent sans nom, et le choix binaire
+      « (CD) est une droite ou une demi-droite » est laissé vide. Pourtant le
+      segment de 6 cm est tracé, la droite passant par A et B aussi, et les trois
+      lignes de la première question sont correctement nommées. C'est le
+      vocabulaire de désignation qui manque, pas le geste de tracé.
+
+  - competence: G.PARA
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      « Deux droites qui se coupent en formant un angle droit sont … » : vide.
+      « À l'aide de ton équerre relève les droites parallèles » : vide également,
+      alors que la figure est simple et que l'élève a un instrument. Les deux
+      mots — parallèle, perpendiculaire — ne sont pas disponibles.
+
+  - competence: G.FIG
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      « Une figure qui a 4 côtés égaux et 4 angles droits est un … » : vide,
+      alors que le triangle équilatéral de 5 cm est construit au compas avec ses
+      arcs de construction visibles, et le losange à diagonales données aussi.
+      L'élève construit les figures qu'on lui décrit mais ne sait pas les nommer.
+
+hesitations:
+  - sur: une incohérence de mon propre tagage, entre les copies 3 et 5
+    pourquoi: >
+      La question « complète l'opération : 290 + … = 3028 » a été rattachée à
+      **N.ADD** sur la copie 3 (où elle était laissée vide, avec l'addition
+      posée juste au-dessus) et à **N.EGT** ici. `N.EGT` — Égalités à trous — est
+      manifestement la bonne compétence pour les deux. C'est exactement le type
+      d'erreur que la validation ne peut pas voir : les deux codes existent. À
+      harmoniser sur la copie 3 avant que le corpus serve d'étalon, sans quoi le
+      module 4 sera mesuré contre deux réponses différentes à la même question.
+
+  - sur: N.EGT est une compétence de 6ème dans un test d'entrée en 6ème
+    pourquoi: >
+      L'outil le signale, et c'est la troisième fois que ce cas se présente
+      (après N.FRA2 sur les copies de 5ème). Ces tests évaluent systématiquement
+      des compétences du niveau où l'élève **entre**. Soit c'est délibéré — on
+      veut savoir ce qui est déjà là —, soit ces items ne devraient pas produire
+      de lacune. La question mérite une réponse générale, pas un arbitrage copie
+      par copie.
+
+  - sur: l'angle de 40° au rapporteur
+    pourquoi: >
+      L'angle est tracé et annoté, mais l'annotation se lit « 60 » ou « 40 »
+      selon l'inclinaison du regard, et l'ouverture dessinée est intermédiaire.
+      Le correcteur semble l'avoir accepté. **Non tagué faute de lecture sûre** :
+      inventer une lecture pour compléter le corpus serait pire que l'omission.
+
+  - sur: un profil presque entièrement CNS
+    pourquoi: >
+      8 problèmes sur 11 sont des CNS, et l'élève réussit tout ce qu'il
+      entreprend — multiplication décimale exacte avec preuve par 9, soustraction
+      de fractions réussie là où les deux élèves de 5ème échouent, constructions
+      au compas propres. Un tel profil relève-t-il vraiment de la remédiation, ou
+      d'un simple apport de vocabulaire et de formules ? Le dispositif chiffre
+      ici 5,5 h alors que le besoin réel est peut-être une séance de lexique.

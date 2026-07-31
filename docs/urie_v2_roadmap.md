@@ -2,7 +2,7 @@
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
 **Dernière mise à jour :** 2026-07-31 (module 2 entamé — gabarit et découpe ; travail versionné sur `chantier/urie-v2-django`)
-**Où en est-on (résumé en une ligne) :** Modules 0 et **1 ✅ faits** · **Module 2 🟨 gabarit lu dans le PDF source, 280/280 cadres, découpe et nettoyage faits** — reste le recalage · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. Trois choses bloquent, toutes hors code : une **copie scannée** (module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit. Le **Module 3** (corpus de référence) est le seul chantier qui avance sans rien attendre.
+**Où en est-on (résumé en une ligne) :** Modules 0, **1 et 3 ✅ faits** — le **corpus de référence existe** (5 copies, 66 problèmes taguées à la main) · **Module 2 🟨 gabarit lu dans le PDF source, 280/280 cadres** — reste le recalage · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. Il ne manque plus que le **Module 2** pour ouvrir le **Module 4**. Trois choses bloquent, toutes hors code : un **sujet Urie imprimé et scanné** (module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
 
 **État vérifié le 2026-07-31 : 204 tests Django + 242 pytest = 446 tests passent.**
 
@@ -38,7 +38,7 @@ Note : `DATABASE_URL` suit la convention SQLAlchemy — `sqlite:///:memory:`, **
 | 0 | Appropriation du référentiel | ✅ Fait (2026-07-30) | — |
 | 1 | Socle de données (Neon, Django) | ✅ Fait (2026-07-30) | — |
 | 2 | Lecture des copies par zones | 🟨 En cours (2026-07-31) — gabarit et découpe faits | Un **sujet Urie** imprimé, rempli et scanné, pour le recalage |
-| 3 | Corpus de référence | 🟨 En cours (2026-07-31) — outil de tagage prêt | 5 copies à réunir (1/5) |
+| 3 | Corpus de référence | ✅ Fait (2026-07-31) — 5 copies, 66 problèmes | — (PRQ et RED non couverts, voir la fiche) |
 | 4 | Diagnostic contraint | ⬜ À faire | Module 2, Module 3 |
 | 5 | Composition du test de confirmation (T1) | ⬜ À faire | Module 4 |
 | 6 | Palier et plan de remédiation | 🟨 En cours (2026-07-30) — moteur fait, séances à planifier | Module 4 pour l'alimenter en vrais problèmes |
@@ -156,7 +156,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 
 ---
 
-### Module 3 — Corpus de référence 🟨 **EN COURS (2026-07-31) — l'outil de tagage est prêt**
+### Module 3 — Corpus de référence ✅ **FAIT (2026-07-31)** — avec une limite à connaître
 **Objectif :** un jeu de copies taguées à la main pour mesurer objectivement le Module 4.
 
 - [x] **Marquer les copies du corpus** — `Evaluation.corpus_reference`, avec `tague_par` et `date_tagage`. Une contrainte en base refuse un marquage sans auteur ni date : on ne saurait ni qui interroger sur un tagage discutable, ni à quelle version du référentiel il se rapporte. *(Le module 1 avait laissé ce point « à définir ».)*
@@ -164,7 +164,19 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - [x] **Outil de saisie : `manage.py taguer_corpus --fichier …`** (arbitrage rendu : un fichier YAML plutôt qu'un écran — le tagage est lent et discutable, un fichier se relit, se compare et se reprend le lendemain ; un formulaire perd tout à la première fermeture d'onglet). Options `--a-blanc` et `--remplacer`.
 - [x] **Validation complète avant toute écriture** : aucun code inventé, justification obligatoire, `ATT` non confirmable, couple en double refusé. Un corpus à moitié écrit serait pire que pas de corpus — il aurait l'air complet.
 - [x] Rassembler ≥5 anciennes copies d'élèves Hakili Lab — **5 réunies** (2 en 3ème, 2 en 5ème, 1 en 6ème).
-- [ ] Taguer les 5 copies — **4 sur 5 faites**. Reste `TEST N°2 6e` (lecture entamée : pages 1 à 3 du sujet).
+- [x] Taguer les 5 copies — **fait**. 66 problèmes, 70 h de remédiation cumulées.
+
+| copie | niveau | problèmes | coût | profil dominant |
+|---|---|---|---|---|
+| `CORPUS-3E-01` | 3ème | 22 | 34,5 h | CPT — effondrement conceptuel |
+| `CORPUS-3E-02` | 3ème | 10 | 8,5 h | PRC / ATT — gestes ratés |
+| `CORPUS-5E-03` | 5ème | 14 | 12,5 h | CNS — connaissances absentes |
+| `CORPUS-5E-04` | 5ème | 9 | 7,0 h | PRC — exécution |
+| `CORPUS-6E-05` | 6ème | 11 | 7,5 h | CNS (8/11) — vocabulaire et formules |
+
+**⚠ Deux types d'erreur ne sont pas couverts : `PRQ` et `RED`.** Le module 4 ne pourra pas être mesuré sur eux, et ce n'est pas un défaut de tagage :
+- **`RED`** est réservé par le référentiel à la partie B, « où la consigne précise que la démarche est évaluée autant que le résultat ». Les tests de l'ancien format ne posent jamais cette consigne. Il faudra des copies du **nouveau format**.
+- **`PRQ`** demande un échec corrélé sur des compétences partageant un prérequis *nommable*. Sur les cinq copies, les échecs ne convergent vers aucun ancêtre commun : le graphe des prérequis est trop maigre. C'est un défaut du référentiel, pas des copies.
 - [x] **Outil durci après trois copies** (voir le journal du 2026-07-31) : consultation du référentiel pendant le tagage, libellés rappelés au compte rendu, codes proches suggérés, contrôle de niveau, étanchéité avec le suivi réel, `manage.py corpus` pour relire l'étalon, rapport d'hésitations.
 - [ ] **Deux types d'erreur manquent au corpus : `PRQ` et `RED`.** Signalé par `manage.py corpus` — le module 4 ne pourra pas être mesuré sur eux. À chercher explicitement dans les deux dernières copies : `RED` est un résultat juste sans justification (partie B), `PRQ` un échec corrélé sur plusieurs compétences partageant un prérequis.
 - [ ] Pour chaque copie : relever chaque réponse fausse, chercher la signature correspondante dans `05_Grille_diagnostic`, noter le problème (`code_competence` + `code_type_erreur`).
@@ -566,6 +578,35 @@ Trois décisions de fond ont été prises après confrontation du protocole à l
 
 > ⚠ **Un point de gestion, hors code, qui pèse plus que le prochain module :**
 > **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+
+### 2026-07-31 (suite) — ✅ Le corpus de référence est complet
+**5 copies, 66 problèmes, 70 h de remédiation cumulées.** Le jalon du module 3 est atteint : le module 4 a désormais un étalon contre lequel se mesurer.
+
+**Cinq profils réellement distincts** — c'est ce qui décide de la valeur du corpus :
+
+| copie | problèmes | coût | ce que le module 4 devra reconnaître |
+|---|---|---|---|
+| 3ème #1 | 22 | 34,5 h | effondrement conceptuel — 13 CPT, palier C |
+| 3ème #2 | 10 | 8,5 h | gestes ratés sur un socle solide — PRC et ATT |
+| 5ème #3 | 14 | 12,5 h | connaissances absentes et une page sautée |
+| 5ème #4 | 9 | 7,0 h | exécution qui dérape, modèles justes |
+| 6ème #5 | 11 | 7,5 h | 8 CNS sur 11 — vocabulaire et formules manquants |
+
+Répartition finale : `CNS` 36 % · `CPT` 35 % · `PRC` 18 % · `ATT` 6 % · `MOD` 5 %.
+
+**Le cas le plus instructif du corpus** reste le périmètre d'une table circulaire, posé à l'identique aux copies 3, 4 et 5 : `1,3 × 2` (formule absente, `CNS`), `1,3 × 3,14 = 1,2856` (formule juste, produit faux, `PRC`), et rien du tout (`CNS`). Une question, trois copies, deux types d'erreur, trois remédiations différentes. Aucune heuristique de notation ne distingue ça ; c'est exactement ce qu'on demandera au module 4.
+
+**Une erreur de tagage rattrapée par le corpus lui-même.** « Complète : 290 + … = 3028 » avait été rattachée à `N.ADD` sur la copie 3 et à `N.EGT` sur la copie 5 — **deux codes valides, donc invisibles à toute validation**. Repéré en taguant la cinquième, harmonisé sur `N.EGT` et la copie 3 re-taguée. Sans cette reprise, le module 4 aurait été mesuré contre deux réponses différentes à la même question. C'est la démonstration concrète de ce que la validation automatique ne peut pas faire — et la raison pour laquelle le compte rendu rappelle désormais les libellés en toutes lettres.
+
+**Ce que le corpus ne pourra pas mesurer, et pourquoi ce n'est pas un défaut de tagage :**
+- **`RED`** — le référentiel le réserve à la partie B « où la consigne précise que la démarche est évaluée autant que le résultat ». Les tests de l'ancien format ne posent jamais cette consigne. Il faudra des copies du **nouveau format**.
+- **`PRQ`** — il demande un prérequis partagé *nommable*. Sur cinq copies, les échecs ne convergent vers aucun ancêtre commun du graphe. Le graphe des prérequis est trop maigre : c'est un défaut du référentiel, à remonter au relecteur.
+
+**16 hésitations** sur les 5 copies, rassemblées par `manage.py corpus --hesitations`. Trois questions de fond en ressortent : l'absence d'arêtes autour de `G.VOC`, la frontière `ATT`/`PRC` qui change la facture, et le fait que **ces tests d'entrée évaluent systématiquement des compétences du niveau où l'élève entre** — signalé trois fois par le contrôle de niveau.
+
+**Un avertissement pour la suite :** le correcteur a accordé des points à une réponse fausse (`1093 ÷ 15 = 72,08`). **Les annotations rouges ne sont pas une vérité de référence.** Mesurer le module 4 contre elles reviendrait à mesurer son accord avec un correcteur, pas la justesse de son diagnostic.
+
+**Vérifié :** 5 copies en base, coûts en accord avec le référentiel, aucune session de corpus mêlée au suivi réel.
 
 ### 2026-07-31 (suite) — Copie 4, et les correctifs éprouvés en conditions réelles
 Le tagage de la copie 4 a servi de test aux six correctifs. **Les trois mécanismes nouveaux ont réagi comme voulu, sans être sollicités exprès :** les libellés rappelés (`M.PER × PRC` suivi de `└ Perimetres × Erreur procedurale`), l'avertissement de niveau (`N.FRA2` est de 5ème, le test est de niveau 5ème), et le signalement d'une compétence taguée deux fois (`M.PER`, MOD et PRC).
