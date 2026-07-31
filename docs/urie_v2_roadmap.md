@@ -1,10 +1,10 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-07-31 (travail versionné — branche `chantier/urie-v2-django` poussée sur `origin`)
-**Où en est-on (résumé en une ligne) :** Modules 0 et **1 ✅ faits** · **Module 6 🟨 le moteur du plan et du palier tourne** (ordre des prérequis, coût, palier, inscription au programme) · **interface migrée sur Django** (suivi, correction unique/lot/libre, mise en service préparée) — prochaine étape : **Module 2** (lecture des copies par zones), le seul chemin vers le Module 4. Reste bloquant en aval : les **209 corrigés** (arbitrage B) et **un essai réel de bout en bout** avant de retirer Streamlit.
+**Dernière mise à jour :** 2026-07-31 (module 2 entamé — gabarit et découpe ; travail versionné sur `chantier/urie-v2-django`)
+**Où en est-on (résumé en une ligne) :** Modules 0 et **1 ✅ faits** · **Module 2 🟨 gabarit lu dans le PDF source, 280/280 cadres, découpe et nettoyage faits** — reste le recalage · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. Trois choses bloquent, toutes hors code : une **copie scannée** (module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit. Le **Module 3** (corpus de référence) est le seul chantier qui avance sans rien attendre.
 
-**État vérifié le 2026-07-30 en fin de soirée : 170 tests Django + 218 pytest = 388 tests passent.**
+**État vérifié le 2026-07-31 : 170 tests Django + 238 pytest = 408 tests passent.**
 
 **Pour reprendre le travail sur Django :**
 ```bash
@@ -37,7 +37,7 @@ Note : `DATABASE_URL` suit la convention SQLAlchemy — `sqlite:///:memory:`, **
 |---|---|---|---|
 | 0 | Appropriation du référentiel | ✅ Fait (2026-07-30) | — |
 | 1 | Socle de données (Neon, Django) | ✅ Fait (2026-07-30) | — |
-| 2 | Lecture des copies par zones | ⬜ À faire | Module 1 |
+| 2 | Lecture des copies par zones | 🟨 En cours (2026-07-31) — gabarit et découpe faits | Une copie réellement scannée, pour le recalage |
 | 3 | Corpus de référence | ⬜ À faire | Module 1 |
 | 4 | Diagnostic contraint | ⬜ À faire | Module 2, Module 3 |
 | 5 | Composition du test de confirmation (T1) | ⬜ À faire | Module 4 |
@@ -117,20 +117,28 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 
 ---
 
-### Module 2 — Lecture des copies par zones
+### Module 2 — Lecture des copies par zones 🟨 **EN COURS (2026-07-31) — gabarit et découpe faits**
 **Objectif :** transformer un sujet rempli et scanné en une liste `(code_question, image_de_la_réponse)`.
 
-- [ ] Choisir un test d'entrée (ex. `Test_diagnostique_entree_6eme.pdf`), le faire remplir à la main par quelqu'un, le scanner — fichier de travail de référence pour ce module.
-- [ ] Redressement du scan sur les bords des cadres (grille de référence régulière).
-- [ ] Détection des rectangles (cadres de réponse — seule classe d'objets de cette taille sur la page).
-- [ ] Lecture OCR du code typographié dans le coin supérieur gauche de chaque cadre.
-- [ ] Découpe de l'intérieur du cadre (production élève isolée).
-- [ ] Suppression des lignes de guidage par seuillage (pâles et uniformes, contrairement à l'écriture).
-- [ ] Gérer séparément les **4** formats de question, pas 3 : `qcm` (71 questions, 1 ligne, une lettre attendue), `court` (139, 2 lignes, nombre/expression), `redige` (63, 8 lignes, raisonnement), et **`construction` (7 questions — non prévu par `guide-urie.md`)**, qui attend un tracé géométrique et non du texte. Décider du traitement de ce 4ème cas : découpe de la zone puis orientation vers la saisie humaine (module 8), le diagnostic automatique n'étant vraisemblablement pas atteignable dessus.
-- [ ] Décider où cette étape s'insère dans `src/pipeline/` : nouvelle étape avant la transcription actuelle, déclenchée uniquement pour les niveaux/tests utilisant le nouveau format à cadres ancrés (les tests existants sans cadres gardent la transcription pleine page inchangée).
+> **Écart assumé avec `guide-urie.md`, et c'est le point de conception du module.** Le guide prescrit de *détecter* les rectangles sur le scan puis de lire au **OCR** le code de chaque cadre. Inutile : les 7 sujets sont produits par WeasyPrint et leur PDF **porte déjà** la position exacte de chaque cadre et son code. Le gabarit est donc lu à la source, pas deviné sur le scan. Ça supprime l'étape la plus fragile de la chaîne — un OCR sur trois caractères à 150 DPI aurait été le premier point de panne, et une confusion `G1`/`G7` aurait attribué une réponse à la mauvaise question **sans que rien ne le signale**. Il ne reste qu'un seul problème à résoudre sur le scan : le recalage.
+
+- [x] **Gabarit extrait du PDF source** (`extraire_gabarit`) : code, page, rectangle, format et nombre de lignes de chaque cadre. **Vérifié 280/280 sur les 7 sujets**, 0 manquant, 0 en trop, 0 doublon.
+- [x] Le format se **déduit de la géométrie** (1 ligne = `qcm`, 2 = `court`, 8 = `redige`, 0 ligne et bord gris 0,600 = `construction`) et n'est pas lu dans le barème — les deux sont ensuite confrontés (`verifier_gabarit`). C'est le garde-fou contre un sujet d'une autre version que celle chargée en base : les codes ou les formats divergent, et on le sait **avant** d'attribuer des réponses aux mauvaises questions.
+- [x] Découpe de l'intérieur du cadre (`decouper_zones`), une image PNG par code, échelle déduite de l'image (aucune hypothèse de résolution).
+- [x] Suppression des lignes de guidage par seuillage — blanchiment plutôt que binarisation franche, pour qu'un trait de crayon clair reste lisible.
+- [x] **Le code typographié est effacé de la zone découpée.** Il est imprimé en noir dans le coin du cadre : le seuillage ne peut pas l'écarter, et le laisser ferait passer pour remplie une zone restée vierge. Sa position exacte vient du PDF, comme le reste.
+- [x] Détection des zones **vierges** (`vide`, `taux_encre`) — « pas de réponse » est une donnée de diagnostic à part entière, et ça évite d'envoyer une image blanche au modèle.
+- [x] Les **4** formats sont gérés, pas 3 : `qcm` (71), `court` (139), `redige` (63) et `construction` (7, non prévu par `guide-urie.md`).
+- [ ] **Reste — recalage du scan sur le gabarit** (translation, échelle, rotation). C'est le seul morceau qui demande une copie réellement scannée : impossible de calibrer un redressement sur un rendu numérique parfait, où il n'y a rien à redresser.
+- [ ] **Reste — seuil d'encre à recalibrer sur du papier** (`SEUIL_ENCRE_DEFAUT = 140`, réglé sur des rendus du PDF, pas sur un scan).
+- [ ] **Reste** — décider du traitement du format `construction` : la zone se découpe comme les autres, mais le diagnostic automatique n'est vraisemblablement pas atteignable dessus → orientation vers la saisie humaine (module 8).
+- [ ] **Reste** — point d'insertion dans `src/pipeline/` : nouvelle étape avant la transcription actuelle, déclenchée pour les seuls tests à cadres ancrés (les tests archivés gardent la transcription pleine page).
 
 **Critère de fin :** sur un sujet rempli et scanné, les 40 cadres sont détectés, correctement associés à leur code de question, et découpés proprement.
-**Fichiers concernés :** nouveau module dans `src/pipeline/` (nom à choisir, ex. `zone_reader.py`), réutilise `src/pipeline/ingestion.py` pour la conversion 150 DPI.
+**Fichiers concernés :** `src/pipeline/zones.py`, réutilise `src/pipeline/ingestion.py` pour la conversion 150 DPI.
+**Tests :** `tests/test_zones.py` (20) — 13 sur un sujet fabriqué dans le test, 7 sur les vrais sujets (ignorés si les PDF sont absents, ils ne sont pas versionnés).
+
+**⚠ Ce qu'il faut pour finir ce module :** un test d'entrée **imprimé, rempli à la main, et scanné**. Consignes d'impression sur `/sujets/` : noir et blanc, recto seul, sans réduction.
 
 ---
 
@@ -532,6 +540,27 @@ Trois décisions de fond ont été prises après confrontation du protocole à l
 
 > ⚠ **Un point de gestion, hors code, qui pèse plus que le prochain module :**
 > **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+
+### 2026-07-31 (suite) — Module 2 : le gabarit ne se devine pas, il se lit
+**La question qui a décidé du module :** faut-il détecter les cadres sur le scan, comme le prescrit `guide-urie.md` ? **Non.** Les 7 sujets sont produits par WeasyPrint et leur PDF porte la position exacte de chaque cadre et son code. Vérifié avant d'écrire la moindre ligne : **280/280 cadres retrouvés sur les 7 sujets**, 0 manquant, 0 en trop, 0 doublon, et le nombre de lignes de guidage concorde avec le format annoncé par le barème sur les 280 (qcm 71 × 1 ligne, court 139 × 2, redige 63 × 8, construction 7 × 0).
+
+Conséquence : **l'OCR disparaît de la chaîne.** C'était le premier point de panne — trois caractères à 150 DPI, à côté de l'écriture d'un élève —, et une confusion `G1`/`G7` aurait attribué une réponse à la mauvaise question sans que rien ne le signale. Le seul problème qui reste sur le scan est le recalage.
+
+**La signature graphique des sujets, relevée sur pièces** (c'est elle qui rend le gabarit lisible) : les cadres sont des aplats gris, pas des traits. Bord **0,478** pour les cadres à lignes, **0,600** pour les cadres vides de `construction`, lignes de guidage **0,749**. Le code de la question est imprimé **deux fois** — en marge à côté de l'énoncé, et à l'intérieur du cadre en haut à gauche : c'est l'inclusion dans le rectangle qui les départage, rien d'autre.
+
+**Deux choses trouvées en écrivant les tests, qui auraient coûté cher plus tard :**
+1. **Le code imprimé dans le cadre est noir**, donc indiscernable de l'écriture au seuillage. Laissé en place, il met de l'encre dans toute zone découpée et **aucune copie vierge n'aurait jamais été reconnue comme telle**. Il est maintenant effacé à partir de sa position exacte, elle aussi lue dans le PDF.
+2. **`numpy` n'était pas déclaré** dans `requirements.txt` — il n'arrivait que par `pandas`, qui part avec Streamlit. Le retrait du filet aurait cassé la découpe. Déclaré explicitement.
+
+**Livré :** `src/pipeline/zones.py` — `extraire_gabarit`, `verifier_gabarit`, `decouper_zones`. Indépendant du framework. La découpe blanchit le fond plutôt que de binariser franchement (un trait de crayon clair reste lisible pour un modèle de vision), et signale les zones vierges : « pas de réponse » est une donnée de diagnostic à part entière, et ça évite d'envoyer une image blanche au modèle.
+
+**`verifier_gabarit` est un garde-fou d'exploitation, pas une aide au développement :** le format est déduit de la géométrie du cadre, jamais lu dans le barème, puis les deux sont confrontés. Si un enseignant scanne un sujet d'une autre version que celle chargée en base, les codes ou les formats divergent — et on l'apprend avant d'attribuer des réponses aux mauvaises questions.
+
+**Vérifié :** `tests/test_zones.py`, 20 tests. 13 tournent sur un sujet fabriqué dans le test lui-même, qui reproduit la signature graphique des vrais — les 7 sujets sont des PDF non versionnés, la CI ne les a pas. Les 7 autres vérifient les 280 cadres réels contre les barèmes, et sont **ignorés** faute de fichiers plutôt que de tomber en échec. **170 tests Django + 238 pytest = 408 tests passent.**
+
+**Bloqué par :** une copie **imprimée, remplie à la main, scannée**. Le recalage et le seuil d'encre ne peuvent pas être calibrés sur un rendu numérique parfait — il n'y a rien à y redresser, et le contraste y est idéal. Consignes d'impression rappelées sur `/sujets/` : noir et blanc, recto seul, **sans réduction**.
+
+**Prochaine étape :** avec un scan, le recalage puis la calibration du seuil. Sans scan, le **Module 3** (corpus de référence) peut avancer en parallèle — il ne dépend que du module 1 et se fait à la main.
 
 ### 2026-07-31 — Le travail est versionné
 Le socle Django n'était pas suivi par git : rien n'avait été commité depuis le **2026-07-23**, une semaine de travail ne tenait que sur un disque. Corrigé — **10 commits découpés par domaine** sur la branche `chantier/urie-v2-django`, poussée sur `origin`.
