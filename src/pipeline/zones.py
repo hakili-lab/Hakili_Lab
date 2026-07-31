@@ -283,6 +283,14 @@ def decouper_zones(
     de l'encre au lieu de binariser franchement — un trait de crayon clair reste
     lisible pour un modèle de vision, alors qu'un seuillage dur l'effacerait.
 
+    ⚠ Ce raisonnement tient sur le PDF, où le gris 191 est uniforme. **Il n'est
+    pas encore vérifié sur du papier :** une imprimante laser rend un aplat gris
+    par un tramage de points noirs. Essayé sur un scan réel d'un test de
+    l'ancien format, le seuillage laisse passer les pointillés imprimés — ils
+    sont noirs. Si les lignes des sujets Urie se trament de la même façon, il
+    faudra les effacer par leur **position**, que le gabarit connaît déjà, plutôt
+    que par leur clarté. À trancher sur le premier sujet Urie imprimé et scanné.
+
     ⚠ Cette fonction suppose la page **déjà recalée** sur le gabarit. Sur un scan
     réel il faut redresser avant d'appeler ici (voir le journal du module 2).
     """
