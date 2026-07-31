@@ -207,12 +207,20 @@ hesitations:
     pourquoi: >
       L'élève répond « parallèle » ou « perpendiculaire » à quatre questions qui
       attendent un point ou une mesure. C'est un échec corrélé sur plusieurs
-      compétences distinctes — la signature exacte de PRQ. Mais PRQ exige de
-      nommer le prérequis, et AUCUNE compétence du référentiel ne couvre le
-      vocabulaire géométrique de base (point, droite, parallèle, perpendiculaire,
-      symétrique). Faute de pouvoir le nommer, j'ai tagué quatre CPT séparés — ce
-      qui gonfle mécaniquement le coût. À arbitrer : le référentiel a-t-il besoin
-      d'une compétence transversale de vocabulaire géométrique ?
+      compétences distinctes — la signature exacte de PRQ, qui exige de nommer le
+      prérequis partagé.
+      Ce prérequis existe presque : `G.VOC` (Primaire, « Vocabulaire et tracés de
+      base »). Deux choses empêchent de s'en servir. Sa description se limite à
+      « droite, demi-droite, segment, milieu : notation et tracé » — elle ne
+      couvre pas le fait de savoir *quelle sorte d'objet* une question attend
+      (un point, une mesure, une relation). Et dans le graphe des prérequis,
+      `G.VOC` n'est déclaré prérequis que de `G.PARA` et `G.FIG` : aucune arête ne
+      le relie à la chaîne des symétries (G.SYMC ← G.SYMO ← G.MED) ni aux angles.
+      Un PRQ sur `G.VOC` ne serait donc fondé ni par sa définition ni par le
+      graphe. J'ai maintenu quatre problèmes séparés, ce qui gonfle mécaniquement
+      le coût d'un élève dont la cause est vraisemblablement unique.
+      À arbitrer, et c'est une question de fond : élargir la description de
+      `G.VOC`, ou ajouter les arêtes manquantes au graphe des prérequis ?
 
   - sur: N.FRA2 — PRC ou CPT ?
     pourquoi: >

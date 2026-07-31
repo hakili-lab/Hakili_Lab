@@ -1,0 +1,164 @@
+# Corpus de référence — copie 3/5
+# Source : « TEST 8 5e (1).pdf » (évaluation d'entrée en 5ème, 14 pages).
+#
+# Contenu de niveau primaire et 6ème : numération, opérations posées, fractions,
+# mesures, vocabulaire géométrique. Profil très différent des deux copies de
+# 3ème — l'élève réussit largement, et ce sont surtout des connaissances isolées
+# qui manquent.
+
+identifiant_hakili: CORPUS-5E-03
+tague_par: Claude (relecture humaine requise)
+date_tagage: 2026-07-31
+
+evaluation:
+  type: T0
+  date: 2025-11-01
+  support: scan 200 DPI — évaluation de l'ancien format, corrigée au stylo rouge
+
+problemes:
+  # ── Activités numériques ────────────────────────────────────────────────
+  - competence: N.NUM
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      « Une centaine quatre dizaines et sept unités » est écrit « 100 40 7 » :
+      les valeurs de position sont juxtaposées au lieu d'être composées en 147.
+      La question suivante, un million quatre cent trente-cinq mille…, est juste —
+      c'est l'écriture *dictée par position* qui échoue, pas la lecture d'un
+      grand nombre.
+
+  - competence: N.ADD
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      5537 + 319 et 290 + … = 3028 laissées entièrement vides. Voir l'hésitation
+      sur la page sautée : ce classement est le moins sûr de la copie.
+
+  - competence: N.MUL
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      15,345 × 53,5 avec preuve par 9 laissée vide. Même réserve que ci-dessus.
+
+  - competence: N.DIVE
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      1093 ÷ 15 est posée correctement — potence, abaissements, place de la
+      virgule — mais la première soustraction donne 3 au lieu de 4 (109 − 105),
+      et le quotient devient 70,2 au lieu de 72,86. La technique est acquise,
+      son exécution dérape sur une soustraction.
+
+  - competence: N.FRA1
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      0,27 sous forme de fraction : la réponse écrite est « 0/0 ». Le sens de la
+      fraction est pourtant tenu juste avant (9/16 sur une figure, numérateur et
+      dénominateur nommés correctement) : c'est le passage décimal → fraction
+      qui n'est pas disponible.
+
+  - competence: N.FRA2
+    type_erreur: ATT
+    etat: hypothese
+    justification: >
+      5/7 − 2/3 : mise au même dénominateur juste (15/21 − 14/21), soustraction
+      des numérateurs juste (15 − 14), puis le résultat est écrit « 1/4 » au lieu
+      de 1/21. Le dénominateur, correct trois fois de suite, se perd à la
+      dernière ligne. 1/5 + 3/5 est juste.
+
+  - competence: D.POUR
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      6 œufs cassés sur 30 : calcule 30 × 6 / 100 = 1,8 %. Le pourcentage est
+      construit comme un produit par la population au lieu d'un rapport de la
+      partie au tout. Le tableau de proportionnalité, juste au-dessus, est
+      entièrement juste — la proportionnalité est acquise, sa lecture en
+      pourcentage ne l'est pas.
+
+  # ── Mesures et grandeurs ────────────────────────────────────────────────
+  - competence: M.CONV
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      1,2 dm converti en 120 cm — un rang de trop sur l'échelle des unités —
+      alors que 0,05 m → 5 cm, faite dans la même ligne, est juste. Le passage
+      dm → cm est traité comme un passage m → cm.
+
+  - competence: M.AIRE
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      Aire du trapèze calculée par (120 + 5) × 4 / 2 : la forme de la formule
+      (B + b) × h / 2 est bien mobilisée, mais la hauteur et la petite base sont
+      interverties dans les rôles. Ce n'est pas un calcul raté, c'est
+      l'identification des grandeurs dans la formule qui échoue.
+
+  - competence: M.PER
+    type_erreur: MOD
+    etat: hypothese
+    justification: >
+      Périmètre d'un champ rectangulaire égal à 48 m, largeur 10 m, calculer la
+      longueur : écrit (48 + 10) × 2 = 116 m. La formule du périmètre est connue
+      et correctement appliquée — mais dans le sens direct, alors que l'énoncé
+      demande de l'inverser. Technique maîtrisée, énoncé non traduit.
+
+  - competence: M.PER
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Périmètre d'une table circulaire de 1,3 m de diamètre : écrit 1,3 × 2 =
+      2,6 m, alors que π = 3,14 est donné dans l'énoncé et reste inutilisé. La
+      formule du périmètre d'un cercle n'est pas mobilisée ; celle du rectangle
+      l'est. Voir l'hésitation sur le rattachement de cette question.
+
+  # ── Activités géométriques ──────────────────────────────────────────────
+  - competence: G.VOC
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Trois items du même registre restent sans réponse : le nom de la première
+      ligne (courbe), le placement du point I milieu de [EF] — pourtant demandé
+      explicitement et au cœur de cette compétence — et le nom de la troisième
+      droite (oblique). Les items nommés du même exercice sont justes : ligne
+      droite, horizontale, verticale, perpendiculaires.
+
+  - competence: G.ANG1
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      « Un angle de 180° est un angle plat » : répond Faux. La définition de
+      l'angle plat n'est pas disponible, alors que la comparaison angle droit /
+      angle aigu de la question voisine est juste et que l'angle de 40° est
+      correctement tracé au rapporteur.
+
+hesitations:
+  - sur: une page entière sautée — N.ADD et N.MUL
+    pourquoi: >
+      Les quatre items de la page 2 du sujet sont vides, dont une addition posée
+      de deux nombres entiers, alors que la page 3 est traitée et réussie. Un
+      élève qui range correctement des décimaux et pose une division à 0,01 près
+      sait additionner 5537 et 319. **Les deux CNS posés sur N.ADD et N.MUL sont
+      donc les plus douteux de cette copie** : ils décrivent peut-être un
+      comportement d'examen — page tournée trop vite — plutôt qu'une lacune. À
+      trancher avec l'enseignant qui a surveillé l'épreuve. C'est exactement le
+      genre de faux positif que le module 4 produira aussi, et le corpus doit le
+      dire.
+
+  - sur: M.PER ou G.CERC pour le périmètre du disque ?
+    pourquoi: >
+      La formule du périmètre d'un cercle relève-t-elle de M.PER (Périmètres,
+      primaire) ou de G.CERC (Cercle et disque, 6ème) ? Le référentiel ne
+      tranche pas, et la question apparaît dans un test d'entrée en 5ème.
+      Retenu M.PER parce que la question porte explicitement sur un périmètre —
+      mais cela met deux problèmes de types différents sur la même compétence.
+
+  - sur: le niveau de N.FRA2 dans un test d'entrée en 5ème
+    pourquoi: >
+      La soustraction de fractions de dénominateurs différents relève de N.FRA2,
+      introduite **en 5ème** — donc pas encore enseignée à un élève qui entre en
+      5ème. L'échec y serait normal et ne devrait pas compter comme lacune. Ici
+      l'élève réussit presque, ce qui rend le point théorique — mais il ne le
+      restera pas sur d'autres copies. Un test d'entrée doit-il évaluer des
+      compétences du niveau dans lequel l'élève entre ?
