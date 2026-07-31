@@ -164,7 +164,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - [x] **Outil de saisie : `manage.py taguer_corpus --fichier …`** (arbitrage rendu : un fichier YAML plutôt qu'un écran — le tagage est lent et discutable, un fichier se relit, se compare et se reprend le lendemain ; un formulaire perd tout à la première fermeture d'onglet). Options `--a-blanc` et `--remplacer`.
 - [x] **Validation complète avant toute écriture** : aucun code inventé, justification obligatoire, `ATT` non confirmable, couple en double refusé. Un corpus à moitié écrit serait pire que pas de corpus — il aurait l'air complet.
 - [x] Rassembler ≥5 anciennes copies d'élèves Hakili Lab — **5 réunies** (2 en 3ème, 2 en 5ème, 1 en 6ème).
-- [ ] Taguer les 5 copies — **3 sur 5 faites** (`corpus_3e_01`, `corpus_3e_02`, `corpus_5e_03`). Restent 1 copie de 5ème et 1 de 6ème.
+- [ ] Taguer les 5 copies — **4 sur 5 faites**. Reste `TEST N°2 6e` (lecture entamée : pages 1 à 3 du sujet).
 - [x] **Outil durci après trois copies** (voir le journal du 2026-07-31) : consultation du référentiel pendant le tagage, libellés rappelés au compte rendu, codes proches suggérés, contrôle de niveau, étanchéité avec le suivi réel, `manage.py corpus` pour relire l'étalon, rapport d'hésitations.
 - [ ] **Deux types d'erreur manquent au corpus : `PRQ` et `RED`.** Signalé par `manage.py corpus` — le module 4 ne pourra pas être mesuré sur eux. À chercher explicitement dans les deux dernières copies : `RED` est un résultat juste sans justification (partie B), `PRQ` un échec corrélé sur plusieurs compétences partageant un prérequis.
 - [ ] Pour chaque copie : relever chaque réponse fausse, chercher la signature correspondante dans `05_Grille_diagnostic`, noter le problème (`code_competence` + `code_type_erreur`).
@@ -566,6 +566,20 @@ Trois décisions de fond ont été prises après confrontation du protocole à l
 
 > ⚠ **Un point de gestion, hors code, qui pèse plus que le prochain module :**
 > **L'essai réel de bout en bout n'a toujours pas eu lieu** (pas de clés API dans cet environnement) — c'est lui qui conditionne le retrait de Streamlit, et il conditionne aussi la confiance qu'on peut accorder à tout ce qui précède.
+
+### 2026-07-31 (suite) — Copie 4, et les correctifs éprouvés en conditions réelles
+Le tagage de la copie 4 a servi de test aux six correctifs. **Les trois mécanismes nouveaux ont réagi comme voulu, sans être sollicités exprès :** les libellés rappelés (`M.PER × PRC` suivi de `└ Perimetres × Erreur procedurale`), l'avertissement de niveau (`N.FRA2` est de 5ème, le test est de niveau 5ème), et le signalement d'une compétence taguée deux fois (`M.PER`, MOD et PRC).
+
+**Le contraste le plus utile du corpus à ce jour.** Copies 3 et 4, même sujet, **même question** — le périmètre d'une table circulaire de 1,3 m de diamètre :
+- copie 3 : `1,3 × 2 = 2,6 m` → la formule n'est pas mobilisée du tout → **`M.PER × CNS`** ;
+- copie 4 : `1,3 × 3,14 = 1,2856 m` → la formule est juste, π est employé, seul le produit est faux → **`M.PER × PRC`**.
+
+Même compétence, même énoncé, deux types d'erreur — et deux remédiations qui n'ont rien à voir. C'est exactement la distinction sur laquelle le module 4 sera jugé, et le corpus la porte maintenant en pièce à conviction.
+
+**Trois constats qui dépassent cette copie :**
+1. **Les annotations rouges ne sont pas une vérité de référence.** Le correcteur a accordé 0,2 point à `1093 ÷ 15 = 72,08`, alors que le quotient est 72,86. Le corpus doit donc être établi sur la **production de l'élève**, jamais sur la note portée sur la copie. Et si un jour on mesurait le module 4 contre ces notes, on mesurerait son accord avec un correcteur, pas la justesse du diagnostic.
+2. **`RED` est hors d'atteinte de ce corpus, et ce n'est pas un oubli.** Le référentiel réserve `RED` à la partie B, « où la consigne précise que la démarche est évaluée autant que le résultat ». Les tests de l'ancien format ne posent jamais cette consigne — ils demandent des résultats. Mesurer le module 4 sur `RED` exigera des copies du **nouveau format**. Taguer `RED` ici reviendrait à inventer la donnée manquante.
+3. **`PRQ` bute deux fois au même endroit.** Copies 1 et 4 : les échecs ne convergent vers aucun ancêtre commun du graphe des prérequis. L'obstacle n'est pas la lecture des copies mais la **maigreur des arêtes du graphe**. Deux copies sur quatre, ce n'est plus une coïncidence — c'est un défaut du référentiel à remonter.
 
 ### 2026-07-31 (suite) — L'outil de tagage durci par l'usage
 Trois copies taguées ont montré où l'outil laissait passer. Six correctifs, dans l'ordre du risque.

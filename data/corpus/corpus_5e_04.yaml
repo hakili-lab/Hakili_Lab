@@ -1,0 +1,144 @@
+# Corpus de référence — copie 4/5
+# Source : « TEST 10 5e.pdf » — même sujet que la copie 3, entrée en 5ème.
+#
+# Deux copies sur le même sujet, deux profils opposés : là où la copie 3 laisse
+# une page entière vide et échoue sur les connaissances, celle-ci traite presque
+# tout et échoue sur l'exécution. Sur la question du périmètre du cercle, les
+# deux échouent — mais pas du même échec, et c'est précisément ce que le module 4
+# devra distinguer.
+
+identifiant_hakili: CORPUS-5E-04
+niveau: 5eme
+tague_par: Claude (relecture humaine requise)
+date_tagage: 2026-07-31
+
+evaluation:
+  type: T0
+  date: 2025-11-01
+  support: scan 200 DPI — évaluation de l'ancien format, corrigée au stylo rouge
+
+problemes:
+  # ── Activités numériques ────────────────────────────────────────────────
+  - competence: N.NUM
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      26,1893 écrit en lettres « vingt-six mille deux cent soixante mille un
+      mille huit cent quatre-vingt-treize » : la partie décimale est lue comme un
+      entier, avec ses ordres de grandeur, et la virgule disparaît. Confirmé juste
+      après : dans 175,62, les chiffres de la partie entière sont correctement
+      nommés puis l'énumération s'arrête au 6, sans dixième ni centième. Les
+      décimales n'ont pas de valeur de position pour cet élève.
+
+  - competence: N.MUL
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      15,345 × 53,5 est posée dans les règles — produits partiels décalés, preuve
+      par 9 tentée — mais les produits partiels sont faux et le résultat donné est
+      19,9565 au lieu de 820,9575. La technique est en place, son exécution non.
+
+  - competence: N.DIVE
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      1093 ÷ 15 à 0,01 près : la potence est correctement conduite jusqu'aux
+      restes 43, 13, 130, 10 — qui sont justes — mais le quotient est écrit
+      72,08 au lieu de 72,86 : un chiffre est perdu et un zéro s'intercale.
+      Voir l'hésitation : cette réponse a été **acceptée** par le correcteur.
+
+  - competence: N.FRA2
+    type_erreur: CPT
+    etat: hypothese
+    justification: >
+      5/7 − 2/3 : la mise au même dénominateur est juste (15/21 et 14/21), puis
+      les numérateurs sont **additionnés** — 15 + 14 = 29/21. L'addition 1/5 + 3/5
+      de la question précédente est juste. La procédure « même dénominateur puis
+      additionner » est appliquée quelle que soit l'opération demandée.
+
+  - competence: D.TAB
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Le tableau de nombres proportionnels est laissé entièrement vide — alors que
+      la question suivante, le pourcentage d'œufs cassés, est **résolue
+      correctement par produit en croix** (100 × 6 / 30 = 20 %). La
+      proportionnalité est acquise ; c'est la lecture et le remplissage d'un
+      tableau qui bloquent.
+
+  # ── Mesures et grandeurs ────────────────────────────────────────────────
+  - competence: M.AIRE
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      Aire du trapèze : aucune tentative, pas même une conversion, alors que les
+      constructions géométriques voisines sont faites. La formule n'est pas
+      disponible.
+
+  - competence: M.PER
+    type_erreur: MOD
+    etat: hypothese
+    justification: >
+      Périmètre 48 m, largeur 10 m, trouver la longueur : écrit (48 − 10) / 2 =
+      19. L'élève a bien compris qu'il fallait **inverser** la formule — c'est
+      déjà beaucoup — mais retire la largeur avant de diviser au lieu de diviser
+      d'abord. Le modèle est faux, pas le calcul.
+
+  - competence: M.PER
+    type_erreur: PRC
+    etat: hypothese
+    justification: >
+      Périmètre d'une table circulaire de 1,3 m de diamètre : écrit
+      1,3 × 3,14 = 1,2856 m. **La formule est la bonne et π est correctement
+      employé** — seul le produit est faux. À comparer avec la copie 3, qui sur la
+      même question a écrit 1,3 × 2 : là, la formule n'était pas mobilisée du
+      tout. Même compétence, même question, deux types d'erreur différents.
+
+  # ── Activités géométriques ──────────────────────────────────────────────
+  - competence: G.VOC
+    type_erreur: CNS
+    etat: hypothese
+    justification: >
+      « Nomme les droites » : la première est dite « couchée » — une description
+      ordinaire, pas un terme géométrique — et la verticale reste sans nom.
+      L'oblique, elle, est trouvée. Le segment de 6 cm et son milieu I sont
+      correctement tracés, et « perpendiculaires » est su : c'est le vocabulaire
+      de position qui manque, pas la notion.
+
+hesitations:
+  - sur: le correcteur a accepté une réponse fausse
+    pourquoi: >
+      1093 ÷ 15 = 72,08 a reçu 0,2 point alors que le quotient exact est 72,86.
+      **Les annotations rouges ne sont donc pas une vérité de référence** — le
+      corpus ne peut pas s'y adosser, il doit être établi sur la production de
+      l'élève. C'est aussi un avertissement pour le module 4 : si un jour on le
+      compare aux notes portées sur les copies, on mesurera l'accord avec un
+      correcteur, pas la justesse du diagnostic.
+
+  - sur: aucun cas de RED dans ces copies, et ce n'est pas un oubli
+    pourquoi: >
+      RED sanctionne un résultat juste dont la démarche n'est pas justifiée, et
+      le référentiel le réserve à la partie B, « où la consigne précise que la
+      démarche est évaluée autant que le résultat ». Les tests de l'ancien format
+      ne posent jamais cette consigne : ils demandent des résultats. **Le corpus
+      constitué sur ces copies ne pourra donc pas mesurer le module 4 sur RED** —
+      il faudra des copies du nouveau format. Tagger RED ici reviendrait à
+      inventer la donnée qui manque.
+
+  - sur: PRQ reste absent, et le graphe des prérequis explique pourquoi
+    pourquoi: >
+      PRQ demande un échec corrélé sur plusieurs compétences partageant un
+      prérequis, ce prérequis devant être nommable. Sur cette copie les échecs
+      sont dispersés (numération, multiplication, division, fractions, tableau,
+      aire, périmètre) et ne convergent vers aucun ancêtre commun du graphe.
+      Comme pour la copie 1, l'obstacle n'est pas la lecture de la copie mais la
+      **maigreur des arêtes du graphe des prérequis**. Deux copies sur quatre
+      butent au même endroit : ce n'est plus une coïncidence.
+
+  - sur: M.PER tagué deux fois
+    pourquoi: >
+      Un modèle faux sur le rectangle (MOD) et une exécution fausse sur le cercle
+      (PRC) : deux échecs de natures réellement différentes, sur deux figures
+      différentes. Le coût est donc compté deux fois pour une compétence qui n'est
+      peut-être fragile qu'à moitié. Signalé par l'outil, laissé tel quel — mais
+      c'est le genre de cas où un enseignant réduirait à un seul problème.
