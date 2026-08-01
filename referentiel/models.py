@@ -183,9 +183,10 @@ class Prerequis(models.Model):
 class CoutRemediation(models.Model):
     """Coût horaire précalculé pour chaque couple compétence × type d'erreur.
 
-    coût = volume horaire officiel × coefficient du type d'erreur, arrondi à la
-    demi-heure, plancher 0,5 h, plafond 4 h. Le plafond évite qu'un seul problème
-    absorbe la moitié d'un plan.
+    coût = volume horaire officiel × coefficient du type d'erreur, arrondi à
+    **l'heure entière supérieure**, plancher 1 h, plafond 4 h. Le plafond évite
+    qu'un seul problème absorbe la moitié d'un plan ; l'arrondi vers le haut
+    évite d'inscrire un volume qu'on sait insuffisant (décision du 2026-08-01).
 
     606 lignes = 101 compétences × 6 types remédiables. `ATT` n'y figure jamais :
     non remédiable, coefficient 0 — l'absence d'une ligne `ATT` est normale, pas

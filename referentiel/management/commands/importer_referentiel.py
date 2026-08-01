@@ -303,15 +303,19 @@ class Command(BaseCommand):
         de 1ère est indéterminable. On calcule donc leurs coûts depuis le volume de
         repli, avec la formule du protocole, et on les marque `estime`.
         """
-        from referentiel.couts import cout_remediation
+        from referentiel.couts import arrondir_heures, cout_remediation
 
         CoutRemediation.objects.all().delete()
 
+        # Le coût du classeur passe par `arrondir_heures` comme celui du repli :
+        # le classeur arrondit à la demi-heure, la règle du dispositif est
+        # l'heure entière supérieure. Sans ce passage, les 444 coûts officiels
+        # — 73 % de la grille — garderaient leurs demi-heures.
         objets = [
             CoutRemediation(
                 competence_id=_texte(r[0]),
                 type_erreur_id=_texte(r[3]),
-                cout_heures=_decimal(r[6]) or Decimal("0.5"),
+                cout_heures=arrondir_heures(_decimal(r[6]) or Decimal("0.5")),
                 derivation=_texte(r[7]),
                 estime=False,
             )
