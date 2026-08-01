@@ -40,7 +40,9 @@ from referentiel.models import Competence, Question
 PROFONDEUR_PREREQUIS = 2
 
 
-def _chaine_prerequis(competence: Competence, profondeur: int) -> list[Competence]:
+def chaine_prerequis(
+    competence: Competence, profondeur: int = PROFONDEUR_PREREQUIS
+) -> list[Competence]:
     """Prérequis directs puis indirects, sans doublon ni boucle.
 
     Le graphe est censé être acyclique — une contrainte l'interdit en base — mais
@@ -99,7 +101,7 @@ def contexte_diagnostic(niveau_test: str, codes_questions: list[str]) -> str:
             + (f", {competence.chapitre_intro}" if competence.chapitre_intro else "")
         )
 
-        prerequis = _chaine_prerequis(competence, PROFONDEUR_PREREQUIS)
+        prerequis = chaine_prerequis(competence, PROFONDEUR_PREREQUIS)
         if prerequis:
             lignes.append(
                 "Prérequis à vérifier si l'échec persiste : "

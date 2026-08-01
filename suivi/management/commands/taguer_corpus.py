@@ -67,6 +67,7 @@ from django.db import models
 
 from referentiel.couts import cout_precalcule
 from referentiel.models import Competence, TypeErreur
+from referentiel.niveaux import ORDRE_NIVEAUX
 from suivi.models import (
     EtatProbleme,
     Evaluation,
@@ -80,12 +81,8 @@ from suivi.models import (
 #: de remédiation. Un problème `resolu` dans un corpus n'aurait aucun sens.
 ETATS_TAGABLES = {EtatProbleme.HYPOTHESE, EtatProbleme.CONFIRME}
 
-#: Ordre des niveaux, pour signaler une compétence taguée alors qu'elle n'a pas
-#: encore été enseignée. Un test d'entrée en 5ème évalue ce qui précède la 5ème.
-ORDRE_NIVEAUX = {
-    "Primaire": 0, "6eme": 1, "5eme": 2, "4eme": 3,
-    "3eme": 4, "2ndeC": 5, "1ereD": 6, "tleD": 7,
-}
+#: Ordre des niveaux — défini une seule fois dans `referentiel/niveaux.py`, le
+#: diagnostic sans ancrage (module 4) pose la même question.
 
 
 class Command(BaseCommand):
