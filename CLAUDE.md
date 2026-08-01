@@ -178,7 +178,7 @@ alembic downgrade -1
 | Fichier | Rôle |
 |---|---|
 | `src/pipeline/pipeline.py` | Pipeline de correction principal (Phase A/B, déjà scindé) |
-| `src/pipeline/zones.py` | Lecture des copies par zones (module 2) — gabarit lu **dans le PDF du sujet**, pas détecté sur le scan : ni détection de rectangles ni OCR, contrairement à `guide-urie.md` |
+| `src/pipeline/zones.py` | Lecture des copies par zones (module 2) — gabarit lu **dans le PDF du sujet**, pas détecté sur le scan : ni détection de rectangles ni OCR, contrairement à `guide-urie.md`. Recalage ancré sur les cadres, appariement des pages non supposé 1:1 (D-CEO-35, D-CEO-36) |
 | `src/models/domain.py` | Schémas Pydantic pipeline — `TeacherDecision`, `CopyGrade`, `DiagnosticResult` |
 | `hakili/settings.py` | Configuration Django — base Neon, sécurité, support SQLite pour les tests |
 | `referentiel/models.py` | 7 tables du référentiel et de la banque de questions (importées du classeur) |

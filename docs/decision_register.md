@@ -660,6 +660,19 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 
 ---
 
+### D-CEO-36 — Le recalage s'ancre sur le contenu, et rien n'est livré contre le tramage *(nouveau 2026-08-01)*
+**Décision :** la page scannée est recalée sur les **cadres eux-mêmes**, jamais sur le rectangle de la page ; l'appariement page scannée ↔ page du sujet **n'est pas supposé 1:1** ; et **aucun mécanisme n'est livré contre le tramage d'impression** tant qu'il n'a pas été mesuré sur papier.
+
+**Ancrage sur le contenu.** Un scanner ne rend pas la page du gabarit : hauteur variant de 835 à 851 pt d'une feuille à l'autre du même fichier, largeur 612 pt contre 595,3. Une mise à l'échelle sur les bords de page serait fausse de 2 à 3 %. Deux conséquences tirées en mesurant : l'estimation d'inclinaison se fait sur les **coordonnées** des pixels d'encre et jamais en faisant tourner l'image — une rotation ré-échantillonne, efface les traits fins (2 616 pixels d'encre à 0° contre moins de 600 ailleurs) et fait gagner l'angle 0 quelles que soient les données ; et l'échelle horizontale est cherchée **autour de la verticale**, parce que les cadres partagent tous les mêmes bords gauche et droit et que deux repères ne suffisent pas à fixer deux inconnues sans se laisser emporter par un trait de marge.
+
+**Appariement des pages.** Le scan mesuré comptait **12 pages pour un sujet de 10** (page de garde, page de renseignements). Découpées dans l'ordre, toutes les zones auraient été prises sur la mauvaise page — et le résultat aurait eu l'air normal, chaque zone contenant bien de l'écriture. L'affectation retenue maximise le total des scores de recalage **en gardant l'ordre des pages**.
+
+**Ce qui n'est pas livré, et pourquoi.** Le repli prévu contre le tramage laser — « effacer les lignes de guidage à leur position connue » — a été écrit, puis retiré : mesuré sur les 7 sujets, les « lignes » sont des bandes de 21 pt **jointives** qui pavent toute la zone de réponse. L'élève écrit sur un **aplat gris**, pas sur un lignage ; leur position est la zone entière, l'effacement l'effacerait entière. Le vrai problème est le retrait d'une **trame**, qui dépend de la finesse de la trame, de la résolution du scanner et de l'épaisseur du trait — trois grandeurs qu'aucun rendu numérique ne donne. Un mécanisme réglé à l'aveugle aurait été confiant et faux ; le risque reste ouvert, correctement décrit, et se tranche en imprimant un sujet et en le scannant **même vierge**.
+
+**Vérifié :** 43 tests sur les zones, dont le recalage sur cinq déformations de numérisation, l'appariement avec deux pages intercalées, et un test paramétré sur les 7 sujets qui verrouille la géométrie réelle pour que la fausse piste ne soit pas re-suivie.
+
+---
+
 ## Tableau de synthèse
 
 | ID | Sujet | Décision finale | Date |
@@ -697,6 +710,7 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 | **D-CEO-26** | **Urie v2 — archivage + barème** | **Les 6 anciens tests archivés (`archive: True`, masqués de la sélection mais toujours résolus pour l'historique) ; barème stocké sur 20, note calculée contre la somme réelle des `max_score` et jamais contre un total déclaré** | **2026-07-30** |
 | **D-CEO-27** | **7 tests Urie générés depuis le classeur** | **Énoncés non extractibles des PDF (maths en vectoriel, WeasyPrint) → source = `Referentiel_Urie_v0.xlsx` via `scripts/generer_baremes_urie.py` ; 280 questions, 71 QCM corrigés, 209 corrigés en attente ; classe canonique unique par test ; copie parfaite = 20,0/20 vérifiée** | **2026-07-30** |
 | **D-CEO-35** | **Gabarit des zones lu dans le PDF** | **Les sujets conservent cadres ancrés et codes ; la position des zones est lue à la source, pas détectée sur le scan. L'OCR sort de la chaîne — c'était le premier point de panne, et une confusion de code aurait fauté sans rien signaler. Règles exprimées en plages, pas en valeurs relevées** | **2026-07-31** |
+| **D-CEO-36** | **Recalage ancré sur le contenu ; rien contre le tramage** | **La page est recalée sur les cadres, jamais sur le rectangle de page ; l'inclinaison s'estime sur les coordonnées de l'encre, pas en tournant l'image ; l'appariement page scannée ↔ page du sujet n'est pas 1:1 (12 pages scannées pour un sujet de 10). Aucun mécanisme livré contre le tramage d'impression : le repli prévu (effacer les lignes à leur position) est impossible, les « lignes » pavent toute la zone** | **2026-08-01** |
 | **D-CEO-34** | **États de session et inscription** | **Sept états ; l'inscription bascule les problèmes, date la facturation et refuse le palier C sans motif tracé. Trois sorties sans remédiation distinguées — « aucune lacune » est une réussite, pas un abandon** | **2026-07-30** |
 | **D-CEO-33** | **Cycle : T2 retiré, tests répétables** | **Cinq étapes au lieu de six ; un même type d'évaluation peut se répéter (rang automatique) tant que les lacunes persistent. Les indicateurs, qui comptent des transitions, restent valides** | **2026-07-30** |
 | **D-CEO-32** | **Périmètre unique** | **Centre d'encadrement, pas école : toute personne autorisée voit tous les élèves et corrige toute copie. Cloisonnement centre/classe retiré, sélecteur de casquette supprimé ; le Sheet reste la source des accès, avec un écran de consultation** | **2026-07-30** |

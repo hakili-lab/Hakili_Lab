@@ -1,10 +1,10 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-07-31 (module 2 entamé — gabarit et découpe ; travail versionné sur `chantier/urie-v2-django`)
-**Où en est-on (résumé en une ligne) :** Modules 0, **1 et 3 ✅ faits** — le **corpus de référence existe** (5 copies, 66 problèmes taguées à la main) · **Module 2 🟨 gabarit lu dans le PDF source, 280/280 cadres** — reste le recalage · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. Il ne manque plus que le **Module 2** pour ouvrir le **Module 4**. Trois choses bloquent, toutes hors code : un **sujet Urie imprimé et scanné** (module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
+**Dernière mise à jour :** 2026-08-01 (module 2 terminé côté code — recalage, appariement des pages, branchement pipeline)
+**Où en est-on (résumé en une ligne) :** Modules 0, **1, 2 et 3 ✅ faits** — le **corpus de référence existe** (5 copies, 66 problèmes taguées à la main) et la **lecture des copies par zones est complète** (gabarit 280/280, recalage, appariement des pages, branchée sur le pipeline) · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. **Le Module 4 est ouvert : plus rien ne le bloque côté code.** Trois choses restent hors code : un **sujet Urie imprimé et scanné** (calibration du tramage, seul point encore ouvert du module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
 
-**État vérifié le 2026-07-31 : 204 tests Django + 242 pytest = 446 tests passent.**
+**État vérifié le 2026-08-01 : 207 tests Django + 261 pytest = 468 tests passent.**
 
 **Pour reprendre le travail sur Django :**
 ```bash
@@ -37,9 +37,9 @@ Note : `DATABASE_URL` suit la convention SQLAlchemy — `sqlite:///:memory:`, **
 |---|---|---|---|
 | 0 | Appropriation du référentiel | ✅ Fait (2026-07-30) | — |
 | 1 | Socle de données (Neon, Django) | ✅ Fait (2026-07-30) | — |
-| 2 | Lecture des copies par zones | 🟨 En cours (2026-07-31) — gabarit et découpe faits | Un **sujet Urie** imprimé, rempli et scanné, pour le recalage |
+| 2 | Lecture des copies par zones | ✅ Fait (2026-08-01) — gabarit, recalage, appariement, pipeline | — (un risque de tramage reste à trancher sur papier, voir la fiche) |
 | 3 | Corpus de référence | ✅ Fait (2026-07-31) — 5 copies, 66 problèmes | — (PRQ et RED non couverts, voir la fiche) |
-| 4 | Diagnostic contraint | ⬜ À faire | Module 2, Module 3 |
+| 4 | Diagnostic contraint | ⬜ À faire — **plus rien ne le bloque** | — |
 | 5 | Composition du test de confirmation (T1) | ⬜ À faire | Module 4 |
 | 6 | Palier et plan de remédiation | 🟨 En cours (2026-07-30) — moteur fait, séances à planifier | Module 4 pour l'alimenter en vrais problèmes |
 | 7 | Génération des fiches | ⬜ À faire | Module 6 |
@@ -117,10 +117,10 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 
 ---
 
-### Module 2 — Lecture des copies par zones 🟨 **EN COURS (2026-07-31) — gabarit et découpe faits**
+### Module 2 — Lecture des copies par zones ✅ **FAIT (2026-08-01)**
 **Objectif :** transformer un sujet rempli et scanné en une liste `(code_question, image_de_la_réponse)`.
 
-> **Écart assumé avec `guide-urie.md`, et c'est le point de conception du module.** Le guide prescrit de *détecter* les rectangles sur le scan puis de lire au **OCR** le code de chaque cadre. Inutile : les 7 sujets sont produits par WeasyPrint et leur PDF **porte déjà** la position exacte de chaque cadre et son code. Le gabarit est donc lu à la source, pas deviné sur le scan. Ça supprime l'étape la plus fragile de la chaîne — un OCR sur trois caractères à 150 DPI aurait été le premier point de panne, et une confusion `G1`/`G7` aurait attribué une réponse à la mauvaise question **sans que rien ne le signale**. Il ne reste qu'un seul problème à résoudre sur le scan : le recalage.
+> **Écart assumé avec `guide-urie.md`, et c'est le point de conception du module.** Le guide prescrit de *détecter* les rectangles sur le scan puis de lire au **OCR** le code de chaque cadre. Inutile : les 7 sujets sont produits par WeasyPrint et leur PDF **porte déjà** la position exacte de chaque cadre et son code. Le gabarit est donc lu à la source, pas deviné sur le scan. Ça supprime l'étape la plus fragile de la chaîne — un OCR sur trois caractères à 150 DPI aurait été le premier point de panne, et une confusion `G1`/`G7` aurait attribué une réponse à la mauvaise question **sans que rien ne le signale**. Ne restaient sur le scan que le recalage et l'appariement des pages — faits depuis.
 
 - [x] **Gabarit extrait du PDF source** (`extraire_gabarit`) : code, page, rectangle, format et nombre de lignes de chaque cadre. **Vérifié 280/280 sur les 7 sujets**, 0 manquant, 0 en trop, 0 doublon.
 - [x] **Règles de lecture exprimées en plages, pas en constantes relevées** (D-CEO-35) : plages de gris et fractions de la largeur de page, au lieu de l'égalité à 0,478431 / 480 pt / 8 lignes. Le sujet est un document vivant — régénéré, il changera de marges et de teintes, et une égalité stricte aurait fait échouer la lecture **totalement** (zéro cadre trouvé), pas partiellement. Au-delà de 2 lignes de guidage, la question est rédigée, qu'il y en ait 6, 8 ou 10.
@@ -133,16 +133,19 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - [x] **Le scan se fait hors plateforme** — ce qui entre est un PDF multipage ou des images. `resolution_scan()` donne la définition native de la source pour ne pas rendre un scan 200 DPI dans une image 150 DPI, et `ingest_pdf(dpi=…)` accepte désormais la résolution voulue (150 reste le défaut, D-CEO-10).
 - [x] **Garde-fou : un scan brut passé à la découpe est refusé.** Les proportions d'un scan ne sont pas celles du sujet (mesures ci-dessous) ; découpé tel quel le décalage atteint plusieurs millimètres en bas de page — assez pour attraper la ligne de la question voisine, pas assez pour que le résultat ait l'air faux.
 - [x] **Seuil d'encre confronté à un scan réel** : `SEUIL_ENCRE_DEFAUT = 140` tombe au milieu d'un large plateau (la proportion de pixels sombres ne bouge que de 1,85 % à 3,47 % entre les seuils 120 et 200). Réglage non critique tant que le scan n'est pas sous-exposé.
-- [ ] 🔴 **Risque ouvert — le seuillage pourrait ne pas suffire à effacer les lignes de guidage.** Sur le scan réel, l'écriture de l'élève ressort intacte (l'objectif est atteint de ce côté) mais **les lignes pointillées imprimées survivent au seuil**. Elles sont imprimées en noir, pas en gris pâle. Or une imprimante laser rend un aplat gris 0,749 par un **tramage de points noirs**, pas par un gris uniforme : une fois imprimées puis scannées, les lignes de guidage des sujets Urie pourraient se comporter comme ces pointillés et non comme le 191 uniforme du PDF. **Se tranche en une manipulation** : imprimer un sujet Urie, le scanner vierge, mesurer le niveau de gris des lignes. Si le tramage est confirmé, l'effacement devra s'appuyer sur la **position connue** des lignes (elle est dans le gabarit) plutôt que sur leur clarté.
-- [ ] **Reste — recalage du scan sur le gabarit** (translation, échelle, rotation), **par page**. Demande une copie d'un **sujet Urie** imprimée et scannée : le scan reçu est d'un test de l'ancien format, sans cadres ni codes, il n'y a aucun gabarit sur lequel le recaler.
-- [ ] **Reste** — décider du traitement du format `construction` : la zone se découpe comme les autres, mais le diagnostic automatique n'est vraisemblablement pas atteignable dessus → orientation vers la saisie humaine (module 8).
-- [ ] **Reste** — point d'insertion dans `src/pipeline/` : nouvelle étape avant la transcription actuelle, déclenchée pour les seuls tests à cadres ancrés (les tests archivés gardent la transcription pleine page).
+- [x] **Recalage du scan sur le gabarit** (inclinaison, échelle, translation), **par page** — `recaler_page`.
+- [x] **Appariement des pages scannées aux pages du sujet** — `apparier_pages`. Le scan mesuré comptait **12 pages pour un sujet de 10** ; découpées dans l'ordre, toutes les zones auraient été prises sur la mauvaise page, avec un résultat d'apparence normale.
+- [x] **Format `construction` orienté vers la saisie humaine** — `ZoneDecoupee.diagnosticable` est faux pour ces 7 questions (et pour toute zone vierge). Elles se découpent comme les autres ; juger une perpendiculaire demande de mesurer la figure, pas de lire une réponse.
+- [x] **Point d'insertion posé dans le pipeline** — `_lire_zones`, entre l'ingestion et la transcription, déclenché par la seule présence d'un `sujet_pdf` (les tests archivés n'en ont pas et gardent la transcription pleine page). La transcription continue de lire la page entière : dans ce format l'élève compose *sur le sujet* (D-CEO-27).
+- [ ] 🔴 **Risque ouvert, et il a changé de nature — le tramage d'impression.** Une imprimante laser rend un aplat gris 0,749 par un **tramage de points noirs**, que le seuillage ne peut pas écarter. Constaté sur un scan réel de l'ancien format, dont les pointillés imprimés survivent.
+  **Ce que la version précédente de cette fiche donnait comme repli ne marche pas.** Elle disait : « l'effacement devra s'appuyer sur la position connue des lignes (elle est dans le gabarit) ». Mesuré depuis sur les 7 sujets : les « lignes de guidage » **ne sont pas des traits** mais des bandes de 21 pt **jointives** (853 relevées, espacement égal à la hauteur) qui pavent toute la zone de réponse. L'élève écrit sur un **aplat gris**, pas sur un lignage. Leur position, c'est la zone entière — l'effacer par position l'effacerait entière.
+  Le vrai problème est donc le retrait d'une **trame étendue à toute la zone**, un filtrage qui distingue un point isolé d'un trait de stylo. Il dépend de la finesse de la trame, de la résolution du scanner et de l'épaisseur du trait — trois grandeurs qu'aucun rendu numérique ne donne. **Se tranche en une manipulation :** imprimer un sujet Urie, le scanner **même vierge**, mesurer. Verrouillé par un test paramétré sur les 7 sujets pour que la fausse piste ne soit pas re-suivie.
 
-**Critère de fin :** sur un sujet rempli et scanné, les 40 cadres sont détectés, correctement associés à leur code de question, et découpés proprement.
-**Fichiers concernés :** `src/pipeline/zones.py`, réutilise `src/pipeline/ingestion.py` pour la conversion 150 DPI.
-**Tests :** `tests/test_zones.py` (20) — 13 sur un sujet fabriqué dans le test, 7 sur les vrais sujets (ignorés si les PDF sont absents, ils ne sont pas versionnés).
+**Critère de fin :** ✅ atteint côté code — sur un sujet rempli et scanné (simulé : inclinaison, échelle, marges, pages intercalées), les cadres sont détectés, associés à leur code, et découpés proprement. Reste la calibration sur papier, ci-dessus.
+**Fichiers concernés :** `src/pipeline/zones.py`, `src/pipeline/pipeline.py` (`_lire_zones`, `PipelineResult.zones`), `src/knowledge/test_registry.py` (`HakiliTest.formats`), réutilise `src/pipeline/ingestion.py`.
+**Tests :** `tests/test_zones.py` (43) — sur un sujet fabriqué dans le test, sur des numérisations simulées, et sur les vrais sujets (ignorés si les PDF sont absents, ils ne sont pas versionnés).
 
-**⚠ Ce qu'il faut pour finir ce module :** un **sujet Urie** (`Test_diagnostique_entree_*.pdf`) imprimé, rempli à la main, et scanné. Consignes d'impression sur `/sujets/` : noir et blanc, recto seul, **sans réduction**. Un scan d'un test de l'ancien format ne peut pas servir : sans cadres ancrés ni codes, il n'y a pas de gabarit sur lequel recaler.
+**⚠ Ce qu'il reste à obtenir :** un **sujet Urie** (`Test_diagnostique_entree_*.pdf`) imprimé et scanné, **même vierge**, pour trancher le tramage. Consignes d'impression sur `/sujets/` : noir et blanc, recto seul, **sans réduction**.
 
 #### Ce qu'un scan réel a appris (mesuré le 2026-07-31 sur `TEST 4 3e.pdf`, HP Scan, 200 DPI, 12 pages)
 
@@ -750,3 +753,25 @@ Découpage : nettoyage des documents périmés · socle Django + authentificatio
 **Vérifié avant de commiter :** aucun secret n'entre dans le dépôt (`.env`, `credentials/`, `*.json`, `logs/`, `runs/`, `dev.db` couverts par `.gitignore` — les 138 fichiers ajoutés ont été scannés) ; les 22 suppressions étaient bien intentionnelles (doc périmée et sources remplacées). **170 tests Django + 218 pytest = 388 tests passent** sur l'arbre commité.
 
 **Reste inchangé :** l'essai réel de bout en bout, toujours en attente de clés API. **Prochaine étape technique : Module 2.**
+
+### 2026-08-01 — ✅ Module 2 terminé : le recalage marchait sur le papier, pas sur les pixels
+
+Le recalage était écrit mais n'avait jamais tourné. Mis à l'épreuve, il s'est révélé **décoratif** : il rendait `angle = 0` sur une page penchée de 1,25°, et les zones d'une copie vierge ressortaient couvertes d'encre.
+
+**La cause vaut d'être retenue, elle se reproduira ailleurs.** L'estimation d'inclinaison faisait tourner l'image à chaque angle candidat pour comparer la concentration de l'encre. Or **une rotation ré-échantillonne** : un trait d'un pixel s'étale sur deux, dont aucun n'atteint le seuil, et le trait disparaît. Mesuré : **2 616 pixels d'encre à 0°, moins de 600 à tout autre angle**. L'angle 0, seul à ne rien ré-échantillonner, gardait toute son encre et gagnait donc *quelles que soient* les données. Le critère ne mesurait pas l'inclinaison, il mesurait la quantité d'encre survivante. Corrigé en estimant sur les **coordonnées** des pixels d'encre — les mêmes pixels d'un angle à l'autre, donc des scores enfin comparables — et en confiant le cisaillement à la transformation affine du découpage : **une seule interpolation, sur la zone seule**, au lieu de faire tourner la page entière.
+
+**Deux autres défauts trouvés en mesurant, pas en relisant :**
+1. **La grille de recherche excluait la bonne échelle.** Elle était centrée sur `largeur de l'image / largeur de la page` à ±5 %. Mais le scanner ne rend pas la page du gabarit : ce qu'il ajoute autour fausse le rapport sans toucher au contenu. L'échelle vraie tombait **hors** de la grille, et l'ajustement se rabattait sur la moins mauvaise — faux, mais confiant. Élargi à 12 %, ce qui couvre le cas le plus coûteux à diagnostiquer : une copie numérisée en Letter au lieu d'A4.
+2. **L'axe horizontal n'a que deux repères.** Tous les cadres partagent les mêmes bords gauche et droit : deux points pour deux inconnues, et le moindre trait en marge emportait l'ajustement — c'est ce qui arrivait, il se calait sur le code imprimé en marge. Or un scanner échantillonne à la même définition dans les deux sens : l'échelle horizontale est cherchée **autour de la verticale**, qui dispose d'une quinzaine de repères. L'indétermination est levée au lieu d'être subie.
+
+**Appariement des pages (ce que le scan réel avait annoncé et que personne n'avait traité).** 12 pages scannées pour un sujet de 10 — page de garde, page de renseignements. `decouper_zones` supposait un appariement 1:1 : **toutes les zones auraient été prises sur la mauvaise page, et le résultat aurait eu l'air normal**, chaque zone contenant bien de l'écriture. Chaque page du scan est désormais confrontée à chaque page du sujet, et l'affectation retenue maximise le total des scores **en gardant l'ordre** — une copie se numérise dans l'ordre, et l'exiger empêche deux pages qui se ressemblent de s'échanger. Coût mesuré sur un cas réaliste (12 × 10) : **4,6 s**, dans un pipeline qui en dure 60 à 90.
+
+**Le risque du tramage a changé de nature — et le repli prévu était impossible.** La fiche disait : si les lignes survivent au seuillage, on les effacera à leur position connue. Mesuré sur les 7 sujets : les « lignes de guidage » **ne sont pas des traits** mais des bandes de 21 pt **jointives** (853 relevées) qui pavent toute la zone de réponse. L'élève écrit sur un **aplat gris**. Leur position, c'est la zone entière — l'effacement l'effacerait entière, ce qu'a montré le test écrit pour l'occasion avant que le mécanisme ne soit retiré. Le vrai problème est le retrait d'une **trame**, un filtrage qui distingue un point isolé d'un trait de stylo, et il dépend de trois grandeurs qu'aucun rendu numérique ne donne. **Rien n'a été livré à sa place** : mieux vaut un risque ouvert et correctement décrit qu'un mécanisme dont la prémisse vient d'être réfutée. Verrouillé par un test paramétré sur les 7 sujets, pour que la fausse piste ne soit pas re-suivie.
+
+**Branché sur le pipeline.** `_lire_zones` s'intercale entre l'ingestion et la transcription, déclenché par la seule présence d'un `sujet_pdf` — pas par une liste de tests à tenir à jour. La transcription continue de lire la page entière (D-CEO-27 : l'élève compose *sur le sujet*). **Aucun échec de cette étape n'arrête la correction** : le module 4 n'existe pas encore, personne ne consomme les zones, et casser une copie pour un service qui n'est pas rendu n'aurait servi à rien. Les anomalies remontent en avertissement à l'enseignant — c'est là qu'un sujet d'une autre version que celle chargée en base se voit.
+
+**`scipy` est installé mais absent de `requirements.txt`.** Il n'arrive que par transitivité. Rien ne s'appuie dessus — le projet s'est déjà fait piéger par `numpy`, qui n'arrivait que par `pandas`, lequel part avec Streamlit.
+
+**Vérifié :** 43 tests sur les zones (24 avant), dont le recalage sur cinq déformations de numérisation, l'appariement avec deux pages intercalées, et la géométrie réelle des 7 sujets. **207 tests Django + 261 pytest = 468 tests passent.**
+
+**Bloqué par :** rien. **Le Module 4 est ouvert — c'est la prochaine étape, et tout le reste en dépend.** Le tramage reste à trancher, mais il ne bloque pas le module 4 : il se mesurera d'abord sur le corpus de référence, qui est constitué de copies de l'ancien format.

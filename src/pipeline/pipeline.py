@@ -63,6 +63,13 @@ from src.pipeline.orchestrator import (
 )
 from src.pipeline.pdf_remediation_html import generate_remediation_pdf
 from src.pipeline.pdf_report_html import generate_copy_report
+from src.pipeline.zones import (
+    GabaritIncoherent,
+    ZoneDecoupee,
+    decouper_zones,
+    extraire_gabarit,
+    verifier_gabarit,
+)
 
 # Singleton RAG — chargé une seule fois pour toute la session
 _retriever: CurriculumRetriever | None = None
@@ -391,6 +398,79 @@ def _apply_extracted_classe(*, copy_id: str, transcription, bareme_id: str) -> N
     _db_update_classe(copy_id, classe)
 
 
+def _lire_zones(
+    *, copy_id: str, bareme_id: str, pages: list[Path], sortie: Path
+) -> tuple[list[ZoneDecoupee], list[ValidationIssue]]:
+    """
+    Découpe la copie en zones de réponse — étape 1 bis, module 2.
+
+    **Ne s'applique qu'aux tests au format à cadres ancrés** : ce sont les seuls
+    dont le PDF du sujet porte la position et le code de chaque cadre. Les tests
+    archivés n'en ont pas et gardent la transcription pleine page — c'est le sens
+    de la condition sur `sujet_pdf`, pas une optimisation.
+
+    **Cette étape ne remplace pas la transcription, elle s'ajoute à côté.** Dans
+    ce format l'élève compose *sur le sujet* : la page scannée porte l'énoncé
+    imprimé, que la transcription lit toujours en entier (D-CEO-27). Les zones
+    servent au diagnostic contraint (module 4), qui a besoin de la réponse à
+    *une* question isolée, sans le reste de la page autour.
+
+    **Rien de ce qui rate ici n'arrête la correction.** Le module 4 n'existe pas
+    encore : personne ne consomme les zones, et faire échouer une copie sur une
+    étape dont plus rien ne dépend en aval reviendrait à casser la correction
+    pour un service qui n'est pas rendu. Les anomalies sont donc signalées à
+    l'enseignant — c'est déjà ce qui compte, un sujet d'une autre version que
+    celle chargée en base se voit à ce moment-là.
+    """
+    from src.knowledge.test_registry import get_registry
+
+    try:
+        test = get_registry().get_test(bareme_id)
+    except Exception:
+        return [], []
+    if test is None or test.sujet_pdf is None:
+        return [], []
+
+    anomalies: list[ValidationIssue] = []
+    try:
+        gabarit = extraire_gabarit(test.sujet_pdf)
+
+        if test.formats:
+            for ecart in verifier_gabarit(gabarit, test.formats):
+                anomalies.append(
+                    ValidationIssue(
+                        code="ZONES_GABARIT_DIVERGENT",
+                        severity="warning",
+                        message=f"Sujet et barème divergent — {ecart}",
+                    )
+                )
+
+        zones = decouper_zones(gabarit, pages, sortie / copy_id / "zones")
+    except GabaritIncoherent as exc:
+        logger.warning("[%s] Lecture par zones impossible : %s", copy_id, exc)
+        return [], [
+            ValidationIssue(
+                code="ZONES_ILLISIBLES",
+                severity="warning",
+                message=(
+                    f"La copie n'a pas pu être découpée par zones : {exc} "
+                    f"La correction se poursuit sur la page entière."
+                ),
+            )
+        ]
+    except Exception as exc:  # pragma: no cover - garde-fou
+        logger.exception("[%s] Lecture par zones échouée : %s", copy_id, exc)
+        return [], []
+
+    vierges = sum(1 for z in zones if z.vide)
+    logger.info(
+        "[%s] Zones découpées : %d dont %d vierges, %d à saisir à la main",
+        copy_id, len(zones), vierges,
+        sum(1 for z in zones if z.format == "construction"),
+    )
+    return zones, anomalies
+
+
 # ── Résultat du pipeline ──────────────────────────────────────────────────────
 
 @dataclass
@@ -407,6 +487,9 @@ class PipelineResult:
     json_path: Path | None = None
     errors: list[str] = field(default_factory=list)
     validation_issues: list[ValidationIssue] = field(default_factory=list)
+    # Zones de réponse découpées (module 2), vides tant que le test n'est pas au
+    # format à cadres ancrés. C'est l'entrée du diagnostic contraint (module 4).
+    zones: list[ZoneDecoupee] = field(default_factory=list)
     model_routing: dict[str, str] = field(default_factory=dict)
     # rubric conservé pour la Phase B
     rubric: Rubric | None = None
@@ -592,6 +675,14 @@ def _run_transcription(
         "Transcription": _client_label(transcription_client, "transcription"),
         "Extraction (barème/énoncé)": f"Claude · {settings.claude_model_heavy}",
     }
+
+    # 1 bis. Lecture par zones (module 2) — seulement pour les tests à cadres
+    # ancrés. Vient après l'ingestion, qui fournit les pages, et avant la
+    # transcription, qui continue de lire la page entière (D-CEO-27).
+    result.zones, anomalies_zones = _lire_zones(
+        copy_id=copy_id, bareme_id=bareme_id, pages=ingestion.pages, sortie=out,
+    )
+    result.validation_issues.extend(anomalies_zones)
 
     # 2. Transcription
     _progress("transcription", 30)

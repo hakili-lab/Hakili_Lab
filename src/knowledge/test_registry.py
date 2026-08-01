@@ -31,7 +31,7 @@ Les retirer du catalogue casserait la relecture de l'historique.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -156,6 +156,9 @@ class HakiliTest:
     official_answers: str = ""  # Corrigé officiel formaté pour injection dans le prompt
     archive: bool = False       # True = plus proposé pour une nouvelle correction
     sujet_pdf: Path | None = None  # sujet imprimable, None si absent
+    # {code question: format} — vide pour les tests archivés, qui n'ont pas de
+    # cadres ancrés. Sert au garde-fou de la lecture par zones (module 2).
+    formats: dict[str, str] = field(default_factory=dict)
 
 
 def _extract_docx_text(docx_path: Path) -> str:
@@ -230,6 +233,17 @@ def _build_rubric_from_yaml(bareme_yaml_path: Path) -> tuple["Rubric", int, dict
                 pts = float(q.get("points_originaux", 1.0))
                 if qid:
                     items.append(RubricItem(id=qid, label=label, max_score=pts))
+
+    # Format de chaque question (qcm / court / redige / construction). Seuls les
+    # barèmes Urie v2 le portent — il vient du classeur. `src/pipeline/zones.py`
+    # le confronte à la géométrie des cadres du sujet : si les deux divergent,
+    # c'est que le sujet scanné n'est pas de la version chargée en base, et on
+    # l'apprend avant d'attribuer des réponses aux mauvaises questions.
+    meta["formats"] = {
+        q["code"]: q["format"]
+        for q in (raw.get("questions") or [])
+        if q.get("code") and q.get("format")
+    }
 
     total_pts = float(meta.get("total_possible") or sum(i.max_score for i in items))
     rubric = Rubric(subject="mathematics", total_points=total_pts, items=items)
@@ -308,6 +322,7 @@ class TestRegistry:
                 official_answers=official_answers,
                 archive=archive,
                 sujet_pdf=sujet_pdf,
+                formats=bareme_meta.get("formats") or {},
             )
             corrige_status = f"corrigé {len(official_answers)} chars" if official_answers else "sans corrigé"
             logger.info(
