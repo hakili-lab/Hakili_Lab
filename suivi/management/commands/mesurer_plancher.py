@@ -218,9 +218,19 @@ class Command(BaseCommand):
             f"  précision {ecart.precision:.0%} · rappel {ecart.rappel:.0%} · "
             f"rappel sur la compétence seule {ecart.rappel_competence:.0%}"
         )
+        # Le signe de l'écart n'est pas une nuance : il dit qui paie l'erreur.
+        # Une surestimation facture des heures inutiles ; une sous-estimation
+        # inscrit un élève sur un volume qui ne suffira pas — et c'est celle-là
+        # qu'on ne voit pas venir, parce qu'elle ressemble à un devis raisonnable.
+        if ecart.ecart_cout > 0:
+            lecture = "surestimation — heures facturées en trop"
+        elif ecart.ecart_cout < 0:
+            lecture = "SOUS-estimation — le plan promettrait moins d'heures qu'il n'en faut"
+        else:
+            lecture = "exact"
         self.stdout.write(
             f"  coût : étalon {ecart.cout_etalon:g} h, produit "
-            f"{ecart.cout_produit:g} h, écart {ecart.ecart_cout:+g} h"
+            f"{ecart.cout_produit:g} h, écart {ecart.ecart_cout:+g} h ({lecture})"
         )
 
         if ecart.type_faux:
