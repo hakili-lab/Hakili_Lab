@@ -165,6 +165,82 @@ class DiagnosticResult(BaseModel):
     competency_gaps: list[CompetencyGap] = Field(default_factory=list)
 
 
+# ── Diagnostic contraint (module 4, chantier Urie v2) ─────────────────────────
+#
+# Ces schémas remplacent `DiagnosticResult` pour les niveaux couverts par le
+# référentiel. La différence n'est pas de format mais de nature : `DiagnosticResult`
+# porte de la prose (`academic_profile`, `weaknesses`…), qu'on ne peut ni compter,
+# ni comparer d'une passation à l'autre, ni chiffrer. Ici chaque sortie est un
+# **problème** — compétence × type d'erreur — c'est-à-dire une ligne de la table
+# `probleme`, avec un coût et un cycle de vie.
+#
+# Ils vivent dans `src/` parce que les clients d'API s'en servent, et `src/` ne
+# dépend d'aucun framework. Les codes, eux, viennent du référentiel Django :
+# ces modèles ne les valident pas, `referentiel/diagnostic.py` s'en charge.
+
+
+class SourceProbleme(str, Enum):
+    """D'où vient un problème — ça décide de la confiance qu'on lui accorde.
+
+    `qcm` est mécanique et sans appel de modèle : la lettre cochée donne le type
+    d'erreur par la table `option_qcm`. `modele` demande une reconnaissance et
+    peut se tromper. Les distinguer permet de mesurer l'écart du module 4 sur ce
+    qui est réellement diagnostiqué, sans le flatter avec les QCM.
+    """
+
+    qcm = "qcm"
+    modele = "modele"
+
+
+class ProblemeDetecte(BaseModel):
+    """Une lacune relevée sur une question — trois champs, pas quatre.
+
+    `citation` est ce qu'on lit sur la copie, pas un commentaire : c'est elle qui
+    rend un désaccord avec le corpus de référence arbitrable (elle alimente
+    `Probleme.justification`).
+    """
+
+    code_question: str
+    code_competence: str
+    code_type_erreur: str
+    citation: str
+    source: SourceProbleme = SourceProbleme.modele
+
+
+class SortieDiagnosticContraint(BaseModel):
+    """Ce que le modèle rend, et rien d'autre — aucune prose n'est acceptée."""
+
+    problemes: list[ProblemeDetecte] = Field(default_factory=list)
+
+
+class DiagnosticContraint(BaseModel):
+    """Le diagnostic complet d'une copie, une fois les codes validés.
+
+    `questions_ecartees` est aussi importante que `problemes` : une question
+    écartée est une question que **personne** n'a diagnostiquée. Sans la lister,
+    l'absence de problème se lirait comme une réussite.
+    """
+
+    copy_id: str
+    niveau_test: str
+    problemes: list[ProblemeDetecte] = Field(default_factory=list)
+    questions_diagnostiquees: list[str] = Field(default_factory=list)
+    #: code de question → motif de mise à l'écart, en clair.
+    questions_ecartees: dict[str, str] = Field(default_factory=dict)
+    #: Sorties du modèle rejetées faute d'un code admissible, conservées pour
+    #: pouvoir mesurer le taux de validité exigé par le jalon du module 4.
+    rejets: list[str] = Field(default_factory=list)
+    appels_modele: int = 0
+
+    @property
+    def valide(self) -> bool:
+        """Vrai si aucune sortie du modèle n'a été rejetée.
+
+        C'est l'unité que compte le jalon « 100 sorties consécutives valides ».
+        """
+        return not self.rejets
+
+
 # ── Sujet de remédiation ───────────────────────────────────────────────────────
 
 class Exercise(BaseModel):

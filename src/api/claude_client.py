@@ -17,6 +17,7 @@ from src.models.domain import (
     Rubric,
     RubricItem,
     RemediationSubject,
+    SortieDiagnosticContraint,
     TranscriptionResult,
 )
 
@@ -108,6 +109,78 @@ _GRADING_TOOL: dict[str, Any] = {
         "required": ["copy_id", "total_score", "total_possible", "questions"],
     },
 }
+
+def _diagnostic_contraint_tool(
+    codes_questions: list[str],
+    codes_competences: list[str],
+    codes_types: list[str],
+) -> dict[str, Any]:
+    """Outil du diagnostic contraint — les codes admis sont des `enum` du schéma.
+
+    C'est la première des trois barrières demandées par le module 4 : un code
+    absent du référentiel devient très difficile à produire, plutôt que d'être
+    rattrapé après coup. Les deux autres restent nécessaires et sont ailleurs :
+    la validation par question (`referentiel/diagnostic.py`) et la redemande.
+
+    Pourquoi une validation reste nécessaire malgré l'`enum` : le schéma ne peut
+    porter qu'**une** liste de compétences pour tout le tableau, alors que chaque
+    question a la sienne (sa compétence et ses prérequis). L'`enum` interdit donc
+    un code hors référentiel, pas un code référentiel attribué à la mauvaise
+    question. Et les autres fournisseurs ne contraignent pas tous aussi fermement.
+    """
+    return {
+        "name": "enregistrer_problemes",
+        "description": (
+            "Enregistre les problèmes relevés sur la copie. Un problème par "
+            "question ratée au plus. Aucune prose."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "problemes": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "code_question": {
+                                "type": "string",
+                                "enum": codes_questions,
+                                "description": "La question analysée.",
+                            },
+                            "code_competence": {
+                                "type": "string",
+                                "enum": codes_competences,
+                                "description": (
+                                    "Compétence de la question, ou l'un de ses "
+                                    "prérequis pour un PRQ. Voir "
+                                    "`codes_competence_admis` de cette question."
+                                ),
+                            },
+                            "code_type_erreur": {
+                                "type": "string",
+                                "enum": codes_types,
+                            },
+                            "citation": {
+                                "type": "string",
+                                "description": (
+                                    "Ce qui est écrit sur la copie, au plus près. "
+                                    "« (aucune réponse) » si la zone est vierge."
+                                ),
+                            },
+                        },
+                        "required": [
+                            "code_question",
+                            "code_competence",
+                            "code_type_erreur",
+                            "citation",
+                        ],
+                    },
+                }
+            },
+            "required": ["problemes"],
+        },
+    }
+
 
 _QUESTIONS_EXTRACTION_TOOL: dict[str, Any] = {
     "name": "save_questions",
@@ -244,6 +317,12 @@ class ClaudeClient:
         self._transcription_prompt = self._load_prompt("transcription_prompt.md")
         self._grading_prompt = self._load_prompt("grading_prompt.md")
         self._diagnostic_prompt = self._load_prompt("diagnostic_prompt.md")
+        self._diagnostic_contraint_prompt = self._load_prompt(
+            "diagnostic_contraint_prompt.md"
+        )
+        self._diagnostic_plancher_prompt = self._load_prompt(
+            "diagnostic_plancher_prompt.md"
+        )
         self._remediation_subject_prompt = self._load_prompt("remediation_subject_prompt.md")
         self._enrichment_subject_prompt = self._load_prompt("enrichment_subject_prompt.md")
 
@@ -521,6 +600,195 @@ class ClaudeClient:
             )
         raw = response.content[0].text.strip()
         return self._parse_response(raw, DiagnosticResult)
+
+    # ── Diagnostic contraint (module 4) ───────────────────────────────────────
+
+    @_retry
+    def diagnose_constrained(
+        self,
+        *,
+        copy_id: str,
+        niveau_test: str,
+        questions: list[dict[str, Any]],
+        codes_competences: list[str],
+        codes_types: list[str],
+        corrections: str = "",
+    ) -> ClaudeResponse:
+        """Diagnostic structuré d'une copie — aucune prose, que des codes.
+
+        `questions` est construit par `referentiel/diagnostic.py` : une entrée par
+        question à diagnostiquer, avec ses signatures d'erreur et les codes de
+        compétence admis pour elle. Ce client ne connaît pas le référentiel et ne
+        le consulte pas — il ne sait qu'appeler le modèle sous contrainte.
+
+        `corrections` porte les motifs de rejet d'une première tentative. C'est la
+        redemande exigée par le module 4 : on ne réécrit pas la sortie du modèle à
+        sa place, on lui dit ce qui n'allait pas et on redemande.
+
+        Les QCM ne passent jamais ici : leur diagnostic est mécanique
+        (`option_qcm`) et aucun appel de modèle ne doit avoir lieu pour eux.
+        """
+        import json as _json
+
+        logger.info(
+            "[%s] Diagnostic contraint — modèle : %s | questions : %d%s",
+            copy_id,
+            settings.claude_model_opus,
+            len(questions),
+            " (redemande)" if corrections else "",
+        )
+
+        codes_questions = [q["code_question"] for q in questions]
+        outil = _diagnostic_contraint_tool(
+            codes_questions, codes_competences, codes_types
+        )
+
+        bloc_corrections = ""
+        if corrections:
+            bloc_corrections = (
+                "\n\n## Sortie précédente refusée\n"
+                "Ta réponse précédente comportait les anomalies suivantes. "
+                "Reprends l'analyse complète en les corrigeant — ne rends pas "
+                "seulement les lignes fautives.\n"
+                f"{corrections}"
+            )
+
+        prompt = (
+            f"{self._diagnostic_contraint_prompt}"
+            f"\n\n## Copie analysée\n"
+            f"Test d'entrée en {niveau_test} (copie {copy_id}).\n"
+            f"\n## Questions à diagnostiquer\n"
+            f"```json\n{_json.dumps(questions, ensure_ascii=False, indent=2)}\n```"
+            f"{bloc_corrections}"
+        )
+
+        def _appeler(model: str) -> Any:
+            return self.client.messages.create(
+                model=model,
+                max_tokens=8192,
+                temperature=0,
+                tools=[outil],
+                tool_choice={"type": "tool", "name": "enregistrer_problemes"},
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt,
+                                "cache_control": {"type": "ephemeral"},
+                            }
+                        ],
+                    }
+                ],
+            )
+
+        import anthropic as _anthropic
+
+        try:
+            response = _appeler(settings.claude_model_opus)
+        except _anthropic.BadRequestError:
+            # Même repli que `diagnose()` : un identifiant de modèle invalide ne
+            # doit pas priver la copie de son diagnostic.
+            logger.warning(
+                "[%s] claude_model_opus '%s' invalide (400) — repli sur %s",
+                copy_id, settings.claude_model_opus, settings.claude_model_heavy,
+            )
+            try:
+                response = _appeler(settings.claude_model_heavy)
+            except Exception as exc:  # noqa: BLE001
+                logger.error("[%s] Diagnostic contraint échoué : %s", copy_id, exc)
+                return ClaudeResponse(success=False, data=None, confidence=0.0,
+                                      raw_response="", error=str(exc))
+        except Exception as exc:  # noqa: BLE001
+            logger.error("[%s] Diagnostic contraint — erreur : %s", copy_id, exc)
+            return ClaudeResponse(success=False, data=None, confidence=0.0,
+                                  raw_response="", error=str(exc))
+
+        return self._extract_tool_result(response, SortieDiagnosticContraint)
+
+    @_retry
+    def diagnose_unanchored(
+        self,
+        *,
+        copy_id: str,
+        niveau_test: str,
+        productions: list[dict[str, Any]],
+        catalogue: list[dict[str, Any]],
+        codes_types: list[str],
+        corrections: str = "",
+    ) -> ClaudeResponse:
+        """Diagnostic sans ancrage de question — la mesure « plancher ».
+
+        Le modèle ne reçoit **aucune signature d'erreur** : la production de
+        l'élève, le catalogue des compétences déjà enseignées à ce niveau, les
+        sept types. C'est la tâche qu'a faite l'humain qui a tagué le corpus de
+        référence, donc la seule comparaison loyale possible tant qu'aucune copie
+        du nouveau format n'existe — et c'est un plancher, le mode ancré étant
+        mieux armé.
+
+        ⚠ Ce qui entre ici doit être la production **brute** de l'élève. Y verser
+        la justification d'un tagage reviendrait à donner la réponse avec la
+        question : voir l'avertissement en tête de `referentiel/diagnostic.py`.
+        """
+        import json as _json
+
+        logger.info(
+            "[%s] Mesure plancher — modèle : %s | productions : %d | catalogue : %d",
+            copy_id, settings.claude_model_opus, len(productions), len(catalogue),
+        )
+
+        outil = _diagnostic_contraint_tool(
+            [p["repere"] for p in productions],
+            [c["code"] for c in catalogue],
+            codes_types,
+        )
+
+        bloc_corrections = ""
+        if corrections:
+            bloc_corrections = (
+                "\n\n## Sortie précédente refusée\n"
+                "Reprends l'analyse complète en corrigeant ceci :\n"
+                f"{corrections}"
+            )
+
+        prompt = (
+            f"{self._diagnostic_plancher_prompt}"
+            f"\n\n## Copie analysée\n"
+            f"Évaluation d'entrée en {niveau_test} (copie {copy_id}).\n"
+            f"\n## Compétences du référentiel déjà enseignées à ce niveau\n"
+            f"```json\n{_json.dumps(catalogue, ensure_ascii=False, indent=2)}\n```"
+            f"\n\n## Ce que l'élève a écrit\n"
+            f"```json\n{_json.dumps(productions, ensure_ascii=False, indent=2)}\n```"
+            f"{bloc_corrections}"
+        )
+
+        try:
+            response = self.client.messages.create(
+                model=settings.claude_model_opus,
+                max_tokens=8192,
+                temperature=0,
+                tools=[outil],
+                tool_choice={"type": "tool", "name": "enregistrer_problemes"},
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": prompt,
+                                "cache_control": {"type": "ephemeral"},
+                            }
+                        ],
+                    }
+                ],
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error("[%s] Mesure plancher — erreur : %s", copy_id, exc)
+            return ClaudeResponse(success=False, data=None, confidence=0.0,
+                                  raw_response="", error=str(exc))
+
+        return self._extract_tool_result(response, SortieDiagnosticContraint)
 
     # ── Sujet de remédiation ──────────────────────────────────────────────────
 
