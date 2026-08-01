@@ -26,6 +26,28 @@ logger = logging.getLogger(__name__)
 _MAX_PAGES_PER_BATCH = 3   # 3 pages par appel → 3× moins d'appels facturés
 _TOKENS_PER_BATCH = 4096  # 4096 nécessaire pour 3 pages de copie math sans troncature
 
+#: Modèles qui **refusent** les paramètres d'échantillonnage.
+#:
+#: À partir d'Opus 4.7, `temperature`, `top_p` et `top_k` ne sont plus acceptés :
+#: les envoyer rend un 400 `invalid_request_error`, pas un avertissement. Le
+#: dépôt appelle `messages.create(..., temperature=0)` en onze endroits, hérités
+#: d'une époque où le déterminisme se demandait comme ça — il se demande
+#: désormais par le prompt et par `effort`.
+#:
+#: Le filtrage se fait ici, sur le nom du modèle, plutôt qu'en retirant
+#: `temperature` de chaque appel : le même client sert Sonnet 4.6, qui l'accepte
+#: encore, et un simple changement de `CLAUDE_MODEL_HEAVY` dans `.env` suffirait
+#: à faire échouer un appel resté correct par ailleurs.
+_PARAMETRES_ECHANTILLONNAGE = ("temperature", "top_p", "top_k")
+_PREFIXES_SANS_ECHANTILLONNAGE = (
+    "claude-opus-4-7",
+    "claude-opus-4-8",
+    "claude-opus-5",
+    "claude-sonnet-5",
+    "claude-fable-5",
+    "claude-mythos-5",
+)
+
 _MEDIA_TYPES: dict[str, str] = {
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
@@ -330,6 +352,26 @@ class ClaudeClient:
         prompt_path = Path(__file__).parent.parent.parent / "prompts" / filename
         return prompt_path.read_text(encoding="utf-8")
 
+    def _creer_message(self, *, model: str, **kwargs: Any) -> Any:
+        """Appelle l'API en retirant ce que le modèle visé n'accepte plus.
+
+        Un seul passage obligé vers `messages.create`, pour que le filtrage des
+        paramètres d'échantillonnage (voir `_PREFIXES_SANS_ECHANTILLONNAGE`) ne
+        dépende pas de la vigilance de chaque appelant. Le retrait est
+        journalisé : un `temperature=0` qui disparaît en silence donnerait
+        l'illusion d'un déterminisme qu'on n'a plus.
+        """
+        if model.startswith(_PREFIXES_SANS_ECHANTILLONNAGE):
+            retires = [p for p in _PARAMETRES_ECHANTILLONNAGE if p in kwargs]
+            for parametre in retires:
+                kwargs.pop(parametre)
+            if retires:
+                logger.debug(
+                    "%s n'accepte plus %s — paramètre(s) retiré(s) de l'appel.",
+                    model, ", ".join(retires),
+                )
+        return self.client.messages.create(model=model, **kwargs)
+
     # ── Transcription ──────────────────────────────────────────────────────────
 
     def transcribe(self, copy_id: str, image_paths: list[Path]) -> ClaudeResponse:
@@ -423,7 +465,7 @@ class ClaudeClient:
             ],
         ]
 
-        response = self.client.messages.create(
+        response = self._creer_message(
             model=settings.claude_model_heavy,
             max_tokens=_TOKENS_PER_BATCH,
             temperature=0,
@@ -482,7 +524,7 @@ class ClaudeClient:
             f"\n\nTRANSCRIPTION:\n{transcription.model_dump_json(indent=2)}"
         )
 
-        response = self.client.messages.create(
+        response = self._creer_message(
             model=settings.claude_model_heavy,
             max_tokens=8192,
             temperature=temperature,
@@ -555,7 +597,7 @@ class ClaudeClient:
         )
 
         def _call_diagnose(model: str) -> object:
-            return self.client.messages.create(
+            return self._creer_message(
                 model=model,
                 max_tokens=16384,
                 temperature=0,
@@ -663,7 +705,7 @@ class ClaudeClient:
         )
 
         def _appeler(model: str) -> Any:
-            return self.client.messages.create(
+            return self._creer_message(
                 model=model,
                 max_tokens=8192,
                 temperature=0,
@@ -764,7 +806,7 @@ class ClaudeClient:
         )
 
         try:
-            response = self.client.messages.create(
+            response = self._creer_message(
                 model=settings.claude_model_opus,
                 max_tokens=8192,
                 temperature=0,
@@ -812,7 +854,7 @@ class ClaudeClient:
             f"{diagnostic.model_dump_json(indent=2)}"
         )
 
-        response = self.client.messages.create(
+        response = self._creer_message(
             model=settings.claude_model_heavy,
             max_tokens=8192,   # 35 exercices (~150 tok/exo) = ~5 250 tok — 4096 coupait après la 1re série
             temperature=0,
@@ -858,7 +900,7 @@ class ClaudeClient:
             " par { et finissant par }. Aucun texte avant ou après."
         )
 
-        response = self.client.messages.create(
+        response = self._creer_message(
             model=settings.claude_model_heavy,
             max_tokens=8192,
             temperature=0,
@@ -916,7 +958,7 @@ class ClaudeClient:
             },
         ]
         try:
-            response = self.client.messages.create(
+            response = self._creer_message(
                 model=settings.claude_model_light,
                 max_tokens=64,
                 temperature=0,
@@ -972,7 +1014,7 @@ class ClaudeClient:
             "TRANSCRIPTION :\n" + "\n\n".join(content_parts)
         )
 
-        response = self.client.messages.create(
+        response = self._creer_message(
             model=settings.claude_model_heavy,
             max_tokens=1024,
             temperature=0,
@@ -1037,7 +1079,7 @@ class ClaudeClient:
                 for img in images
             ],
         ]
-        response = self.client.messages.create(
+        response = self._creer_message(
             model=settings.claude_model_light,
             max_tokens=2048,
             temperature=0,
@@ -1079,7 +1121,7 @@ class ClaudeClient:
             ],
         ]
 
-        response = self.client.messages.create(
+        response = self._creer_message(
             model=settings.claude_model_heavy,
             max_tokens=2048,
             temperature=0,
@@ -1218,6 +1260,55 @@ class ClaudeClient:
 
     # ── Extraction tool_use ───────────────────────────────────────────────────
 
+    @staticmethod
+    def _normaliser_problemes(data: dict) -> dict:
+        """Remet `problemes` en liste quand le modèle l'a emballé autrement.
+
+        Deux formes constatées sur Sonnet 5 (2026-08-01), les deux
+        intermittentes et les deux fatales telles quelles :
+
+        1. `{"problemes": {…}}` — un objet seul là où une liste est attendue,
+           quand il n'y a qu'un problème à déclarer ;
+        2. `{"problemes": "{\\"problemes\\": [{…}]}"}` — **tout le JSON réemballé
+           dans une chaîne**, à l'intérieur du champ qu'il était censé remplir.
+
+        Pydantic refuse, `_extract_tool_result` rend un échec, et **la copie
+        entière est perdue**. Deux des cinq copies du corpus rendaient ainsi zéro
+        problème — ce qui se lit comme « aucune lacune détectée », pas comme une
+        panne de format. C'est le pire des symptômes : un échec qui a l'air d'un
+        résultat.
+
+        ⚠ Ce n'est pas une entorse à la règle « une sortie refusée n'est jamais
+        réparée à sa place » (module 4). Cette règle porte sur le **contenu** :
+        on n'invente pas un code, on ne déplace pas une compétence. Ici on
+        déballe, sans rien ajouter ni modifier. Les codes obtenus restent soumis
+        inchangés à la validation par question, seule juge de leur admissibilité.
+        """
+        problemes = data.get("problemes")
+
+        if isinstance(problemes, str):
+            try:
+                decode = json.loads(problemes)
+            except json.JSONDecodeError:
+                return data
+            logger.warning("`problemes` rendu comme chaîne JSON — déballé tel quel.")
+            # Le modèle réemballe parfois l'objet complet, clé comprise.
+            if isinstance(decode, dict) and "problemes" in decode:
+                decode = decode["problemes"]
+            problemes = decode
+            data = dict(data)
+            data["problemes"] = problemes
+
+        if isinstance(problemes, dict):
+            logger.warning(
+                "`problemes` rendu comme objet seul plutôt que liste — enveloppé "
+                "sans modification de son contenu."
+            )
+            data = dict(data)
+            data["problemes"] = [problemes]
+
+        return data
+
     def _extract_tool_result(self, response: Any, model_cls: type) -> ClaudeResponse:
         """Extrait le résultat d'un appel tool_use — JSON garanti correctement formé."""
         tool_block = next(
@@ -1277,6 +1368,8 @@ class ClaudeClient:
 
             if model_cls is TranscriptionResult:
                 data = self._normalize_transcription(data)
+            elif model_cls is SortieDiagnosticContraint:
+                data = self._normaliser_problemes(data)
 
             validated = model_cls(**data)
             return ClaudeResponse(
