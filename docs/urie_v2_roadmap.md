@@ -1,10 +1,10 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-08-01 (module 2 terminé côté code — recalage, appariement des pages, branchement pipeline)
-**Où en est-on (résumé en une ligne) :** Modules 0, **1, 2 et 3 ✅ faits** — le **corpus de référence existe** (5 copies, 66 problèmes taguées à la main) et la **lecture des copies par zones est complète** (gabarit 280/280, recalage, appariement des pages, branchée sur le pipeline) · **Module 6 🟨 le moteur du plan et du palier tourne** · **interface migrée sur Django**. **Le Module 4 est ouvert : plus rien ne le bloque côté code.** Trois choses restent hors code : un **sujet Urie imprimé et scanné** (calibration du tramage, seul point encore ouvert du module 2), les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
+**Dernière mise à jour :** 2026-08-01 (module 4 — moteur du diagnostic contraint livré)
+**Où en est-on (résumé en une ligne) :** Modules 0, **1, 2 et 3 ✅ faits** · **Module 4 🟨 le moteur du diagnostic contraint tourne** — QCM court-circuités sans aucun appel de modèle, sortie strictement contrainte, rejet et redemande, écriture des problèmes en hypothèse, outil de mesure écrit · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. **Le point dur n'est plus le code : le module 4 n'a rien contre quoi être mesuré** (le corpus est fait de copies de l'ancien format, voir sa fiche) et le **branchement au pipeline attend un arbitrage** (coût, sort du rapport actuel). Hors code : un **sujet Urie imprimé et scanné**, les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
 
-**État vérifié le 2026-08-01 : 207 tests Django + 261 pytest = 468 tests passent.**
+**État vérifié le 2026-08-01 : 251 tests Django + 267 pytest = 518 tests passent.**
 
 **Pour reprendre le travail sur Django :**
 ```bash
@@ -39,7 +39,7 @@ Note : `DATABASE_URL` suit la convention SQLAlchemy — `sqlite:///:memory:`, **
 | 1 | Socle de données (Neon, Django) | ✅ Fait (2026-07-30) | — |
 | 2 | Lecture des copies par zones | ✅ Fait (2026-08-01) — gabarit, recalage, appariement, pipeline | — (un risque de tramage reste à trancher sur papier, voir la fiche) |
 | 3 | Corpus de référence | ✅ Fait (2026-07-31) — 5 copies, 66 problèmes | — (PRQ et RED non couverts, voir la fiche) |
-| 4 | Diagnostic contraint | ⬜ À faire — **plus rien ne le bloque** | — |
+| 4 | Diagnostic contraint | 🟨 En cours (2026-08-01) — moteur fait, **rien pour le mesurer** | Des copies au nouveau format (voir la fiche) |
 | 5 | Composition du test de confirmation (T1) | ⬜ À faire | Module 4 |
 | 6 | Palier et plan de remédiation | 🟨 En cours (2026-07-30) — moteur fait, séances à planifier | Module 4 pour l'alimenter en vrais problèmes |
 | 7 | Génération des fiches | ⬜ À faire | Module 6 |
@@ -197,20 +197,57 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 
 ---
 
-### Module 4 — Diagnostic contraint
+### Module 4 — Diagnostic contraint 🟨 **EN COURS (2026-08-01) — le moteur tourne**
 **Objectif :** remplacer le rapport en texte libre par une liste de problèmes structurés.
 
-- [ ] Définir le format de sortie structuré strict : `(code_competence, code_type_erreur, citation)`, rien d'autre.
-- [ ] Fournir au modèle les signatures d'erreur de la question concernée (`signature_erreur`) — le modèle reconnaît, ne devine pas.
-- [ ] Implémenter le rejet + nouvelle demande si la sortie ne respecte pas le format ou utilise un code inconnu du référentiel.
-- [ ] Court-circuiter entièrement le modèle pour les QCM : lettre cochée → `option_qcm` → type d'erreur directement, aucun appel LLM.
-- [ ] Écrire chaque problème produit dans `probleme` (état `hypothese`) + sa ligne dans `transition`.
-- [ ] Décider du point d'intégration dans le pipeline existant : remplace l'appel `DiagnosticResult` texte libre, mais **seulement pour les niveaux couverts par le référentiel** (voir décision actée dans `CLAUDE.md`) — prévoir la bascule conditionnelle par niveau/test.
-- [ ] Faire tourner sur les copies du corpus de référence (Module 3), comparer au tagage manuel, mesurer et consigner l'écart.
-- [ ] Atteindre 100 sorties consécutives valides (aucun code hors référentiel) avant tout déploiement réel.
+- [x] **Format de sortie strict** : `(code_question, code_competence, code_type_erreur, citation)`, rien d'autre. Aucun champ de prose n'existe dans le schéma — c'est ce qui empêche le texte libre de revenir par la fenêtre.
+- [x] **Les signatures d'erreur de la question sont fournies** au modèle (`signature_erreur`, 3 à 4 par question). Il reconnaît, il ne devine pas.
+- [x] **Rejet et redemande.** Une sortie refusée n'est **jamais réparée à sa place** : les motifs lui sont rendus et on redemande une fois. Ce qui reste invalide est **écarté** — un problème inventé oriente une remédiation vers la mauvaise notion, une absence se rattrape.
+- [x] **QCM entièrement court-circuités** — lettre cochée → `option_qcm` → type d'erreur. Un test échoue si le client est seulement *touché* pour un QCM. 71 des 280 questions ne coûtent donc rien et ne peuvent pas se tromper.
+- [x] **Écriture dans `probleme`** en état `hypothese`, jamais `confirme` : c'est T1 qui tranche, pas un modèle de langage. Deux questions révélant la même lacune fusionnent en un problème (contrainte d'unicité par session) en conservant les deux citations.
+- [x] **Le module 4 ne peut pas écrire dans une évaluation du corpus** — refus explicite, écriture atomique. Un étalon qu'on corrige au fur et à mesure ne mesure plus rien, et le défaut serait invisible : les chiffres s'amélioreraient tout seuls.
+- [x] **Ce qui n'est pas diagnostiqué est nommé** (`questions_ecartees`) : construction géométrique, réponse illisible, QCM sans case cochée, modèle indisponible. Une question écartée en silence se lirait comme une réussite.
+- [x] **Outil de mesure écrit** (`suivi/mesure.py`, option `--comparer`) : exacts / compétence juste mais type faux / manqués / en trop, précision, rappel, et **écart de coût en heures** — c'est le coût qui décide du palier, donc de ce qu'une famille paie.
+- [x] **Mesure plancher écrite** (`manage.py mesurer_plancher`, `diagnostiquer_sans_ancrage`) — arbitrage rendu le 2026-08-01 : puisque le corpus ne peut pas alimenter le mode ancré, le modèle est mis à la tâche **plus dure** (production brute + catalogue du niveau, aucune signature). Comparaison loyale avec le tagage manuel, et plancher : le mode ancré ne peut que faire mieux. **Reste à exécuter — demande une clé d'API et la transcription des 5 copies.**
+- [ ] 🔴 **Mesure en configuration de production** — attend des copies au nouveau format, voir ci-dessous.
+- [ ] **Point d'intégration dans le pipeline** — **différé** (arbitrage du 2026-08-01) : le module s'alimente à la main tant qu'il n'est pas mesuré, conformément au jalon go/no-go.
+- [ ] Atteindre 100 sorties consécutives valides. Demande des clés d'API, et des copies au nouveau format.
 
-**Critère de fin :** 100 sorties consécutives valides + écart diagnostic automatique / tagage manuel mesuré et consigné (jalon de validation ci-dessus).
-**Fichiers concernés :** `prompts/` (nouveau prompt diagnostic contraint), `src/api/*_client.py` (fonction dédiée), `src/pipeline/pipeline.py` (point de bascule par niveau).
+**Critère de fin :** 100 sorties consécutives valides + écart diagnostic automatique / tagage manuel mesuré et consigné.
+**Fichiers concernés :** `prompts/diagnostic_contraint_prompt.md`, `src/models/domain.py` (`ProblemeDetecte`, `DiagnosticContraint`), `src/api/claude_client.py` (`diagnose_constrained`, outil à `enum`), `referentiel/diagnostic.py` (moteur), `suivi/diagnostic.py` (écriture), `suivi/mesure.py` (écart), `suivi/management/commands/diagnostiquer.py`, `data/reponses/exemple.yaml`.
+**Tests :** `referentiel/tests_diagnostic.py` (31) + `suivi/tests_diagnostic.py` (9) + `tests/test_diagnostic_contraint.py` (6).
+
+#### Les trois barrières contre un code inventé
+Aucune ne suffit seule, et c'est pour ça qu'il y en a trois :
+
+1. **Le schéma de l'outil** déclare les codes admis en `enum` — un code hors référentiel devient très difficile à produire, au lieu d'être rattrapé après coup.
+2. **La validation par question.** L'`enum` ne peut porter qu'**une** liste pour tout le tableau, alors que chaque question a la sienne (sa compétence et ses prérequis) ; il n'empêche donc pas d'attribuer à `L5` une compétence admissible pour `G13`. **C'est le seul contrôle qui attrape le cas réellement dangereux** — un code valide mais mal placé, qui passerait toute autre validation sans un mot.
+3. **La redemande**, puis la mise à l'écart de ce qui reste invalide.
+
+⚠ **Conséquence sur le jalon « 100 sorties consécutives valides » : il est en grande partie garanti par construction.** L'`enum` rend un code hors référentiel presque impossible à produire. Ce jalon ne prouvera donc pas grand-chose ; **c'est l'écart contre le corpus qui mesure quelque chose**, et lui seul.
+
+#### 🔴 Le corpus ne peut pas mesurer ce module — cette feuille de route disait le contraire
+La fiche du module 2 promettait que le module 4 « se mesurera d'abord sur le corpus de référence, qui est constitué de copies de l'ancien format ». **Ça ne tient pas, et il vaut mieux le savoir maintenant.**
+
+Le diagnostic contraint travaille **par question** : il reçoit l'énoncé, la compétence évaluée, ses prérequis et ses signatures d'erreur, tous tirés des 280 questions Urie. Une copie de l'ancien format n'en porte **aucune** — il n'y a rien à quoi rattacher ses réponses. C'est déjà pour cette raison que le module 3 ne peut enregistrer aucune `Reponse` pour ces copies ; la conséquence sur la mesure n'avait simplement pas été tirée.
+
+**Arbitrage rendu le 2026-08-01 : les deux, en parallèle.** La mesure plancher est écrite et donne un signal sans attendre ; la mesure juste attend le sujet imprimé, qui est de toute façon nécessaire au module 2. L'option écartée : rapprocher les questions des anciens tests des compétences du référentiel — un travail du même ordre que l'arbitrage C, qui aurait introduit sa propre marge d'erreur **dans l'instrument de mesure lui-même**.
+
+##### La mesure plancher, et le piège qu'elle désamorce
+`manage.py mesurer_plancher --productions … --contre <évaluation>` donne au modèle la production brute de l'élève et le catalogue des compétences déjà enseignées à ce niveau (17 en 6ème, 63 en 3ème), **sans aucune signature d'erreur**. Le résultat se compare aux problèmes tagués à la main.
+
+⚠ **Le piège, et il est facile à tendre :** alimenter la mesure avec `Probleme.justification`, déjà en base pour les 66 problèmes du corpus. Ces justifications sont écrites par le tagueur et portent le diagnostic en toutes lettres (« la formule est juste, seul le produit est faux ») — les donner en entrée revient à fournir la réponse avec la question. **Le score serait excellent et ne voudrait rien dire**, ce qui est le pire des cas : personne ne met en doute un bon chiffre. La commande compare donc chaque production aux justifications de l'étalon et **refuse de tourner** au-delà de 75 % de ressemblance. Vérifié : une justification recopiée est rejetée à 100 %.
+
+**Ce qu'il reste à faire pour obtenir le chiffre :** transcrire les 5 copies du corpus en fichiers de productions (`data/productions/exemple.yaml` donne le format), puis lancer la commande avec une clé d'API. La transcription est le seul travail manuel — et elle ne demande aucun jugement, seulement de recopier ce qui est écrit.
+
+#### Point d'intégration dans le pipeline — **différé (arbitrage du 2026-08-01)**
+Le branchement est mécaniquement trivial : pour les 7 tests Urie, l'identifiant d'item du barème **est** le code de question du référentiel (`D1`, `L5`…), et `observed_answer` porte la réponse de l'élève. Il n'est pas fait, et c'est délibéré — le motif n'est pas technique :
+
+- **en parallèle du diagnostic actuel** : deux appels de modèle par copie, contre une cible de ~$0,02/copie ;
+- **en remplacement** : le rapport PDF et le sujet de remédiation se nourrissent du texte libre. Les couper maintenant retirerait à l'enseignant un livrable qui marche, pour une liste de codes que rien ne met encore en forme — ce sont les modules 7 (fiches) et 9 (rapport) qui doivent arriver d'abord ;
+- **différé — retenu** : le module s'alimente à la main (`manage.py diagnostiquer`) le temps d'être mesuré. C'est ce que dit le jalon go/no-go de ce document : rien ne s'approche d'un enseignant avant l'écart mesuré.
+
+Le branchement se rouvrira quand la mesure existera, et il faudra alors trancher entre parallèle et remplacement.
 
 ---
 
@@ -362,6 +399,103 @@ Limite structurelle assumée : certaines compétences ont un libellé volontaire
 ---
 
 ## Journal de bord
+
+### 2026-08-01 (suite) — 🟨 Module 4 : le moteur tourne, et il n'a rien contre quoi se mesurer
+
+Le diagnostic contraint est écrit, testé et exécutable de bout en bout
+(`manage.py diagnostiquer`). **La moitié mécanique tourne sans aucune clé d'API** :
+vérifié sur le référentiel réel, un QCM coché `d` à la question `D2` du test de
+3ème rend `M.ECH × CPT` sans qu'aucun modèle soit appelé, et une question de
+construction est orientée vers la saisie humaine. 71 des 280 questions sont dans
+ce cas — c'est un quart du diagnostic gratuit et infaillible.
+
+**Trois choix de conception, et ce qu'ils évitent**
+
+1. **Les compétences admises pour une question sont sa compétence *et ses
+   prérequis*.** Restreindre à la seule compétence de la question rendrait `PRQ`
+   inexprimable — ce type d'erreur signifie précisément que la lacune est en
+   amont (« il ne rate pas les identités remarquables, il ne sait pas additionner
+   deux relatifs »). C'est aussi ce qui donne un usage au graphe des prérequis
+   côté diagnostic, et non plus seulement côté plan.
+2. **Rien n'est deviné, et ce qui n'est pas jugé est nommé.** Un QCM sans case
+   cochée n'est pas rattaché à `CNS` : aucune option ne décrit une case vide, et
+   lui en attribuer une inventerait une lacune, avec un coût, dans le palier d'un
+   élève. « b et c » n'est pas lu comme « b ». Ces cas partent dans
+   `questions_ecartees`, qui est rendue au compte rendu — sans ça, leur absence
+   de problème se lirait comme une réussite.
+3. **Une sortie refusée n'est jamais réparée à la place du modèle.** On lui rend
+   les motifs, on redemande une fois, et ce qui reste invalide est abandonné. Une
+   lacune manquée se rattrape au test suivant ; une lacune inventée envoie un
+   tuteur travailler la mauvaise notion pendant des heures facturées.
+
+**Ce que l'`enum` du schéma change au jalon — et il faut le dire.** Les codes
+admis sont déclarés en `enum` dans l'outil : un code hors référentiel devient
+presque impossible à produire. Le jalon « 100 sorties consécutives valides » est
+donc **en grande partie garanti par construction** et ne prouvera pas grand-chose.
+Le contrôle qui compte est ailleurs : la validation **par question**, seule à
+attraper un code valide mais mal placé — celui qui passerait tout le reste sans
+un mot. C'est le même piège que le module 3 avait rencontré au tagage (`G.VOC`
+existait, le tagage l'avait cru absent) : ce n'est jamais le code inventé qui fait
+mal, c'est le code plausible.
+
+**🔴 Le constat qui pèse le plus, et il contredit cette feuille de route.** La
+fiche du module 2 annonçait que le module 4 se mesurerait « d'abord sur le corpus
+de référence ». **Ce n'est pas possible.** Le diagnostic contraint travaille par
+question — énoncé, compétence, prérequis, signatures, tous tirés des 280 questions
+Urie. Les 5 copies du corpus sont de l'**ancien format** et n'en portent aucune.
+Le module 3 avait déjà constaté qu'aucune `Reponse` n'y était enregistrable ; la
+conséquence sur la mesure n'avait pas été tirée. **Le module 4 est donc écrit,
+mais aveugle** — trois issues sont posées dans sa fiche, aucune n'est gratuite.
+
+**Le branchement au pipeline n'est pas fait, et c'est délibéré.** Il est
+mécaniquement trivial (pour les 7 tests Urie, l'identifiant d'item du barème *est*
+le code de question). Mais le brancher en parallèle double le coût par copie face
+à une cible de $0,02, et le brancher en remplacement retire à l'enseignant le
+rapport PDF et le sujet de remédiation, qui se nourrissent du texte libre et n'ont
+pas encore d'équivalent structuré — ce sont les modules 7 et 9. Trois options
+posées dans la fiche, à trancher.
+
+**Une décision de schéma prise en passant.** `guide-urie.md` demande « une ligne
+dans `transition` » à la création d'un problème. Ce n'est pas faisable —
+`Transition` interdit `etat_avant == etat_apres` — et surtout le corpus de
+référence n'en écrit pas : en écrire ici rendrait les deux jeux non comparables et
+fausserait le taux de confirmation du module 9. La date de l'hypothèse est portée
+par `evaluation_origine.date`, ce qui est plus juste qu'une date d'écriture en base.
+
+**Un défaut d'exploitation corrigé au passage.** Le compte rendu emploie `└`,
+absent de cp1252 — l'encodage par défaut d'une console Windows. La commande
+s'interrompait sur une trace d'encodage **au milieu** de la liste des problèmes,
+ce qui donne l'illusion d'un diagnostic en échec alors qu'il a abouti. Le flux est
+désormais dégradé plutôt qu'interrompu. `taguer_corpus` et `corpus` portent le
+même caractère et donc le même risque latent — non traité ici.
+
+**Deux arbitrages rendus dans la foulée.**
+- **Mesure : les deux à la fois.** La mesure plancher est écrite (`mesurer_plancher`) et donne un signal sans rien attendre ; la mesure juste attend le sujet imprimé, nécessaire de toute façon au module 2. Écarté : rapprocher les questions des anciens tests du référentiel, qui aurait mis la marge d'erreur d'un rapprochement **dans l'instrument de mesure**.
+- **Pipeline : différé.** Rien ne s'approche d'un enseignant avant l'écart mesuré — c'est le jalon go/no-go de ce document. Le module s'alimente à la main en attendant.
+
+**Le piège de la mesure plancher, désamorcé avant d'avoir été tendu.** Alimenter
+la mesure avec `Probleme.justification` (déjà en base pour les 66 problèmes) était
+la voie facile : ces justifications portent le diagnostic en toutes lettres, donc
+le score aurait été excellent et vide de sens. **C'est le pire cas de figure —
+personne ne met en doute un bon chiffre.** La commande compare chaque production
+aux justifications de l'étalon et refuse de tourner au-delà de 75 % de
+ressemblance ; vérifié en lui soumettant une justification recopiée, rejetée à
+100 %. `ORDRE_NIVEAUX`, dupliqué dans le tagage du corpus, a été ramené à une
+seule définition (`referentiel/niveaux.py`) — les deux modules posent la même
+question sur l'ordre des niveaux.
+
+**Vérifié :** 50 tests nouveaux (35 sur le moteur, 9 sur l'écriture et la mesure,
+6 sur les schémas), dont « aucun appel de modèle pour un QCM » qui échoue si le
+client est seulement touché. **251 tests Django + 267 pytest = 518 tests passent.**
+Les deux commandes ont été exécutées sur le référentiel réel (101 compétences, 280
+questions) : `diagnostiquer` rend `M.ECH × CPT` sur un QCM sans aucun appel de
+modèle, `mesurer_plancher` s'arrête proprement faute de clé d'API.
+
+**Prochaine étape, dans l'ordre :** transcrire les 5 copies du corpus en fichiers
+de productions (aucun jugement, seulement recopier ce qui est écrit), lancer la
+mesure plancher avec une clé, consigner l'écart ici. En parallèle : imprimer,
+faire passer et scanner un sujet Urie — il débloque à la fois le tramage du
+module 2 et la mesure juste du module 4.
 
 ### 2026-07-30 (suite) — Nettoyage, et un bug sérieux qu'il a révélé
 - **Nettoyage** : 22 fichiers supprimés (docs périmées, schémas JSON morts, orphelins), 3 bibliothèques retirées. Détail et faux positifs écartés : D-CEO-31.

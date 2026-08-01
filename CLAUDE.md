@@ -186,6 +186,11 @@ alembic downgrade -1
 | `suivi/plan.py` | Plan de remédiation — tri topologique sur les prérequis, coût, palier (module 6) |
 | `referentiel/couts.py` | Formule de coût — arrondi 0,5 h, plancher 0,5, plafond 4, volume de repli lycée (D-CEO-29) |
 | `referentiel/contexte.py` | Ancrage du diagnostic reconstruit depuis le référentiel (D-CEO-30) |
+| `referentiel/diagnostic.py` | **Diagnostic contraint (module 4)** — QCM court-circuités sans appel de modèle, codes admis par question, rejet et redemande |
+| `suivi/diagnostic.py` | Écriture des problèmes du module 4 en `hypothese` — refuse d'écrire dans une évaluation du corpus |
+| `suivi/mesure.py` | Écart module 4 ↔ corpus : exacts, compétence juste mais type faux, manqués, en trop, écart de coût |
+| `referentiel/niveaux.py` | Ordre des niveaux — une seule définition, partagée par le tagage du corpus et le diagnostic |
+| `prompts/diagnostic_contraint_prompt.md` | Prompt du diagnostic contraint — aucun champ de prose dans la sortie |
 | `comptes/` | Authentification Django adossée au Sheet — session signée, décorateurs d'accès |
 | `correction_web/` | Flux de correction sous Django — copie unique, lot, mode libre ; état en base, pas en session |
 | `suivi_web/jetons.py` | Jetons signés dans les URL à la place de `identifiant_hakili` (D-CEO-25) |
