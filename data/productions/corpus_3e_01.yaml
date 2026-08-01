@@ -1,0 +1,222 @@
+# Productions brutes — CORPUS-3E-01 (évaluation 1 du corpus de référence)
+# Source : « TEST 4 3e.pdf », 12 pages, scan 200 DPI. Note portée : 02,5/20.
+#
+# Transcrit du scan le 2026-08-01, sans avoir lu le tagage de cette copie.
+# Ne figurent ici que les questions dont la réponse écrite est fausse ou vide.
+# Les annotations rouges du correcteur ne sont pas transcrites.
+#
+#   python manage.py mesurer_plancher --productions data/productions/corpus_3e_01.yaml --contre 1
+
+identifiant_hakili: CORPUS-3E-01
+niveau_test: 3eme
+
+productions:
+  # ── A. Activités numériques ─────────────────────────────────────────────
+  - repere: "A1"
+    enonce: "Donner la définition de chacun des ensembles de nombres suivants : IN, D, Z, Q et IR"
+    production: >
+      D est l'ensemble des entier Decimaux.
+      Z est l'ensemble des entier relatif qui peuvent s'écrire avec une virgule.
+      Q est l'ensemble des entre relatif qui s'écrire sous forme de fraction.
+      (IN et IR ne sont pas définis.)
+
+  - repere: "A2b"
+    enonce: "Vrai ou faux : IN ⊂ Z"
+    production: "Faux"
+
+  - repere: "A2d"
+    enonce: "Vrai ou faux : 2,765 ∉ Q"
+    production: "Vrai"
+
+  - repere: "A2e"
+    enonce: "Vrai ou faux : 3,145689 ∈ IR"
+    production: ""
+
+  - repere: "A2f"
+    enonce: "Vrai ou faux : toute Suite Décimale Illimitée Périodique peut s'écrire sous la forme de fraction."
+    production: ""
+
+  - repere: "A3-B"
+    enonce: "Calculer et donner le résultat sous forme de nombre entier relatif : B = (-22,2) + (-46,7)"
+    production: "B = -22,2 + 46,7\nB = -68,7"
+
+  - repere: "A3-C"
+    enonce: "Calculer et donner le résultat sous forme de nombre entier relatif : C = 27 + 3 x (35 - 57)"
+    production: "C = 27 + 3 (-78 22) [raturé]\nC = 27 + 3 x 22\nC = 27 + 66\nC = 93"
+
+  - repere: "A3-D"
+    enonce: "Calculer : D = -5 x [-3 - 5 x (12 - 4 x 25)] - (+3 + 27 - 80)"
+    production: >
+      D = -5 x [-3 - 5 x (12 - 100)] - (+3 + 53)
+      D = -5 x [-3 - 5 x (-88)] - (+56)
+      D = -5 x [-3 - 5 x 88] - (+56)
+      D = -5 x [-3 - 440] - (+56)
+      D = -5 x [-443] - (+56)
+      D = -5 x -443 - 56
+      D = -2200 - 56
+      D = 1444
+
+  - repere: "A4"
+    enonce: "On donne X = 2,85418541... Donner une approximation décimale au 1/100 par défaut et par excès de X."
+    production: "Par défaut : 2,8\nPar excès : 2,85"
+
+  - repere: "A5"
+    enonce: "Décomposer en produit de facteurs premiers chacun des nombres suivants : 572 et 127."
+    production: "572 | 4 = 143 : 2 | 72\n127"
+
+  - repere: "A6-A"
+    enonce: "Calculer et donner le résultat sous forme de puissance de 2 : A = (2³)⁷"
+    production: ""
+
+  - repere: "A6-B"
+    enonce: "Calculer et donner le résultat sous forme de puissance de 2 : B = 2³ x 2⁵"
+    production: ""
+
+  - repere: "A6-C"
+    enonce: "Calculer et donner le résultat sous forme de puissance de 2 : C = 2³ / 2⁵"
+    production: ""
+
+  - repere: "A7"
+    enonce: "Compléter les égalités suivantes : a) IR+ ∪ IR- = ...   b) IR+ ∩ IR- = ..."
+    production: ""
+
+  - repere: "A8a"
+    enonce: "Factoriser le polynôme : f(x) = 3x² - 2x"
+    production: "f(x) = 3x² - 2x\nf(x) = 3x . x 3x - 2x\nf(x) = 6x - 2x\nf(x) = 4x"
+
+  - repere: "A8b"
+    enonce: "Factoriser le polynôme : g(x) = 36x² - 84x + 49"
+    production: "g(x) = 36x x 3x² - 84x + 49\ng(x) = 1296x - 133x\ng(x) = 1168x"
+
+  - repere: "A8c"
+    enonce: "Factoriser le polynôme : h(x) = 9x² - 16"
+    production: "h(x) = 9x² - 16\nh(x) = 9x . x 9x - 16\nh(x) = 81x - 16\nh(x) = 65x"
+
+  - repere: "A8d"
+    enonce: "Factoriser le polynôme : i(x) = 25x² + 30x + 9"
+    production: "i(x) = 25x² + 30x + 9\ni(x) = 25x . x 25x + 30x + 9\ni(x) = 625x + 39x\ni(x) = 664x"
+
+  - repere: "A9e"
+    enonce: "Développer, réduire et ordonner : j(x) = (x² + x + 1)(x - 4)"
+    production: "j(x) = (x . x + x + 1)(x - 4)\nj(x) = x³ + 1 + 1 - 4x\nj(x) = x³ + 5x"
+
+  - repere: "A9f"
+    enonce: "Développer, réduire et ordonner : g(x) = (3 - 2x)²"
+    production: "g(x) = (3 - 2x)² (3 - 2x)²\ng(x) = 1x + 1x\ng(x) = 2x"
+
+  - repere: "A10a"
+    enonce: "Résoudre dans IR : 18 + x = 30"
+    production: ""
+
+  - repere: "A10b"
+    enonce: "Résoudre dans IR : 4x = 36"
+    production: ""
+
+  - repere: "A10c"
+    enonce: "Résoudre dans IR : 28/x = 7"
+    production: ""
+
+  - repere: "A11"
+    enonce: "Donner la représentation graphique de la solution de l'inéquation -3x - 2 ≥ 1"
+    production: >
+      droite graduée tracée, graduations -4 -3 -2 -1 puis 1 2 3 4 5 ; hachures
+      entre -3 et -1 environ, fermées par un crochet
+
+  - repere: "A12"
+    enonce: >
+      Un père partage une somme de 5 000 F entre ses deux enfants Moussa et Karim.
+      Moussa reçoit 1 500 francs de plus que Karim. Combien chacun a-t-il reçu ?
+    production: >
+      Calculons la part des deux enfants : 5 000 F / 2 = 2 500 F.
+      Calculons la part de Karim : 2 500 F - 1 500 F = 1 000 F.
+      Calculons la part de Moussa : 2 500 F + 1 500 F = 4 000 F.
+
+  - repere: "A13-A"
+    enonce: "Calculer et donner le résultat sous forme de fraction irréductible : A = 7/4 x 3 + 5"
+    production: "A = 7/4 x 3/1 + 5 = 7/12 + 5 = 7/12 + 5/1 = (7x1)/(12x1) + (5x12)/(1x12)\n= 7/12 + 60/12 = (7+60)/12 = 67/12"
+
+  - repere: "A13-B"
+    enonce: "Calculer et donner le résultat sous forme de fraction irréductible : B = (2 x 3/7) + 9/7"
+    production: "B = (2/1 x 3/7) + 9/7 = 3/14 + 9/7 = (3x7)/(14x7) + (9x14)/(7x14)\n= 21/98 + 126/98 = (21+126)/98 = 147/98"
+
+  - repere: "A13-C"
+    enonce: "Calculer et donner le résultat sous forme de fraction irréductible : C = -3 : ((-2/5)/(-7))"
+    production: "C = -3 : (-2/1)/(-5/7) = -3 : (2/1 x 5/7) = -3 : 21/5 = -3 : 21 / 1 : 5 = -3:21 / 1:5 = 7/1"
+
+  - repere: "A13-D"
+    enonce: "Calculer et donner le résultat sous forme de fraction irréductible : D = 5/-3 - 5/4 - 7"
+    production: >
+      D = (5x4)/(-3x4) - (5x-3)/(4x-3) - 7 = 20/-12 - 15/12 - 7 = (20-15)/12 - 7
+      = 5/12 - 7/1 = (-5x1)/(-12x1) - (7x12)/(1x12) = -5/12 - 84/12
+      D = 19/-12
+
+  # ── B. Activités géométriques ───────────────────────────────────────────
+  - repere: "B1a"
+    enonce: "Sur une droite (D) graduée d'unité 1 cm, placer les points A, B, C, D et E d'abscisses -7 ; -3 ; 0 ; 7/2 ; 5"
+    production: >
+      A placé en -7, B placé en -3, C placé en 0, E placé en 5 ; entre 0 et 2 est
+      écrit « 7/3 » et aucun point n'est nommé D
+
+  - repere: "B1b"
+    enonce: "Calculer la distance AB."
+    production: "Calculons la distance AB\nA(-7) ; B(-3)\nAB = (-7 ; -3)\nAB = -7 - 3\nAB = -10"
+
+  - repere: "B2"
+    enonce: "Dans un repère (O, I, J) d'unité 1 cm, placer les points A(3 ; -4) ; B(-1/2 ; -2) ; C(0 ; -4)"
+    production: >
+      A(3 ; -4) et C(0 ; -4) placés correctement ; B écrit « B(-1/2 ; -1) » et
+      placé au-dessous de l'axe des abscisses vers -2 en x
+
+  - repere: "B3a"
+    enonce: "Compléter : deux angles opposés par le sommet sont ..."
+    production: "parallèle"
+
+  - repere: "B3b"
+    enonce: "Compléter : deux angles alternes-internes ont ..."
+    production: ""
+
+  - repere: "B3c"
+    enonce: "Compléter : la somme des angles d'un triangle est égale à ..."
+    production: "la somme de ces deux côté"
+
+  - repere: "B5b"
+    enonce: "ABCD étant un parallélogramme, compléter : vecteur AB + vecteur AD = ..."
+    production: "BD"
+
+  - repere: "B6"
+    enonce: >
+      Au regard de la figure quadrillée (A B C D / E F G H / I J K L / M N O P),
+      compléter par des lettres : a) 2EF = ...  b) -3GH = ...  c) NP = 2M...
+      d) MP = -3C...
+    # Les lettres ajoutées par l'élève sont peu lisibles ; transcrites telles
+    # qu'elles se lisent, sans reconstitution.
+    production: "a) AB\nb) LK\nc) 2MJ\nd) -3CO"
+
+  - repere: "B7"
+    enonce: >
+      (D) et (L) sont deux droites non parallèles du plan, A et B deux points
+      distincts. a) Placer A', projeté de A sur (D) parallèlement à (L).
+      b) Placer B', projeté orthogonal de B sur (D).
+    production: >
+      traits pointillés tracés en travers de la figure, un point marqué à côté
+      de A et un autre à côté de B, aucun des deux sur la droite (D)
+
+  - repere: "B8a"
+    enonce: "Au regard de la figure, compléter : le symétrique de B par rapport au point G est ..."
+    production: "Perpendiculaire"
+
+  - repere: "B8b"
+    enonce: "Au regard de la figure, compléter : le symétrique de E par rapport à la droite (OC) est ..."
+    production: "Parallèle"
+
+  - repere: "B8c"
+    enonce: "Compléter : I est le projeté du point L sur la droite (AM) parallèlement à la droite ..."
+    production: "D.P"
+
+  - repere: "B9a"
+    enonce: "Donner la formule du volume de la pyramide."
+    production: ""
+
+  - repere: "B9b"
+    enonce: "Donner la formule du volume du cylindre."
+    production: ""

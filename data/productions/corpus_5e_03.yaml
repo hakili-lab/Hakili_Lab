@@ -1,0 +1,96 @@
+# Productions brutes — CORPUS-5E-03 (évaluation 3 du corpus de référence)
+# Source : « TEST 8 5e (1).pdf », 14 pages, scan 200 DPI.
+#
+# Transcrit du scan le 2026-08-01, sans avoir lu le tagage de cette copie.
+# Ne figurent ici que les questions dont la réponse écrite est fausse ou vide.
+# Les annotations rouges du correcteur ne sont pas transcrites.
+#
+#   python manage.py mesurer_plancher --productions data/productions/corpus_5e_03.yaml --contre 3
+
+identifiant_hakili: CORPUS-5E-03
+niveau_test: 5eme
+
+productions:
+  # ── Activités numériques ────────────────────────────────────────────────
+  - repere: "numérique — 1a"
+    enonce: "Écris en chiffres : une centaine quatre dizaines et sept unités"
+    production: "100407"
+
+  - repere: "numérique — 2"
+    enonce: "Écris en lettres : 26,1893"
+    production: "vingt sept six virgule mille huit cent quatre vingt treize"
+
+  - repere: "numérique — 3b"
+    enonce: "Quelle place occupe chaque chiffre dans ce nombre : 175,62"
+    production: "1 = Centaine ; 7 = dizaine ; 5 unités ; 6 = dixième ; 2 = unités"
+
+  - repere: "numérique — 4a"
+    enonce: "Pose et effectue l'opération suivante : 5537 + 319"
+    production: ""
+
+  - repere: "numérique — 4b"
+    enonce: "Complète l'opération suivante : 290 + ... = 3028"
+    production: ""
+
+  - repere: "numérique — 4c"
+    enonce: "Effectue l'opération suivante et fais la preuve par 9 : 15,345 x 53,5"
+    production: ""
+
+  - repere: "numérique — 5"
+    enonce: "Encercle la lettre correspondante à la bonne réponse : 4072 ÷ 12 = (a) 37,933 (b) 339,33 (c) 339,45"
+    production: "aucune lettre entourée"
+
+  - repere: "numérique — 7"
+    enonce: "Pose et effectue l'opération suivante à 0,01 près : 1093 ÷ 15"
+    production: "potence 1093 | 15 ; sous le dividende 105, puis 3, 0, 30, 30, 00 ; quotient écrit : 70,2"
+
+  - repere: "numérique — 11"
+    enonce: "Écris le nombre décimal suivant sous la forme de fraction : 0,27"
+    # Le chiffre du dénominateur n'est pas lu avec certitude (0 ou 8).
+    production: "0/0"
+
+  - repere: "numérique — 12b"
+    enonce: "Effectue : 5/7 - 2/3"
+    production: "5/7 (raturé) (5x3)/(3x7) - (2x7)/(7x3) = 15/21 - 14/21 = (15-14)/21 = 1/4"
+
+  - repere: "numérique — 15"
+    enonce: >
+      Adama veut vendre 30 œufs au marché. En route il en casse 6. Calcule le
+      pourcentage des œufs cassés.
+    production: "Le pourcentage des œufs cassés est :\n(30 x 6) / 100 = 1,8 %\nposé à côté : 30 x 6 = 180 ; 180 | 100 = 1,8"
+
+  # ── Activités géométriques ──────────────────────────────────────────────
+  - repere: "géométrie — 1a"
+    enonce: "Nomme les lignes suivantes : (a) ligne ondulée"
+    production: ""
+
+  - repere: "géométrie — 4b"
+    enonce: "Place le point I milieu du segment [EF]."
+    production: "aucun point I sur le segment tracé"
+
+  - repere: "géométrie — 5c"
+    enonce: "Nomme les droites suivantes : c. (droite oblique)"
+    production: ""
+
+  - repere: "géométrie — 8b"
+    enonce: "Réponds par vrai ou faux : un angle de 180° est un angle plat."
+    production: "Faux"
+
+  - repere: "géométrie — 14"
+    enonce: "Une table de forme circulaire a 1,3 m de diamètre. Quel est son périmètre ? (π = 3,14)"
+    production: "Périmètre est\n1,3 m x 2 = 2,6 m\nposé à côté : 1,3 x 2 = 2,6"
+
+  - repere: "géométrie — 17"
+    enonce: >
+      Calcule l'aire d'un trapèze en cm² ayant pour grande base 1,2 dm, de petite
+      base 4 cm et de hauteur 0,05 m.
+    production: >
+      L'aire est : je convertis 1,2 dm et 0,05 m en cm : 120 cm et 5 cm.
+      L'aire est (120 + 5) x 4 / 2 = 250 cm ; posé à côté : 120 + 5 = 125,
+      125 x 4 = 500, 500 | 2 = 250
+
+  - repere: "géométrie — 18"
+    enonce: >
+      Le périmètre d'un champ rectangulaire est égal à 48 m, sa largeur vaut 10 m.
+      Calcule sa longueur.
+    production: "Le périmètre est :\n(48 + 10) x 2 = 116 m ; posé à côté : 48 + 10 = 58, 58 x 2 = 116"

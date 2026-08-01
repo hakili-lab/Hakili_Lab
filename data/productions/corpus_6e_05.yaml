@@ -1,0 +1,105 @@
+# Productions brutes — CORPUS-6E-05 (évaluation 5 du corpus de référence)
+# Source : « TEST N°2 6e.pdf », 14 pages, scan 200 DPI.
+#
+# Transcrit du scan le 2026-08-01. Ne contient que ce que l'élève a écrit au
+# stylo bleu (ou tracé au crayon). Les annotations rouges sont celles du
+# correcteur : elles ne sont PAS transcrites — elles portent déjà un jugement.
+#
+# Conformément à `exemple.yaml`, les questions réussies ne figurent pas ici :
+# elles n'ont rien à diagnostiquer. Une production fausse ou vide y figure,
+# même si l'on n'en conclut rien.
+#
+#   python manage.py mesurer_plancher --productions data/productions/corpus_6e_05.yaml --contre 5
+
+identifiant_hakili: CORPUS-6E-05
+niveau_test: 6eme
+
+productions:
+  # ── Activités numériques ────────────────────────────────────────────────
+  - repere: "numérique — 3b"
+    enonce: "Quelle place occupe chaque chiffre dans ce nombre : 175,62"
+    production: ""
+
+  - repere: "numérique — 4b"
+    enonce: "Complète l'opération suivante : 290 + ... = 3028"
+    production: "un nombre écrit puis raturé, illisible ; la case reste remplie par ce nombre raturé"
+
+  - repere: "numérique — 7"
+    enonce: "Pose et effectue l'opération suivante à 0,01 près : 1093 ÷ 15"
+    production: "potence posée 1093 | 15 ; quelques chiffres sous le dividende ; aucun quotient écrit à droite de la barre"
+
+  - repere: "numérique — 10"
+    enonce: "Donne le numérateur et le dénominateur de la fraction suivante : 9/16"
+    production: "9\n16\n9 est inférieur à 16"
+
+  - repere: "numérique — 11"
+    enonce: "Écris le nombre décimal suivant sous la forme de fraction : 0,27"
+    production: "0/27"
+
+  - repere: "numérique — 13"
+    enonce: >
+      Ousmane achète 8 mètres de tissu pour ses enfants. Le tailleur utilise 3/4
+      de tissu pour la couture, calcule la longueur du tissu utilisée.
+    production: "La longueur du tissu est\n8 x 3 / 4\nx 8/3\n24 | 4\n 0 | 8\ntissu"
+
+  - repere: "numérique — 14"
+    enonce: >
+      Complète le tableau des nombres proportionnels (x4). Ligne du haut : 1 ; 5 ; ?
+      Ligne du bas : ? ; ? ; 16.
+    production: "sous 1 : 4 ; sous 5 : 20 ; au-dessus de 16 : 44"
+
+  - repere: "numérique — 15"
+    enonce: >
+      Adama veut vendre 30 œufs au marché. En route il en casse 6. Calcule le
+      pourcentage des œufs cassés.
+    production: "Le pourcentage des œufs est\n30 - 6 = 24"
+
+  # ── Activités géométriques ──────────────────────────────────────────────
+  - repere: "géométrie — 3"
+    enonce: "Encercle la lettre correspondante à la bonne réponse. (CD) est : (a) Une droite (b) Une demi-droite"
+    production: ""
+
+  - repere: "géométrie — 4b"
+    enonce: "Place le point I milieu du segment [EF]."
+    production: "aucun point I sur le segment tracé"
+
+  - repere: "géométrie — 5"
+    enonce: "Nomme les droites suivantes. a. ... b. ... c. ..."
+    production: ""
+
+  - repere: "géométrie — 6"
+    enonce: "Complète la phrase suivante : Deux droites qui se coupent en formant un angle droit sont : ..."
+    production: ""
+
+  - repere: "géométrie — 7"
+    enonce: "À l'aide de ton équerre relève les droites parallèles. (figure : droites (A) (B) (C) (D))"
+    production: ""
+
+  - repere: "géométrie — 13"
+    enonce: "Encercle la bonne réponse. L'aire du disque est égale à (π = 3,14) : (a) Diamètre x π (b) Rayon x rayon x π (c) Rayon x π"
+    production: "case (a) cochée"
+
+  - repere: "géométrie — 14"
+    enonce: "Une table de forme circulaire a 1,3 m de diamètre. Quel est son périmètre ? (π = 3,14)"
+    production: ""
+
+  - repere: "géométrie — 15"
+    enonce: "Complète : une figure qui a 4 côtés égaux et 4 angles droits est un ..."
+    production: ""
+
+  - repere: "géométrie — 17"
+    enonce: >
+      Calcule l'aire d'un trapèze en cm² ayant pour grande base 1,2 dm, de petite
+      base 4 cm et de hauteur 0,05 m.
+    production: ""
+
+  - repere: "géométrie — 18"
+    enonce: >
+      Le périmètre d'un champ rectangulaire est égal à 48 m, sa largeur vaut 10 m.
+      Calcule sa longueur.
+    production: ""
+
+  # Non transcrit faute de lecture sûre : l'angle tracé au rapporteur
+  # (géométrie 9) porte une annotation qui se lit « 40 » ou « 60 » selon
+  # l'inclinaison. Inventer une lecture pour compléter le fichier serait pire
+  # que l'omission.

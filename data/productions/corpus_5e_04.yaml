@@ -1,0 +1,70 @@
+# Productions brutes — CORPUS-5E-04 (évaluation 4 du corpus de référence)
+# Source : « TEST 10 5e.pdf », 14 pages, scan 200 DPI.
+#
+# Transcrit du scan le 2026-08-01, sans avoir lu le tagage de cette copie.
+# Ne contient que ce que l'élève a écrit au stylo bleu (ou tracé au crayon).
+# Les annotations rouges du correcteur ne sont pas transcrites : elles portent
+# déjà un jugement. Elles ont seulement servi à décider quelles questions
+# figurent ici — celles barrées en rouge ou laissées vides.
+#
+#   python manage.py mesurer_plancher --productions data/productions/corpus_5e_04.yaml --contre 4
+
+identifiant_hakili: CORPUS-5E-04
+niveau_test: 5eme
+
+productions:
+  # ── Activités numériques ────────────────────────────────────────────────
+  - repere: "numérique — 2"
+    enonce: "Écris en lettres : 26,1893"
+    production: "vingt six mille (raturé) deux cent soixante mille (raturé) un mille huit cent quatre vingt treize"
+
+  - repere: "numérique — 3b"
+    enonce: "Quelle place occupe chaque chiffre dans ce nombre : 175,62"
+    production: "1 est centaine 7 dizaine 5 unité, 6"
+
+  - repere: "numérique — 4c"
+    enonce: "Effectue l'opération suivante et fais la preuve par 9 : 15,345 x 53,5"
+    production: >
+      15,345 x 53,5 = 19,9565 ; multiplication posée, produits partiels écrits
+      les uns sous les autres sans décalage : 76725, 46415, 76725, total 199565
+
+  - repere: "numérique — 11"
+    enonce: "Écris le nombre décimal suivant sous la forme de fraction : 0,27"
+    production: "0/27"
+
+  - repere: "numérique — 12b"
+    enonce: "Effectue : 5/7 - 2/3"
+    production: "5/7 - 2/3 = (5x3)/(7x3) + (2x7)/(3x7) = 15/21 + 14/21 = (15+14)/21 = 29/21"
+
+  - repere: "numérique — 14"
+    enonce: >
+      Complète le tableau des nombres proportionnels (x4). Ligne du haut : 1 ; 5 ; ?
+      Ligne du bas : ? ; ? ; 16.
+    production: ""
+
+  # ── Activités géométriques ──────────────────────────────────────────────
+  - repere: "géométrie — 1a"
+    enonce: "Nomme les lignes suivantes : (a) ligne ondulée"
+    production: ""
+
+  - repere: "géométrie — 5b"
+    enonce: "Nomme les droites suivantes : b. (droite verticale)"
+    production: ""
+
+  - repere: "géométrie — 14"
+    enonce: "Une table de forme circulaire a 1,3 m de diamètre. Quel est son périmètre ? (π = 3,14)"
+    # Le résultat écrit n'est pas lu avec certitude ; l'opération posée, elle,
+    # est nette. Transcrite telle quelle plutôt que devinée.
+    production: "Son périmètre est :\n1,3 x 3,14 = 1,256 m"
+
+  - repere: "géométrie — 17"
+    enonce: >
+      Calcule l'aire d'un trapèze en cm² ayant pour grande base 1,2 dm, de petite
+      base 4 cm et de hauteur 0,05 m.
+    production: ""
+
+  - repere: "géométrie — 18"
+    enonce: >
+      Le périmètre d'un champ rectangulaire est égal à 48 m, sa largeur vaut 10 m.
+      Calcule sa longueur.
+    production: "La longueur est\n(48 m - 10 m) / 2 = 19"

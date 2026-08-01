@@ -1,0 +1,72 @@
+# Productions brutes — CORPUS-3E-02 (évaluation 2 du corpus de référence)
+# Source : « TEST 10 3e.pdf », 12 pages, scan 200 DPI. Même sujet que la copie 1.
+#
+# Transcrit du scan le 2026-08-01, sans avoir lu le tagage de cette copie.
+# Ne figurent ici que les questions dont la réponse écrite est fausse ou vide.
+# Cette copie est nettement plus solide que la copie 1 : la liste est courte,
+# c'est normal.
+#
+#   python manage.py mesurer_plancher --productions data/productions/corpus_3e_02.yaml --contre 2
+
+identifiant_hakili: CORPUS-3E-02
+niveau_test: 3eme
+
+productions:
+  # ── A. Activités numériques ─────────────────────────────────────────────
+  - repere: "A4"
+    enonce: "On donne X = 2,85418541... Donner une approximation décimale au 1/100 par défaut et par excès de X."
+    production: "x = 2,85 → 2,84 < x < 2,86"
+
+  - repere: "A5"
+    enonce: "Décomposer en produit de facteurs premiers chacun des nombres suivants : 572 et 127."
+    production: "572 = 2 x 2 x 143\n127 = 127 x 1"
+
+  - repere: "A11"
+    enonce: "Donner la représentation graphique de la solution de l'inéquation -3x - 2 ≥ 1"
+    production: >
+      -3x ≥ 1 + 2 → -3x ≥ 3 → -x ≥ 1 → x ≤ -1 ; x ∈ ]-∞ ; -1].
+      Droite tracée de -∞ à +∞ avec un crochet en -1 ouvert vers la droite et
+      les hachures portées à droite de -1, vers +∞.
+
+  - repere: "A13-C"
+    enonce: "Calculer et donner le résultat sous forme de fraction irréductible : C = -3 : ((-2/5)/(-7))"
+    production: "C = -3 : ((-2/5)/(-7)) = -3 : (-14/5) = -3 x 5/(-14) = -3 x (-5/14) = +15/14"
+
+  # ── B. Activités géométriques ───────────────────────────────────────────
+  - repere: "B3a"
+    enonce: "Compléter : deux angles opposés par le sommet sont ..."
+    production: "deux angles dont les pointes des sommets se touches"
+
+  - repere: "B3b"
+    enonce: "Compléter : deux angles alternes-internes ont ..."
+    production: "sont deux angles situé de part et d'autres de la droites parallèles"
+
+  - repere: "B6c"
+    enonce: >
+      Au regard de la figure quadrillée (A B C D / E F G H / I J K L / M N O P),
+      compléter par des lettres : c) vecteur NP = 2 x vecteur M...
+    production: "Q"
+
+  - repere: "B7a"
+    enonce: >
+      (D) et (L) sont deux droites non parallèles du plan. A' est le projeté du
+      point A sur la droite (D) parallèlement à la droite (L). Placer A'.
+    production: >
+      aucun point A' placé sur (D) ; seul B' est placé, sur (D), avec le codage
+      de l'angle droit (question b)
+
+  - repere: "B8b"
+    enonce: "Au regard de la figure, compléter : le symétrique de E par rapport à la droite (OC) est ..."
+    production: "H"
+
+  - repere: "B8c"
+    enonce: "Compléter : I est le projeté du point L sur la droite (AM) parallèlement à la droite ..."
+    production: "(BN)"
+
+  - repere: "B9a"
+    enonce: "Donner la formule du volume de la pyramide."
+    production: ""
+
+  - repere: "B9b"
+    enonce: "Donner la formule du volume du cylindre."
+    production: ""
