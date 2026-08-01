@@ -1,8 +1,8 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-08-01 (module 4 — moteur du diagnostic contraint livré)
-**Où en est-on (résumé en une ligne) :** Modules 0, **1, 2 et 3 ✅ faits** · **Module 4 🟨 le moteur du diagnostic contraint tourne** — QCM court-circuités sans aucun appel de modèle, sortie strictement contrainte, rejet et redemande, écriture des problèmes en hypothèse, outil de mesure écrit · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. **Le point dur n'est plus le code : le module 4 n'a rien contre quoi être mesuré** (le corpus est fait de copies de l'ancien format, voir sa fiche) et le **branchement au pipeline attend un arbitrage** (coût, sort du rapport actuel). Hors code : un **sujet Urie imprimé et scanné**, les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
+**Dernière mise à jour :** 2026-08-01 (suite 4 — coûts en heures entières, bascule sur Sonnet 5, panne de format levée)
+**Où en est-on (résumé en une ligne) :** Modules 0, **1, 2 et 3 ✅ faits** · **Module 4 🟨 le moteur du diagnostic contraint tourne** — QCM court-circuités sans aucun appel de modèle, sortie strictement contrainte, rejet et redemande, écriture des problèmes en hypothèse, outil de mesure écrit · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. **Le module 4 a enfin un chiffre.** Les 5 copies du corpus sont transcrites (`data/productions/`) et la mesure plancher a tourné sur les 66 problèmes : **rappel 85 % sur la compétence, 65 % sur le couple `compétence × type`** sur Opus 4.7 — **70 % / 47 % sur Sonnet 5**, retenu « en attendant » le 2026-08-01 et sensiblement moins bon. Le point dur est désigné : **le type d'erreur**, et `ATT` en particulier — 4 inattentions dans l'étalon, aucune retrouvée. Les coûts passent à **l'heure entière supérieure** (décision du 2026-08-01, +33 % sur l'étalon) — **les seuils de palier A/B/C n'ont pas été rejugés en conséquence.** Le **branchement au pipeline attend un arbitrage** (coût, sort du rapport actuel). Hors code : un **sujet Urie imprimé et scanné**, les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
 
 **État vérifié le 2026-08-01 : 251 tests Django + 267 pytest = 518 tests passent.**
 
@@ -208,7 +208,9 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - [x] **Le module 4 ne peut pas écrire dans une évaluation du corpus** — refus explicite, écriture atomique. Un étalon qu'on corrige au fur et à mesure ne mesure plus rien, et le défaut serait invisible : les chiffres s'amélioreraient tout seuls.
 - [x] **Ce qui n'est pas diagnostiqué est nommé** (`questions_ecartees`) : construction géométrique, réponse illisible, QCM sans case cochée, modèle indisponible. Une question écartée en silence se lirait comme une réussite.
 - [x] **Outil de mesure écrit** (`suivi/mesure.py`, option `--comparer`) : exacts / compétence juste mais type faux / manqués / en trop, précision, rappel, et **écart de coût en heures** — c'est le coût qui décide du palier, donc de ce qu'une famille paie.
-- [x] **Mesure plancher écrite** (`manage.py mesurer_plancher`, `diagnostiquer_sans_ancrage`) — arbitrage rendu le 2026-08-01 : puisque le corpus ne peut pas alimenter le mode ancré, le modèle est mis à la tâche **plus dure** (production brute + catalogue du niveau, aucune signature). Comparaison loyale avec le tagage manuel, et plancher : le mode ancré ne peut que faire mieux. **Reste à exécuter — demande une clé d'API et la transcription des 5 copies.**
+- [x] **Mesure plancher écrite** (`manage.py mesurer_plancher`, `diagnostiquer_sans_ancrage`) — arbitrage rendu le 2026-08-01 : puisque le corpus ne peut pas alimenter le mode ancré, le modèle est mis à la tâche **plus dure** (production brute + catalogue du niveau, aucune signature). Comparaison loyale avec le tagage manuel, et plancher : le mode ancré ne peut que faire mieux.
+- [x] **Transcription des 5 copies du corpus** (`data/productions/corpus_*.yaml`) — lue sur les scans, sans lire le tagage des copies 1 à 4. Les 5 fichiers passent la validation de format **et** le contrôle anti-recopie.
+- [x] **Mesure plancher exécutée sur les 5 copies (2026-08-01)** — **rappel compétence 85 %, couple exact 65 %, précision 61 %** sur 66 problèmes. Tableau par copie et analyse au journal. **Le point dur est le type d'erreur, pas la compétence**, et `ATT` n'est jamais retrouvé — ce qui surfacture, puisque c'est le seul type à coût nul.
 - [ ] 🔴 **Mesure en configuration de production** — attend des copies au nouveau format, voir ci-dessous.
 - [ ] **Point d'intégration dans le pipeline** — **différé** (arbitrage du 2026-08-01) : le module s'alimente à la main tant qu'il n'est pas mesuré, conformément au jalon go/no-go.
 - [ ] Atteindre 100 sorties consécutives valides. Demande des clés d'API, et des copies au nouveau format.
@@ -238,7 +240,13 @@ Le diagnostic contraint travaille **par question** : il reçoit l'énoncé, la c
 
 ⚠ **Le piège, et il est facile à tendre :** alimenter la mesure avec `Probleme.justification`, déjà en base pour les 66 problèmes du corpus. Ces justifications sont écrites par le tagueur et portent le diagnostic en toutes lettres (« la formule est juste, seul le produit est faux ») — les donner en entrée revient à fournir la réponse avec la question. **Le score serait excellent et ne voudrait rien dire**, ce qui est le pire des cas : personne ne met en doute un bon chiffre. La commande compare donc chaque production aux justifications de l'étalon et **refuse de tourner** au-delà de 75 % de ressemblance. Vérifié : une justification recopiée est rejetée à 100 %.
 
-**Ce qu'il reste à faire pour obtenir le chiffre :** transcrire les 5 copies du corpus en fichiers de productions (`data/productions/exemple.yaml` donne le format), puis lancer la commande avec une clé d'API. La transcription est le seul travail manuel — et elle ne demande aucun jugement, seulement de recopier ce qui est écrit.
+**Ce qu'il reste à faire pour obtenir le chiffre :** ~~transcrire les 5 copies~~ — **fait le 2026-08-01** (`data/productions/corpus_3e_01`, `corpus_3e_02`, `corpus_5e_03`, `corpus_5e_04`, `corpus_6e_05`). Reste à installer les dépendances (`anthropic` n'est pas présent dans l'interpréteur courant) et à renseigner `ANTHROPIC_API_KEY`, puis à lancer les 5 commandes et à consigner l'écart ici.
+
+##### Ce que la transcription a demandé de trancher, et qui n'était pas prévu
+- **Les copies portent trois encres, pas une.** Bleu = l'élève, rouge = le correcteur, gris = les tracés au crayon. Seuls le bleu et le crayon sont transcrits. La consigne « recopier ce qui est écrit » ne suffisait pas : recopier le rouge aurait donné au modèle la correction en même temps que la production — le même piège que les justifications, par une autre porte.
+- **`exemple.yaml` demande de ne pas faire figurer les questions réussies.** C'est appliqué, mais il faut savoir que ça durcit encore la tâche : le tagueur humain, lui, avait la copie entière et raisonne explicitement par contraste (« laissé vide *alors que* la question précédente est juste »). Le plancher est donc plus bas que le protocole ne le laisse croire. Le critère retenu pour inclure une question : réponse vide, ou réponse dont la fausseté se lit sans diagnostic (résultat faux, mot absent du sujet). Pas de jugement de compétence.
+- **Deux passages n'ont pas été transcrits faute de lecture sûre** et c'est dit dans les fichiers : l'annotation de l'angle au rapporteur de `CORPUS-6E-05` (se lit « 40 » ou « 60 »), et deux des quatre égalités vectorielles de `CORPUS-3E-01`. Inventer une lecture pour compléter aurait mis une erreur dans l'instrument de mesure.
+- **La copie 5 a été transcrite après lecture de son tagage** (sa fiche avait été ouverte plus tôt dans la session) ; les copies 1 à 4 l'ont été à l'aveugle. Si l'écart mesuré sur la copie 5 se détache nettement des quatre autres, cette asymétrie est la première explication à envisager.
 
 #### Point d'intégration dans le pipeline — **différé (arbitrage du 2026-08-01)**
 Le branchement est mécaniquement trivial : pour les 7 tests Urie, l'identifiant d'item du barème **est** le code de question du référentiel (`D1`, `L5`…), et `observed_answer` porte la réponse de l'élève. Il n'est pas fait, et c'est délibéré — le motif n'est pas technique :
@@ -399,6 +407,245 @@ Limite structurelle assumée : certaines compétences ont un libellé volontaire
 ---
 
 ## Journal de bord
+
+### 2026-08-01 (suite 4) — Coûts en heures entières, Sonnet 5, et un bug qui rendait « 0 problème » pour une panne de format
+
+Trois demandes utilisateur, et un défaut sérieux découvert en les traitant.
+
+#### 1. Les écarts de coût négatifs — ce n'est pas un bug de calcul
+
+`ecart_cout = cout_produit − cout_etalon`. Un écart négatif dit que le module 4
+**sous-estime** : il chiffre moins d'heures que le tagage manuel. Ce n'est pas une
+erreur d'arithmétique, c'est le résultat de la mesure — et c'est le sens le plus
+inquiétant des deux. Une surestimation facture des heures inutiles et se voit sur
+la facture ; une sous-estimation inscrit un élève sur un volume qui ne suffira
+pas, et **ressemble à un devis raisonnable**. Le compte rendu de
+`mesurer_plancher` lit désormais le signe à voix haute plutôt que de laisser
+interpréter un `+` ou un `−`.
+
+⚠ **Ne pas agréger les écarts.** Sur la première série, +3,5 h de somme cachaient
+des écarts par copie de −4 h à +5,5 h qui se compensaient. Ce que paie une
+famille n'est pas la moyenne du centre.
+
+#### 2. 🔴 Le défaut que la question a fait remonter : la règle d'arrondi ne s'appliquait qu'à 27 % de la grille
+
+En allant régler l'arrondi, constat : **les 444 coûts officiels étaient lus tels
+quels dans le classeur** (`importer_referentiel.py`, `cout_heures=_decimal(r[6])`).
+Seules les 162 lignes de lycée passaient par `cout_remediation()`. Autrement dit
+la formule documentée dans `referentiel/couts.py` — « arrondi, plancher,
+plafond » — **ne voyait jamais passer 73 % de la grille**. Changer la formule
+seule n'aurait donc corrigé que 162 lignes sur 606, en silence, et le classeur
+aurait continué d'imposer ses demi-heures.
+
+Corrigé par un point de passage unique, `arrondir_heures()`, appliqué **aux deux
+voies** à l'import. Mesuré au passage : sur les 444 officiels, 389 coïncident
+avec la formule et **55 divergent** — tous des cas où le classeur avait arrondi
+vers le bas (`G.MED × CPT` : 9 h × 0,35 = 3,15 → classeur 3 h). La valeur du
+classeur reste la source (arbitrage G) ; c'est son arrondi qui est normalisé.
+
+#### 3. Arrondi à l'heure entière supérieure (décision utilisateur)
+
+Plus de demi-heures, toujours au-dessus : 1,5 → 2. `COUT_PLANCHER` passe de 0,5 h
+à 1 h ; le plafond reste 4 h. Grille régénérée : **1 h × 394 · 2 h × 144 ·
+3 h × 34 · 4 h × 34**, zéro valeur fractionnaire sur 606 lignes.
+
+Deux conséquences à ne pas découvrir plus tard :
+- **L'échelle se resserre.** Quatre valeurs au lieu de huit. Sur le lycée
+  (volume de repli 4 h), quatre des six types remédiables tombent tous sur 1 h :
+  le type d'erreur n'y départage presque plus rien. C'est la dégénérescence que
+  le choix de 4 h évitait par le haut, revenue par le bas. Le test
+  `test_le_repli_lycee_ne_departage_plus_que_deux_types` la consigne — **c'est
+  un constat gardé sous les yeux, pas un objectif atteint.**
+- **Les coûts montent de ~33 %,** donc les paliers glissent. L'étalon du corpus
+  passe de 70 h à 93 h. Des élèves classés A (< 8 h) passeront en B. Le seuil
+  A/B/C n'a pas été rejugé — à surveiller sur les premières sessions réelles.
+
+Les coûts déjà **stockés** sur les problèmes (`Probleme.cout_estime` est copié à
+la création, pas relu) restaient à l'ancienne échelle : nouvelle commande
+`manage.py recalculer_couts` (avec `--a-blanc`). 46 problèmes réalignés,
+45 h → 68 h. Elle **refuse de toucher** aux problèmes d'une session déjà
+inscrite — un palier annoncé à une famille ne se réécrit pas dans son dos — et
+les liste pour reprise à la main (2 cas, session `DEMO`).
+
+#### 4. Sonnet 5 pour le diagnostic — et ce que ça coûte
+
+`CLAUDE_MODEL_OPUS=claude-sonnet-5` (le champ garde son nom, qui ne désigne plus
+un Opus — noté dans `.env`).
+
+**🔴 Deux copies sur cinq rendaient « produit 0 ».** Pas une baisse de qualité :
+une panne de format. Sonnet 5 emballe par intermittence sa sortie autrement que
+le schéma ne le demande — soit `{"problemes": {…}}` (objet seul au lieu d'une
+liste), soit, plus surprenant, **tout le JSON réemballé dans une chaîne à
+l'intérieur du champ qu'il devait remplir** : `{"problemes": "{\"problemes\":
+[…]}"}`. Pydantic refusait, la copie entière était perdue, et le compte rendu
+affichait « produit 0 · rappel 0 % » — **un échec de format qui a l'apparence
+d'un diagnostic vide.** C'est le symptôme le plus dangereux du lot : il ne
+ressemble pas à une panne.
+
+Traité par `ClaudeClient._normaliser_problemes`, qui déballe sans rien ajouter.
+**Ce n'est pas une entorse à la règle « une sortie refusée n'est jamais réparée
+à sa place »** : cette règle porte sur le contenu — on n'invente pas un code, on
+ne déplace pas une compétence. Ici on ouvre une enveloppe. Les codes obtenus
+repassent inchangés par la validation par question. Quatre tests verrouillent
+les deux formes, le cas normal, et le refus de deviner sur une chaîne non-JSON.
+
+**Le chiffre, une fois la panne levée :**
+
+| copie | étalon | produit | exacts | type faux | manqués | en trop | rappel compétence | écart de coût |
+|---|---|---|---|---|---|---|---|---|
+| `3E-01` | 22 | 22 | 11 | 6 | 5 | 5 | 77 % | −13 h |
+| `3E-02` | 10 | 7 | 1 | 4 | 5 | 2 | 50 % | −1 h |
+| `5E-03` | 14 | 12 | 8 | 1 | 5 | 3 | 64 % | −6 h |
+| `5E-04` | 9 | 9 | 5 | 0 | 4 | 4 | 56 % | −1 h |
+| `6E-05` | 11 | 14 | 6 | 4 | 1 | 4 | 91 % | +8 h |
+| **total** | **66** | **64** | **31** | **15** | **20** | **18** | **70 %** | **−13 h** |
+
+**Sonnet 5 est nettement moins bon qu'Opus 4.7 sur cette tâche**, et il faut le
+dire : rappel sur le couple **47 % contre 65 %**, rappel sur la compétence seule
+**70 % contre 85 %**, précision **48 % contre 61 %**. Les 18 points de rappel
+perdus ne sont pas du bruit sur 66 problèmes. Et **quatre copies sur cinq
+sous-estiment** désormais le coût, là où la série Opus se partageait
+équitablement entre sur- et sous-estimation.
+
+Le basculement est fait comme demandé — c'est « en attendant ». Mais le prix est
+réel, et le jalon du module 4 ne sera pas franchi sur ce modèle.
+
+**Vérifié :** 253 tests Django + 271 pytest = **524 tests passent**.
+
+**Prochaine étape :** inchangée sur le fond — le type d'erreur reste le point
+dur, `ATT` en tête. S'y ajoute une question ouverte : **rejuger les seuils
+A/B/C** après la hausse de ~33 % des coûts.
+
+### 2026-08-01 (suite 3) — 🔢 Le module 4 a un chiffre : 85 % sur la compétence, 65 % sur le couple
+
+Les cinq mesures plancher ont tourné contre les 66 problèmes du corpus.
+**Le module 4 trouve la bonne compétence 85 % du temps, et le bon couple
+`compétence × type d'erreur` 65 % du temps.**
+
+| copie | étalon | produit | exacts | type faux | manqués | en trop | précision | rappel | rappel compétence | écart de coût |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `CORPUS-3E-01` | 22 | 27 | 17 | 4 | 1 | 6 | 63 % | 77 % | 95 % | −4,0 h |
+| `CORPUS-3E-02` | 10 | 9 | 4 | 4 | 2 | 1 | 44 % | 40 % | 80 % | **+5,5 h** |
+| `CORPUS-5E-03` | 14 | 15 | 9 | 3 | 2 | 3 | 60 % | 64 % | 86 % | −1,5 h |
+| `CORPUS-5E-04` | 9 | 8 | 5 | 0 | 4 | 3 | 62 % | 56 % | 56 % | +1,0 h |
+| `CORPUS-6E-05` | 11 | 12 | 8 | 2 | 1 | 2 | 67 % | 73 % | 91 % | +2,5 h |
+| **total** | **66** | **71** | **43** | **13** | **10** | **15** | **61 %** | **65 %** | **85 %** | **+3,5 h** |
+
+**Ce que ces chiffres disent, et c'est le résultat de la session.** L'écart de
+20 points entre 85 % et 65 % n'est pas du bruit : **le module 4 voit *où* ça
+casse, et se trompe sur *pourquoi*.** C'est exactement le mode d'échec que la
+fiche du module 4 désignait comme le plus coûteux — une compétence juste avec un
+type d'erreur faux envoie le tuteur travailler la mauvaise chose pendant des
+heures facturées, et aucune validation ne peut l'attraper puisque les deux codes
+existent.
+
+**Le défaut le plus net, et il a une conséquence financière directe : `ATT`.**
+Le corpus porte 4 problèmes d'inattention ; le module 4 en produit **1**, et pas
+au bon endroit — aucun des 4 n'est retrouvé. Ils reviennent en `CPT` ou en
+`PRC`. Or `ATT` est **le seul type qui ne coûte rien** (non remédiable, D-CEO
+module 6). Transformer une inattention en lacune conceptuelle **facture des
+heures qui n'ont pas lieu d'être** : c'est la copie 2, dont l'étalon porte 3 des
+4 `ATT` du corpus, qui affiche le pire écart de coût du lot — +5,5 h sur 8,5 h,
+soit **+65 %**. Le palier de cet élève passerait de A à B sur cette seule
+erreur de type.
+
+**L'écart de coût agrégé est trompeur et il ne faut pas s'en servir.** +3,5 h
+sur 70 h = +5 %, ce qui semble excellent. Mais les écarts par copie vont de
+−4,0 h à +5,5 h : les surestimations et les sous-estimations se compensent en
+agrégat alors qu'aucun élève n'est bien chiffré. **C'est l'écart absolu par
+copie qui compte** — ce que paie une famille, ce n'est pas la moyenne du centre.
+
+**Ce que ça ne dit pas.** C'est un plancher, et il est plus bas que le protocole
+ne le laissait croire : le modèle a travaillé sans aucune signature d'erreur, et
+sans les questions réussies (voir l'entrée précédente) alors que le tagueur
+humain raisonnait explicitement par contraste. Le mode ancré du module 4 reçoit
+3 à 4 signatures par question — il ne peut que faire mieux sur le type d'erreur,
+qui est précisément ce que les signatures décrivent. **Ce chiffre n'atteste donc
+pas le jalon**, il donne une base de comparaison pour le jour où le sujet
+imprimé existera.
+
+**Deux défauts d'exploitation corrigés en route, tous deux invisibles jusqu'à
+l'exécution.**
+1. **TLS.** Avast inspecte le HTTPS et signe les certificats avec sa propre
+   racine, présente dans le magasin de Windows mais absente du bundle `certifi`
+   qu'embarquent les SDK. Tout appel de modèle échouait sur
+   `CERTIFICATE_VERIFY_FAILED` sur une machine dont le réseau marche par
+   ailleurs. `manage.py` délègue désormais la vérification au magasin du système
+   (`truststore`, ajouté aux dépendances) — rien n'est désactivé : ce que Windows
+   refuse reste refusé.
+2. **`temperature` sur Opus 4.7.** Le paramètre n'est plus accepté depuis
+   Opus 4.7 et rend un 400 ; `claude_client.py` l'envoyait dans ses **onze**
+   appels. Le filtrage se fait maintenant sur le nom du modèle, dans un passage
+   obligé unique (`_creer_message`), plutôt qu'en retirant `temperature` de
+   chaque appel : le même client sert Sonnet 4.6, qui l'accepte encore, et un
+   changement de `CLAUDE_MODEL_HEAVY` dans `.env` aurait suffi à casser un appel
+   resté correct par ailleurs. Le retrait est journalisé — un `temperature=0` qui
+   disparaît en silence donnerait l'illusion d'un déterminisme qu'on n'a plus.
+
+**Un défaut de la doc constaté au passage :** `.env.example` propose encore
+`IMAGE_MIN_RESOLUTION` et `IMAGE_BLUR_THRESHOLD`, que `src/core/config.py` ne
+déclare plus. `Settings` refuse les variables inconnues, donc **copier
+`.env.example` en `.env` comme son en-tête le demande fait échouer toute commande
+du pipeline.** Non corrigé ici (fichier versionné) — à retirer.
+
+**Vérifié :** 251 tests Django + 267 pytest = **518 tests passent** après la
+modification du client.
+
+**Prochaine étape :** le chiffre existe, le point dur est désigné — le type
+d'erreur, et `ATT` en particulier. Deux pistes, à trancher : (1) décrire `ATT`
+explicitement dans `prompts/diagnostic_plancher_prompt.md` et re-mesurer, ce qui
+coûte quelques centimes et dit tout de suite si le défaut est de prompt ou de
+fond ; (2) attendre le mode ancré, dont les signatures portent justement la
+distinction de type. La (1) ne dispense pas de la (2) mais l'éclaire. Reste
+inchangé : imprimer, faire passer et scanner un sujet Urie.
+
+### 2026-08-01 (suite 2) — Les 5 copies sont transcrites ; la mesure plancher n'attend plus que la clé
+
+Le travail manuel identifié comme prochaine étape par l'entrée précédente est fait :
+les 5 copies du corpus sont transcrites en fichiers de productions
+(`data/productions/corpus_3e_01`, `_3e_02`, `_5e_03`, `_5e_04`, `_6e_05`).
+**Les 5 passent la validation de format et le contrôle anti-recopie** —
+`mesurer_plancher` ne s'arrête plus que sur l'absence de modèle, ce qui est le
+comportement attendu.
+
+**Ce que la transcription a appris, et qui n'était pas dans le protocole**
+
+1. **La consigne « recopier ce qui est écrit » était incomplète.** Les copies
+   portent **trois encres** : le bleu de l'élève, le rouge du correcteur, le gris
+   des tracés au crayon. Le module 2 avait déjà mesuré cette séparation sur un
+   scan réel (2,3 % de pixels rouges) mais la conséquence n'avait pas été tirée
+   ici : transcrire le rouge, c'est fournir la correction avec la production —
+   exactement le piège que la commande interdit du côté des justifications, par
+   une autre porte, et que rien n'aurait détecté. Consigné dans chaque fichier.
+2. **Ne pas transcrire les questions réussies durcit la tâche plus que prévu.**
+   C'est la règle de `exemple.yaml` et elle est appliquée. Mais le tagueur humain
+   avait la copie entière et raisonne explicitement par contraste — la moitié des
+   66 justifications du corpus dit « laissé vide *alors que* telle autre question
+   est juste ». Le plancher mesuré sera donc plus bas que le protocole ne le
+   laisse entendre : à interpréter comme tel, pas comme un mauvais résultat.
+3. **Deux passages n'ont pas été transcrits, et c'est écrit dans les fichiers.**
+   L'annotation de l'angle au rapporteur de `CORPUS-6E-05` se lit « 40 » ou
+   « 60 » ; deux des quatre égalités vectorielles de `CORPUS-3E-01` ne se
+   distinguent pas nettement du texte imprimé. Le module 3 avait déjà refusé de
+   taguer ce même angle pour la même raison. Une lecture inventée pour compléter
+   un fichier met l'erreur **dans l'instrument de mesure**.
+4. **Une asymétrie assumée, à garder en tête au dépouillement.** La copie 5 a été
+   transcrite après que sa fiche de tagage a été lue ; les copies 1 à 4 l'ont été
+   à l'aveugle. Si son écart se détache des quatre autres, c'est la première
+   explication à examiner.
+
+**Ce qui bloque, et ce n'est plus du travail :** `anthropic` n'est pas installé
+dans l'interpréteur courant (`pip install -r requirements.txt`) et il n'y a pas
+de fichier `.env` ni de `ANTHROPIC_API_KEY` dans l'environnement.
+
+**Vérifié :** 251 tests Django + 267 pytest = 518 tests passent (exécutés en début
+de session, avant toute modification). Les 5 commandes `mesurer_plancher` ont été
+lancées : les 5 franchissent validation et contrôle anti-circularité.
+
+**Prochaine étape :** installer les dépendances, renseigner la clé, lancer les 5
+mesures, consigner l'écart ici (exacts / type faux / manqués / en trop, et écart
+de coût en heures). En parallèle, toujours : imprimer, faire passer et scanner un
+sujet Urie — il débloque le tramage du module 2 et la mesure juste du module 4.
 
 ### 2026-08-01 (suite) — 🟨 Module 4 : le moteur tourne, et il n'a rien contre quoi se mesurer
 
