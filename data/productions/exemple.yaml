@@ -1,0 +1,54 @@
+# Exemple de fichier de productions — mesure plancher du module 4.
+#
+#   python manage.py mesurer_plancher --productions data/productions/copie_6e.yaml --contre 5
+#
+# À quoi ça sert
+# --------------
+# Le diagnostic contraint travaille par question, à partir des 280 questions du
+# référentiel. Les 5 copies du corpus sont de l'ANCIEN format et n'en portent
+# aucune : le module 4 ne peut pas tourner dessus, donc il n'a rien contre quoi se
+# mesurer tant qu'aucune copie du nouveau format n'existe.
+#
+# Ce fichier permet la mesure « plancher » : le modèle reçoit la production brute
+# de l'élève et le catalogue des compétences du niveau, SANS aucune signature
+# d'erreur à reconnaître. C'est exactement la tâche qu'a faite l'humain qui a
+# tagué le corpus — donc la comparaison est loyale. Et c'est un plancher : le mode
+# ancré, mieux armé, ne peut que faire aussi bien ou mieux.
+#
+# ⚠ LA SEULE RÈGLE QUI COMPTE ICI
+# --------------------------------
+# `production` doit contenir **ce que l'élève a écrit**, transcrit du scan, et
+# rien d'autre. Aucune interprétation, aucun jugement, aucun « il confond X et Y ».
+#
+# La tentation est de recopier les justifications du corpus, déjà écrites et déjà
+# en base. Ce serait mesurer le vide : ces justifications portent le diagnostic en
+# toutes lettres, les donner en entrée revient à fournir la réponse avec la
+# question. Le score serait excellent et ne voudrait rien dire. La commande
+# refuse de tourner si elle détecte cette recopie.
+#
+# Correspondance des évaluations du corpus (`manage.py corpus` pour la liste) :
+#   1 → CORPUS-3E-01 (22 problèmes)   ·  2 → CORPUS-3E-02 (10)
+#   3 → CORPUS-5E-03 (14)             ·  4 → CORPUS-5E-04 (9)
+#   5 → CORPUS-6E-05 (11)  ← la plus courte, bon point de départ
+
+identifiant_hakili: HK-EXEMPLE      # identifiant non nominatif du corpus
+niveau_test: 6eme                   # le niveau **d'entrée** du test
+
+productions:
+  # Un repère par endroit de la copie. Il n'a pas besoin d'exister au
+  # référentiel : il sert seulement à relier un problème à sa source.
+  - repere: "partie A — question 4"
+    enonce: "Quelle place occupe chaque chiffre dans 175,62 ?"
+    production: ""                  # rien d'écrit — donnée de diagnostic à part entière
+
+  - repere: "partie A — question 7"
+    enonce: "Complète : 290 + ... = 3028"
+    production: "290 + 2638 = 3028, puis raturé, case laissée à 2748"
+
+  - repere: "exercice 2"
+    enonce: "Périmètre d'une table circulaire de 1,3 m de diamètre"
+    production: "1,3 x 2 = 2,6 m"   # ce qu'on lit, pas ce qu'on en conclut
+
+  # Ne pas faire figurer les questions réussies : elles n'ont rien à diagnostiquer.
+  # En revanche, une production ratée dont on ne conclut rien se met quand même —
+  # le modèle a le droit de n'émettre aucun problème, et c'est signalé au rapport.

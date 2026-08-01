@@ -1,0 +1,56 @@
+# Exemple de fichier de réponses — diagnostic contraint (module 4).
+#
+#   python manage.py diagnostiquer --fichier data/reponses/exemple.yaml --sans-modele
+#
+# Ce fichier est la façon d'alimenter le module 4 à la main, sans passer par le
+# pipeline de correction : les codes de question sont ceux des 280 questions du
+# référentiel (onglet `04_Questions`), et rien d'autre n'est accepté.
+#
+# À terme, ces réponses viendront du module 2 (zones découpées) puis de la
+# transcription. En attendant, ce format sert à éprouver le diagnostic sur des
+# copies réelles et à mesurer son écart avec le corpus de référence.
+#
+# Trois choses à savoir sur ce que produit le diagnostic :
+#   1. Les QCM sont tranchés **sans aucun appel de modèle** — la lettre cochée
+#      donne le type d'erreur par la table des options.
+#   2. Les problèmes produits sont des **hypothèses**. C'est T1 qui confirme ou
+#      écarte, jamais le diagnostic automatique.
+#   3. Une question écartée (illisible, construction géométrique, sans réponse
+#      cochée) est **listée** au compte rendu : son absence de problème ne vaut
+#      pas réussite.
+
+identifiant_hakili: HK-EXEMPLE
+niveau_test: 3eme          # 6eme, 5eme, 4eme, 3eme, 2ndeC, 1ereD, tleD
+copy_id: ""                # facultatif — la copie déjà persistée par le pipeline
+
+reponses:
+  # ── QCM : la lettre cochée suffit, aucun modèle n'est appelé ──────────────
+  - question: D2
+    reponse: "d"           # 300 km au lieu de 3 km → CPT (échelle inversée)
+
+  - question: F1
+    reponse: "c"           # 10 au lieu de -10 → ATT (signe perdu)
+
+  - question: G3
+    reponse: "c"           # bonne réponse — aucun problème produit
+
+  - question: G5
+    reponse: ""            # rien de coché : écartée, pas devinée
+    vide: true
+
+  # ── Réponses ouvertes : soumises au modèle avec les signatures d'erreur ───
+  - question: D1
+    reponse: "18/50 = 0,36"
+
+  - question: D3
+    reponse: ""
+    vide: true             # zone vierge — donnée de diagnostic à part entière
+
+  # ── Question réussie : indiquée pour mémoire, non diagnostiquée ───────────
+  - question: D5
+    reponse: "Prix de vente 2 800 F"
+    correcte: true
+
+  # ── Construction géométrique : orientée vers la saisie humaine ────────────
+  - question: G12
+    reponse: "figure tracée"
