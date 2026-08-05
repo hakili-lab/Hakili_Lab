@@ -1,9 +1,9 @@
 """
 Formatage mathématique des textes IA — helpers PURS (regex uniquement).
 
-Partagés entre le rendu PDF (pdf_report_html) et l'UI Streamlit (app.py).
+Utilisés par le rendu PDF (pdf_report_html) et par l'affichage des écrans.
 Module volontairement sans dépendance (stdlib `re` seulement) : importable
-en tête d'app.py sans coût de démarrage.
+n'importe où sans coût de démarrage.
 """
 from __future__ import annotations
 

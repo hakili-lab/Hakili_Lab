@@ -7,8 +7,8 @@ Contrôle avant mise en service, et essai de correction de bout en bout.
 Sans argument, la commande ne fait que vérifier la configuration — aucune API
 n'est appelée, rien n'est écrit. Avec `--copie`, elle exécute une correction
 complète sur une vraie copie : c'est le seul contrôle qui prouve que la chaîne
-tient de bout en bout, et c'est le préalable au retrait de Streamlit
-(voir docs/urie_v2_roadmap.md).
+tient de bout en bout. Il n'a jamais été passé — Streamlit a été retiré sans lui
+(D-CEO-39), et il reste donc à faire.
 """
 from __future__ import annotations
 
@@ -220,8 +220,8 @@ class Command(BaseCommand):
     # ── Essai réel ───────────────────────────────────────────────────────────
 
     def _essai_reel(self, options: dict) -> None:
-        """Exécute une correction complète — c'est le contrôle qui manque avant de
-        retirer Streamlit."""
+        """Exécute une correction complète — le seul contrôle qui prouve que la
+        chaîne tient de bout en bout. Toujours pas passé à ce jour."""
         chemin = Path(options["copie"]).expanduser().resolve()
         if not chemin.exists():
             self._echec("Copie introuvable", str(chemin))

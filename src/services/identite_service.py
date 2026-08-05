@@ -1,13 +1,14 @@
 """
 Rôles, casquettes, recherche par nom, nommage des documents.
 
-Extrait de `src/ui/app.py` lors de la migration vers Django : ces fonctions
-n'affichent rien, elles décident. Les laisser dans un fichier Streamlit de
+Extrait de l'ancienne interface Streamlit lors de la migration vers Django
+(retirée depuis, D-CEO-39) : ces fonctions n'affichent rien, elles décident.
+Les laisser dans un fichier d'interface de
 2 876 lignes les rendait intestables et les aurait fait disparaître avec lui.
 Aucune logique n'a été modifiée au passage — seulement déplacée et couverte de
 tests.
 
-Ce module ne dépend d'aucun framework : ni Streamlit, ni Django.
+Ce module ne dépend d'aucun framework.
 """
 from __future__ import annotations
 

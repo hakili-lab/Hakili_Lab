@@ -1,8 +1,8 @@
 """
 Tests de `src/services/identite_service.py`.
 
-Cette logique vivait dans `src/ui/app.py` et n'était donc pas testable : le
-fichier importe Streamlit et construit la configuration au chargement. Ces tests
+Cette logique vivait dans l'ancienne interface Streamlit et n'était donc pas
+testable : le fichier construisait la configuration au chargement. Ces tests
 sont écrits au moment de l'extraction, pour figer le comportement existant avant
 que les vues Django ne s'appuient dessus.
 """

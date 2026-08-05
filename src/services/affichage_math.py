@@ -1,7 +1,8 @@
 """
 Rendu des expressions mathématiques à l'écran.
 
-Extrait de `src/ui/app.py` lors de la migration vers Django. Sans ces fonctions,
+Extrait de l'ancienne interface Streamlit lors de la migration vers Django
+(retirée depuis, D-CEO-39). Sans ces fonctions,
 une réponse d'élève s'afficherait « x^2 » et « <= » au lieu de x² et ≤ : ce n'est
 pas cosmétique, c'est ce que l'enseignant compare pour décider d'une note dans le
 tableau de validation.

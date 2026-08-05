@@ -1,10 +1,10 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-08-05 (module 2 supprimé, diagnostic branché sur la correction — D-CEO-38)
+**Dernière mise à jour :** 2026-08-05 (module 2 supprimé et diagnostic branché sur la correction — D-CEO-38 ; Streamlit retiré — D-CEO-39)
 **Où en est-on (résumé en une ligne) :** Modules 0, **1 et 3 ✅ faits** · **Module 2 ⛔ supprimé le 2026-08-05** — trois copies 5e réelles imprimées et scannées l'ont mis en défaut (les trois refusées, dérive jusqu'à 3 cm), et il reconstituait par la géométrie une correspondance que la correction produit déjà ; au passage le risque du tramage est levé, l'imprimante n'imprime pas les bandes de guidage du tout · **Module 4 🟨 le moteur tourne et il est branché** — `manage.py diagnostiquer --correction <id>` reprend une copie déjà corrigée, sans lecture ni appel de modèle supplémentaire, QCM court-circuités, décision enseignant prioritaire · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. Le chiffre du module 4 reste celui de la mesure plancher : **rappel 85 % sur la compétence, 65 % sur le couple `compétence × type`** (Opus 4.7), point dur = le type d'erreur, `ATT` en tête. **La mesure juste n'attend plus qu'une chose : corriger les 3 copies 5e** (`KOANDA-SAIBATA-5E`, `NABALOUM-MADJID-5E`, `OUATTARA-FADEL_5E`) puis comparer. Les seuils de palier A/B/C **n'ont toujours pas été rejugés** après la hausse de ~33 % des coûts.
 
-**État vérifié le 2026-08-05 : 268 tests Django + 239 pytest = 507 tests passent.** (Le total baisse : les 43 tests du module 2 sont partis avec lui, 15 tests neufs couvrent le branchement.)
+**État vérifié le 2026-08-05 : 268 tests Django + 239 pytest = 507 tests passent.** (Le total baisse : les 43 tests du module 2 sont partis avec lui, 15 tests neufs couvrent le branchement. Le retrait de Streamlit n'a touché aucun test.)
 
 ⚠ **Un point bloque l'usage de l'interface, et aucune ligne de code ne le lèvera :**
 le fichier de clé JSON du compte de service Google est introuvable sur la machine
@@ -351,14 +351,14 @@ enseignant avant l'écart mesuré.
 
 - [ ] Écran 1 : saisie/correction des réponses d'une évaluation, copie découpée affichée à côté du champ. *(dépend du Module 2 pour la découpe ; le tableau de validation du pipeline existant en couvre déjà la moitié)*
 - [ ] Écran 2 : fiche de séance tuteur, 5 champs (problèmes travaillés, blocage, déblocage, travail donné, appréciation), utilisable au téléphone en moins de 2 minutes.
-- [x] Réutiliser l'auth déjà en place plutôt que créer un nouveau système d'accès — fait côté Django (`comptes/`, décorateurs `connexion_requise` / `admin_requis`), et non plus dans `src/ui/app.py`.
+- [x] Réutiliser l'auth déjà en place plutôt que créer un nouveau système d'accès — fait côté Django (`comptes/`, décorateurs `connexion_requise` / `admin_requis`).
 - [x] Acquis en chemin, à ne pas refaire : l'**admin Django sur les 11 tables** couvre la consultation et la correction ponctuelle, et l'écran `/parcours/<jeton>/` porte déjà l'inscription au programme.
 - [x] Acquis les 2-3 août, **hors de ce module** : un **système visuel unifié** dans `templates_django/base.html` (composants nommés, gamme de couleurs, échelles typographique et d'espacement) sur lequel les onze écrans existants ont été repris, et un **jeu d'identités factices** (D-CEO-37) qui rend les écrans travaillables sans les Sheets. Les deux écrans à construire ci-dessus s'appuieront dessus — ils n'en sont pas plus avancés pour autant.
 
 > ⚠ **Ne pas confondre.** Le travail de présentation des 2-3 août ne coche aucune des deux premières cases : elles demandent des écrans qui **n'existent pas**, pas une meilleure mise en page de ceux qui existent. Le module reste amorcé, au même point qu'au 30 juillet.
 
 **Critère de fin :** un tuteur remplit une fiche de séance depuis son téléphone en moins de 2 minutes ; une évaluation complète peut être corrigée à l'écran sans manipuler de fichier.
-**Fichiers concernés :** `src/ui/app.py` (nouveaux onglets/vues).
+**Fichiers concernés :** `suivi_web/` et `correction_web/` (nouvelles vues et gabarits), sur le système visuel de `templates_django/base.html`.
 
 ---
 
@@ -376,7 +376,7 @@ enseignant avant l'écart mesuré.
 - [ ] Réutiliser le pattern de tableau de bord déjà validé (`src/core/tendance.py`, D-CEO-23) pour l'affichage des indicateurs.
 
 **Critère de fin :** les deux documents se génèrent depuis la base sans aucune retouche manuelle.
-**Fichiers concernés :** `src/pipeline/pdf_report_html.py` (nouveau template), `src/ui/app.py` (nouvel onglet indicateurs).
+**Fichiers concernés :** `src/pipeline/pdf_report_html.py` (nouveau template), `suivi_web/` (écran d'indicateurs).
 
 ---
 
@@ -453,6 +453,56 @@ Limite structurelle assumée : certaines compétences ont un libellé volontaire
 ---
 
 ## Journal de bord
+
+### 2026-08-05 (suite 2) — Streamlit retiré, et deux dépendances de moins que prévu
+
+Deuxième poste de la simplification décidée avec l'utilisateur. `src/ui/`
+supprimé : **3 106 lignes**, dont `app.py` qui était le plus gros fichier du
+projet (2 778). Avec lui partent `streamlit`, `pandas`, la configuration
+`.streamlit/` et la cible `make run-streamlit`.
+
+**Et `numpy` aussi**, ce qui n'était pas prévu : il ne servait pas à Streamlit
+mais à `src/pipeline/zones.py`, supprimé le matin même (D-CEO-38). Plus rien ne
+l'utilise. Le commentaire qui le déclarait dans `requirements.txt` disait
+d'ailleurs exactement ça — « numpy sert à la découpe des zones de réponse » —
+il aurait survécu sans être relu.
+
+`hakili_logo.png` est **déplacé** dans `static/` plutôt que supprimé : c'était
+le seul exemplaire de la marque dans le dépôt, et Django le sert désormais
+(`STATICFILES_DIRS` prend `static/` s'il existe).
+
+**Le filet ne rattrapait plus rien.** Django porte les onze écrans depuis le
+30 juillet et Streamlit n'a plus servi depuis. Surtout, il ne pouvait pas
+dépanner : sans la clé du compte de service Google, **aucune des deux
+interfaces** ne permet de se connecter. Le point de panne est commun ; le
+second exemplaire ne le contourne pas, il double seulement l'entretien.
+
+**🔴 Ce que ce retrait emporte, et qu'il ne faut pas laisser filer.** La fiche
+« Retrait de Streamlit » de ce document posait **un** point bloquant :
+`verifier_installation --copie … --test … --eleve …`, une correction complète
+sur une vraie copie. **Il n'a jamais tourné.** Le retrait a eu lieu sans lui —
+c'est un choix, pas un oubli, et il est consigné comme tel en D-CEO-39. Les 268
+tests Django ne le remplacent pas : ils simulent le pipeline. Ce contrôle reste
+le seul qui prouve que la chaîne tient de bout en bout, et il est maintenant
+**découplé** au lieu d'être bloquant — ce qui le rend plus facile à oublier, pas
+moins nécessaire.
+
+**Ce que ça débloque.** `copie` et `document` vivent sous SQLAlchemy/Alembic
+parce que Streamlit les écrivait, et c'est la raison pour laquelle
+`Evaluation.copy_id` est un champ texte plutôt qu'une clé étrangère. La
+condition est levée : ces deux tables peuvent passer sous Django, ce qui retire
+un second ORM et un second système de migrations. C'est le chantier suivant
+(point 4 de la liste de simplification), pas un effet de bord de celui-ci.
+
+**268 tests Django + 239 pytest passent, inchangés** — rien ne dépendait de
+`src/ui`. C'est la discipline « `src/` sans dépendance de framework », tenue
+depuis le début, qui rend ce retrait sans effet : les fonctions métier avaient
+déjà été extraites vers `src/services/`.
+
+**Reste de la liste de simplification :** les trois clients IA non retenus
+(1 671 lignes), la double persistance (450), la mesure plancher (276), le module
+5 tel qu'il est spécifié, et le principe **dégrader plutôt que refuser**.
+
 
 ### 2026-08-05 (suite) — ⛔ Le module 2 est supprimé, et le module 4 est branché
 
@@ -1150,8 +1200,12 @@ Test personnalisé (sujet hors catalogue) désormais disponible dans l'interface
 
 **Vérifié :** 81 tests Django + 218 pytest = **299 tests passent**.
 
-### ⚠ Retrait de Streamlit — un seul point bloquant
-Streamlit **reste en service**, délibérément.
+### ⚠ Retrait de Streamlit — fait le 2026-08-05 (D-CEO-39), sans l'essai qui le conditionnait
+> **Cette fiche décrivait l'état antérieur au retrait.** Elle est conservée parce que le
+> point bloquant qu'elle nomme — l'essai réel de bout en bout — **n'a jamais été passé**.
+> Il n'est plus bloquant, il est simplement toujours à faire.
+
+Streamlit restait en service, délibérément.
 
 **Il manque un essai réel de bout en bout.** Cet environnement n'a pas de clés API : tous les tests simulent le pipeline. Une correction complète sur une vraie copie — vraies API, vraie base Neon, vrai Sheet — doit être passée avant de retirer le filet.
 
@@ -1160,7 +1214,7 @@ Tout le reste est prêt :
 - Plus aucun test ne dépend de Streamlit.
 - Les quatre écrans sont couverts : correction d'une copie, correction d'une classe, suivi des élèves, statistiques — plus le mode libre.
 
-**Marche à suivre une fois l'essai passé :** supprimer `src/ui/`, retirer `streamlit` de `requirements.txt` et le dossier `.streamlit/`, mettre à jour `README.md`, `CLAUDE.md` et le registre des décisions.
+**Marche à suivre une fois l'essai passé :** supprimer `src/ui/`, retirer `streamlit` de `requirements.txt` et le dossier `.streamlit/`, mettre à jour `README.md`, `CLAUDE.md` et le registre des décisions. → **Fait le 2026-08-05**, l'essai en moins ; `pandas` et `numpy` sont partis avec, et `hakili_logo.png` a été déplacé dans `static/`.
 
 ### 2026-07-30 (suite) — Mise en service préparée
 **Constat en préparant le déploiement : l'application ne pouvait pas être déployée.** Aucun serveur web dans `requirements.txt`, aucun `Procfile` — `runserver` n'est pas un serveur de production. Comblé :

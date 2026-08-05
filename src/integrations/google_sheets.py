@@ -31,9 +31,9 @@ deriver_centres. Ajouter un centre se fait dans les Sheets, jamais dans le
 code.
 
 Chaque Sheet est lu sur son premier onglet (sheet1). Cache TTL en mémoire
-(pas st.cache_data, pour garder ce module indépendant du framework UI comme
-le reste de src/services/ — testable sans Streamlit) : voir _CACHE_TTL_SECONDS
-et clear_cache().
+(en mémoire, pas dans un cache de framework, pour garder ce module
+indépendant de l'interface comme le reste de src/services/) : voir
+_CACHE_TTL_SECONDS et clear_cache().
 
 IMPORTANT — confidentialité : contact_parents est renvoyé par get_eleves()/
 get_eleve_by_identifiant() car il sert à construire identifiant_hakili (et
@@ -119,9 +119,9 @@ _COLONNES_PERSONNEL_OPTIONNELLES: frozenset[str] = frozenset({"classe", "email"}
 _ROLE_RESPONSABLE = "responsable"
 _ROLE_ENSEIGNANT = "enseignant"
 
-# Entre 60 et 120s demandé : les lectures répétées (rerun Streamlit à chaque
-# clic) ne rappellent pas l'API, tout en restant quasi temps réel si le
-# docteur modifie un Sheet.
+# Entre 60 et 120s demandé : les lectures répétées d'un même écran ne
+# rappellent pas l'API, tout en restant quasi temps réel si le docteur
+# modifie un Sheet.
 _CACHE_TTL_SECONDS = 90
 
 _cache: dict[str, tuple[float, Any]] = {}
@@ -550,8 +550,8 @@ def _load_personnel() -> list[dict[str, Any]]:
     pour une personne à rôle unique) ; "roles" contient TOUS les rôles
     effectifs d'une personne, utilisé pour détecter le double rôle
     (responsable ET enseignant à la fois) sans jamais coder de nom en dur —
-    voir la boucle de détection ci-dessous et src/ui/app.py pour le
-    sélecteur de casquette qui en résulte."""
+    voir la boucle de détection ci-dessous. Le rôle ne commande plus que
+    l'accès à l'administration (D-CEO-32)."""
     par_personne: dict[str, dict[str, Any]] = {}
     nb_sans_pin = 0
 

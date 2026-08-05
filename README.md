@@ -172,7 +172,7 @@ data/knowledge/
 
 | Couche | Technologie |
 |---|---|
-| Interface | Streamlit 1.36 |
+| Interface | Django 5.2 (rendu serveur) |
 | Base de connaissance | YAML + pyyaml |
 | IA — Vision | Google Gemini 2.5 Flash |
 | IA — Raisonnement math | DeepSeek V3 + R1 (API compatible OpenAI) |
@@ -207,7 +207,7 @@ data/knowledge/
 .\.venv\Scripts\Activate.ps1
 
 # 2. Lancer l'interface
-streamlit run src\ui\app.py
+$env:DEBUG="true"; python manage.py runserver
 ```
 
 > Si PowerShell bloque : `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
@@ -216,12 +216,12 @@ streamlit run src\ui\app.py
 
 ```bash
 source .venv/bin/activate
-streamlit run src/ui/app.py
+DEBUG=true python manage.py runserver
 # ou
 make run
 ```
 
-L'interface s'ouvre sur `http://localhost:8501`.
+L'interface s'ouvre sur `http://localhost:8000` (admin sur `/admin/`).
 
 ---
 
@@ -239,7 +239,7 @@ python -m venv .venv
 
 Copy-Item .env.example .env
 # Ouvrir .env et renseigner les clés API
-.\.venv\Scripts\streamlit.exe run src\ui\app.py
+.\.venv\Scripts\python.exe manage.py runserver
 ```
 
 ### Linux / Mac
@@ -358,7 +358,6 @@ hakili_ai_correction/
 │   │   ├── pipeline.py               # Pipeline 11 étapes · on_progress callback
 │   │   └── pdf_report.py             # Génération rapports PDF (ReportLab)
 │   └── ui/
-│       ├── app.py                    # Interface Streamlit — mode Hakili + mode libre
 │       └── progress.py               # Écran d'analyse animé (7 étapes + barre temps réel)
 │
 ├── prompts/
@@ -403,7 +402,7 @@ hakili_ai_correction/
 | Commande | Description |
 |---|---|
 | `make setup` | Créer le venv et installer les dépendances |
-| `make run` | Lancer l'interface Streamlit |
+| `make run` | Lancer l'interface Django |
 | `make test` | Lancer les tests unitaires |
 | `make lint` | Vérifier qualité du code (ruff + mypy) |
 
@@ -412,7 +411,7 @@ hakili_ai_correction/
 ```powershell
 .\.venv\Scripts\pytest tests/ -v
 .\.venv\Scripts\ruff check src/
-.\.venv\Scripts\streamlit.exe run src\ui\app.py
+.\.venv\Scripts\python.exe manage.py runserver
 ```
 
 ---

@@ -3,7 +3,7 @@ dernières copies notées.
 
 Même esprit que classe_normalizer.py / centre_normalizer.py : une constante
 métier éditable à un seul endroit (SEUIL_TENDANCE) et une fonction pure,
-testable indépendamment de Streamlit et de la base — voir ces deux modules
+testable indépendamment de l'interface et de la base — voir ces deux modules
 pour le précédent déjà établi dans ce projet.
 """
 from __future__ import annotations

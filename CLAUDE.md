@@ -14,22 +14,15 @@ Ce document a deux parties : l'état réel de l'infrastructure aujourd'hui, puis
 
 `docs/decision_register.md` (D001 à D-CEO-25) est la **source de vérité datée** pour toute décision d'architecture. Lis-le avant de toucher à l'auth, à la persistance, ou aux Sheets — ce qui suit n'en est qu'un résumé, il peut avoir été complété depuis.
 
-### ⚠ Migration en cours : Streamlit → Django (D-CEO-28)
+### Django porte toute l'interface (D-CEO-28, achevé par D-CEO-39)
 
-Le projet est **en transition**. Django porte désormais le socle de données du chantier Urie v2 ; Streamlit porte encore toute l'interface existante. Les deux tournent sur la même base Neon, sans recouvrement d'écriture.
+**Streamlit est retiré** depuis le 2026-08-05. Django porte les 11 tables, l'authentification nom+PIN adossée au Sheet (`comptes/`), le suivi des élèves (`suivi_web/`), et la correction — copie unique, classe entière, mode libre (`correction_web/`).
 
-| Ce qui est en Django | Ce qui reste sur Streamlit |
-|---|---|
-| Les 11 tables du référentiel et du suivi | **Rien de fonctionnel** — `src/ui/app.py` est conservé comme filet |
-| Authentification nom+PIN adossée au Sheet (`comptes/`) | |
-| Suivi des élèves, profil, documents, statistiques (`suivi_web/`) | |
-| Correction : copie unique, classe entière, mode libre (`correction_web/`) | |
+⚠ **Un contrôle n'a jamais été passé, et son absence n'est pas comblée par les tests :** `manage.py verifier_installation --copie … --test … --eleve …` exécute une correction complète sur une vraie copie. C'est le seul contrôle qui prouve que la chaîne tient de bout en bout. Il conditionnait le retrait de Streamlit ; le retrait a eu lieu sans lui (D-CEO-39), donc **il reste à faire**.
 
-Le pipeline (`src/api/`, `src/pipeline/`, `src/knowledge/`) est **indépendant du
-framework** et sert aux deux. Streamlit ne sera supprimé qu'après un essai réel de
-bout en bout : `manage.py verifier_installation --copie … --test … --eleve …`
+`src/api/`, `src/pipeline/`, `src/knowledge/`, `src/models/`, `src/core/`, `src/integrations/` sont **indépendants du framework** — ne pas y introduire de dépendance à Django. Cette discipline a survécu à la migration, elle n'est pas devenue inutile : c'est elle qui a rendu le retrait de Streamlit sans effet sur les tests.
 
-`src/api/`, `src/pipeline/`, `src/knowledge/`, `src/models/`, `src/core/`, `src/integrations/` sont **indépendants du framework** — ne pas y introduire de dépendance à Django ou à Streamlit.
+**Reste de la transition, pas encore fait :** `copie` et `document` vivent toujours sous SQLAlchemy/Alembic — c'est ce qui rend `Evaluation.copy_id` texte plutôt que clé étrangère. La condition qui bloquait leur passage sous Django (Streamlit les écrivait) est levée.
 
 **Commandes :**
 ```bash
@@ -95,7 +88,7 @@ Le guide (`guide-urie.md`) prescrit une base **SQLite séparée** à 11 tables. 
 Points clés de cette adaptation :
 - `evaluation` référence `copie.copy_id` (nullable) au lieu de dupliquer le stockage des scans/documents — un `T0`/`T1`/etc. réutilise la `Copie` déjà persistée par le pipeline existant.
 - L'identité élève reste `identifiant_hakili` (texte), jamais une FK vers une table `eleve` — cohérent avec D-CEO-20.
-- Nommer la table de session `session_urie` (pas `session`, ambigu avec la session Streamlit).
+- Nommer la table de session `session_urie` (pas `session`, ambigu avec la session HTTP).
 - Import du classeur via un script idempotent (pattern `seed_users.py`), pas de saisie manuelle des tables référentiel/banque de questions.
 
 Le diagnostic structuré (module 4) **remplace directement** l'actuel `DiagnosticResult`/`CompetencyGap` en texte libre — niveau par niveau, au fur et à mesure que le référentiel et la grille de diagnostic couvrent ce niveau. Pas de coexistence longue entre les deux systèmes.
@@ -119,7 +112,7 @@ Sept états de session (D-CEO-34), dont **trois sorties sans remédiation à ne 
 
 ## Contraintes actives (fusion existant + chantier Urie v2)
 
-- Python + **Django (rendu serveur, HTMX)** — Streamlit n'est plus qu'un filet en attente de l'essai réel de bout en bout (D-CEO-28).
+- Python + **Django (rendu serveur, HTMX)**, seule interface depuis le retrait de Streamlit (D-CEO-39).
 - Barème binaire 0/1 par question et sous-question (hors nouveau format QCM/court/rédigé du chantier Urie).
 - L'enseignant a toujours le dernier mot sur le score (`TeacherDecision`, déjà implémenté).
 - **Aucun code de compétence ou de type d'erreur inventé — tout vient du référentiel.**
@@ -158,11 +151,9 @@ Avant de coder sur ce dépôt :
 # Windows
 .\.venv\Scripts\Activate.ps1
 $env:DEBUG="true"; python manage.py runserver     # interface Django, admin sur /admin/
-streamlit run src\ui\app.py                       # filet, le temps de l'essai réel
 
 # Unix / make
 make setup && make run          # lance Django
-make run-streamlit              # l'ancienne interface, tant qu'elle est en service
 make test
 make lint
 
@@ -195,20 +186,19 @@ alembic downgrade -1
 | `correction_web/` | Flux de correction sous Django — copie unique, lot, mode libre ; état en base, pas en session |
 | `suivi_web/jetons.py` | Jetons signés dans les URL à la place de `identifiant_hakili` (D-CEO-25) |
 | `referentiel/management/commands/importer_referentiel.py` | Import idempotent du classeur |
-| `src/db/models.py` | Schéma SQLAlchemy — `copie` et `document` seulement (Streamlit) |
+| `src/db/models.py` | Schéma SQLAlchemy — `copie` et `document` seulement. Reliquat de la transition : peut passer sous Django depuis D-CEO-39 |
 | `src/db/database.py` | Connexion Neon (`pool_pre_ping`, `pool_recycle`) |
 | `src/integrations/google_sheets.py` | Source de vérité identité élèves/personnel |
 | `src/services/auth_service.py` | Authentification nom+PIN par rôle |
 | `src/core/tendance.py` | Calcul de tendance (pattern à réutiliser pour les indicateurs module 9) |
 | `src/core/centre_normalizer.py` | Dérivation des centres depuis les Sheets |
-| `src/ui/app.py` | Interface Streamlit — navigation par menu interne, tous les tableaux de bord |
 | `docs/decision_register.md` | Toutes les décisions actives et datées — source de vérité |
 | `docs/cycle_de_suivi.md` | **Le cycle T0→T5 en détail** — états d'un problème, règles de décision, ce que le cycle produit. Fait foi sur le déroulé |
 | `docs/audit_donnees.md` | Audit de la base et de la connaissance — constats classés par gravité, plan en 9 étapes |
 | `docs/urie_v2_roadmap.md` | Chantier Urie v2 — avancement détaillé, jalons, journal de bord — source de vérité sur "où en est-on" |
 | `docs/harmonisation_donnees.md` | Écart ancien système ↔ référentiel Urie v2 — arbitrages en attente, défauts constatés. **À lire avant le module 1** |
 | `docs/deploiement.md` | Mise en service Railway/Render — variables, limites de stockage, données de mineurs |
-| `docs/architecture_cible.md` | Recommandation de sortie de Streamlit (Django + HTMX) + traitement des accents. **Décision à trancher avant le module 1** |
+| `docs/architecture_cible.md` | Recommandation de sortie de Streamlit — **appliquée** (D-CEO-39), valeur historique |
 | `docs/accents_a_corriger.md` | Généré — liste des accents à corriger dans le classeur, à remettre au docteur |
 | `guide-urie.md` | Chantier Urie v2 — les 9 modules, détaillés |
 | `protocole-urie.md` | Chantier Urie v2 — vocabulaire, taxonomie, protocole T0-T5 |

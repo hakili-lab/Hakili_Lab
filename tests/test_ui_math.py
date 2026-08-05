@@ -1,5 +1,5 @@
 """
-Tests des helpers de notation mathématique de l'interface Streamlit.
+Tests des helpers de notation mathématique de l'affichage.
 
 _mh : HTML (st.markdown unsafe_allow_html=True) — symboles Unicode natifs
       conservés (le navigateur les rend), exposants/fractions en sup/sub,
@@ -7,7 +7,7 @@ _mh : HTML (st.markdown unsafe_allow_html=True) — symboles Unicode natifs
 _mt : texte pur (labels d'expander) — symboles Unicode + exposants ²³,
       jamais de balises HTML.
 """
-# Ces fonctions vivaient dans src/ui/app.py et exigeaient Streamlit pour être
+# Ces fonctions vivaient dans l'ancienne interface Streamlit et exigeaient de l'importer pour être
 # importées. Elles sont désormais dans src/services/affichage_math.py : le test
 # ne dépend plus d'aucun framework d'interface.
 from src.services.affichage_math import math_html as _mh  # noqa: E402

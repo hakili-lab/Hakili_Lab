@@ -34,9 +34,11 @@ class Copie(models.Model):
     résoudre le lien d'une évaluation vers son scan.
 
     Aucune clé étrangère ne pointe vers elle — voir `Evaluation.copy_id` pour le
-    motif. À la fin de la migration, quand Streamlit sera retiré et la table passée
-    sous la responsabilité de Django, `managed` pourra devenir `True` et le lien
-    devenir une vraie clé étrangère. Ce sera un choix explicite, pas un effet de bord.
+    motif. **La condition qui bloquait est levée** : Streamlit est retiré
+    (D-CEO-39), et `copie` peut donc passer sous la responsabilité de Django,
+    `managed` devenir `True` et le lien devenir une vraie clé étrangère. Ce sera
+    un choix explicite, pas un effet de bord — il emporte la sortie de
+    SQLAlchemy et d'Alembic avec lui.
     """
 
     copy_id = models.CharField(max_length=255, primary_key=True)
@@ -395,7 +397,7 @@ class Evaluation(models.Model):
     stocker une seconde fois le PDF et les images.
 
     Lien souple, pas clé étrangère — et c'est délibéré. La table `copie` appartient
-    à SQLAlchemy pendant la coexistence Streamlit / Django : une vraie clé étrangère
+    à SQLAlchemy tant que les deux ORM cohabitent : une vraie clé étrangère
     coupleraient le schéma Django à une table qu'un autre ORM peut modifier, et
     rendrait la base de test inutilisable (Django ne crée pas les tables non gérées).
     C'est le même choix que `Session.identifiant_hakili`, texte lui aussi parce que

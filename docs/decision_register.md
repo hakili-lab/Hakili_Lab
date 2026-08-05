@@ -720,6 +720,23 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 
 ---
 
+### D-CEO-39 — Streamlit est retiré, sans l'essai réel qui le conditionnait *(nouveau 2026-08-05)*
+**Décision :** `src/ui/` est **supprimé** (3 106 lignes), avec `streamlit`, `pandas` et `numpy`. Django porte seul l'interface. **Le jalon qui conditionnait ce retrait — un essai de correction réel de bout en bout — n'a pas été passé, et c'est assumé plutôt que masqué.**
+
+**Ce qui est supprimé :** `src/ui/app.py` (2 778 lignes, le plus gros fichier du projet), `src/ui/progress.py` (328), la configuration `.streamlit/`, la cible `make run-streamlit`. `hakili_logo.png` est **déplacé** dans `static/` : c'est le seul exemplaire de la marque dans le dépôt, et Django le sert désormais.
+
+**Trois dépendances tombent avec.** `streamlit` et `pandas` ne servaient qu'à cette interface. `numpy` n'y servait pas — il était déclaré explicitement pour `src/pipeline/zones.py`, supprimé par D-CEO-38 le même jour ; plus rien ne l'utilise. Une dépendance de moins est une surface de rupture de moins, et ces trois-là sont parmi les plus mouvantes de l'écosystème.
+
+**Pourquoi maintenant.** Le filet ne rattrapait plus rien. Django porte les onze écrans depuis le 30 juillet ; Streamlit n'a plus servi depuis. Il ne pouvait de toute façon pas dépanner : sans la clé du compte de service Google, **aucune des deux interfaces** ne permet de se connecter — le point de panne est commun, le second exemplaire ne le contourne pas. Ce qui restait était le coût : deux interfaces à tenir à jour, dont une que personne n'ouvre, et le risque qu'une correction soit faite deux fois ou dans une seule.
+
+**Ce que le retrait coûte, dit franchement.** `verifier_installation --copie … --test … --eleve …` exécute une correction complète sur une vraie copie : c'est le seul contrôle qui prouve que la chaîne Django tient de bout en bout, et **il n'a jamais tourné**. Les 268 tests Django couvrent les vues, l'état, les décisions ; ils ne remplacent pas une copie réelle traversant le pipeline. Ce contrôle reste à faire — il est simplement découplé du retrait, au lieu de le bloquer indéfiniment. Le code reste dans l'historique Git si un besoin de comparaison se présentait.
+
+**Ce que ça débloque.** `Copie` et `Document` vivent sous SQLAlchemy/Alembic parce que Streamlit les écrivait ; `Evaluation.copy_id` est un champ texte et non une clé étrangère pour la même raison. La condition est levée : ces deux tables peuvent passer sous Django, ce qui retire un second ORM, un second système de migrations, et un piège permanent. C'est le chantier suivant, pas un effet de bord de celui-ci.
+
+**Vérifié :** 268 tests Django + 239 pytest passent, inchangés — rien ne dépendait de `src/ui`. `manage.py check` et `verifier_installation` ne signalent que le manque déjà connu (clé Google).
+
+---
+
 ## Tableau de synthèse
 
 | ID | Sujet | Décision finale | Date |
@@ -758,6 +775,7 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 | **D-CEO-27** | **7 tests Urie générés depuis le classeur** | **Énoncés non extractibles des PDF (maths en vectoriel, WeasyPrint) → source = `Referentiel_Urie_v0.xlsx` via `scripts/generer_baremes_urie.py` ; 280 questions, 71 QCM corrigés, 209 corrigés en attente ; classe canonique unique par test ; copie parfaite = 20,0/20 vérifiée** | **2026-07-30** |
 | **D-CEO-35** ⛔ | *(caduque — D-CEO-38)*  **Gabarit des zones lu dans le PDF** | **Les sujets conservent cadres ancrés et codes ; la position des zones est lue à la source, pas détectée sur le scan. L'OCR sort de la chaîne — c'était le premier point de panne, et une confusion de code aurait fauté sans rien signaler. Règles exprimées en plages, pas en valeurs relevées** | **2026-07-31** |
 | **D-CEO-36** ⛔ | *(caduque — D-CEO-38)*  **Recalage ancré sur le contenu ; rien contre le tramage** | **La page est recalée sur les cadres, jamais sur le rectangle de page ; l'inclinaison s'estime sur les coordonnées de l'encre, pas en tournant l'image ; l'appariement page scannée ↔ page du sujet n'est pas 1:1 (12 pages scannées pour un sujet de 10). Aucun mécanisme livré contre le tramage d'impression : le repli prévu (effacer les lignes à leur position) est impossible, les « lignes » pavent toute la zone** | **2026-08-01** |
+| **D-CEO-39** | **Streamlit retiré** | **`src/ui/` supprimé (3 106 lignes) avec `streamlit`, `pandas` et `numpy` — ce dernier ne servait qu'au module 2, parti le même jour. Django porte seul l'interface depuis le 30 juillet et le filet ne rattrapait plus rien : sans la clé Google, aucune des deux interfaces ne permet de se connecter. L'essai réel de bout en bout qui conditionnait le retrait n'a pas été passé — il reste à faire, découplé plutôt que bloquant. Débloque le passage de `copie`/`document` sous Django** | **2026-08-05** |
 | **D-CEO-38** | **Module 2 supprimé, diagnostic branché sur la correction** | **Trois copies 5e réelles imprimées/scannées : les trois refusées. Cause mesurée — un bord de cadre passe de 121–156 dans le PDF à 243–248 après impression (papier 251,6), le seuil d'encre à 140 ne le voit pas et le recalage s'accroche au texte : dérive jusqu'à 85 pt, 4 pages/10 acceptées à tort. Le tramage, lui, n'existe pas (0,00 % de pixels sous 200 dans un cadre). Remplacé par `reponses_depuis_correction()` : la correction rend déjà `observed_answer` par code de question, et le code du barème est celui du référentiel. D-CEO-35 et D-CEO-36 caduques** | **2026-08-05** |
 | **D-CEO-37** | **Identités factices en développement** | **Élèves et personnel inventés à la place de la lecture des Sheets, verrouillés sur `DEBUG` + `HAKILI_SHEETS_FACTICES` : rien n'est écrit, le branchement est au ras du réseau (`_fetch_raw_rows`) avec les en-têtes réels, donc toute la chaîne aval s'exécute pour de vrai. Cas limites couverts (centre vu une fois, fratrie, double affectation). `donnees_demo` ajoute trois parcours, sans jamais toucher aux sessions `CORPUS-*`** | **2026-08-05** |
 | **D-CEO-34** | **États de session et inscription** | **Sept états ; l'inscription bascule les problèmes, date la facturation et refuse le palier C sans motif tracé. Trois sorties sans remédiation distinguées — « aucune lacune » est une réussite, pas un abandon** | **2026-07-30** |

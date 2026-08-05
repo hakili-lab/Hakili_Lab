@@ -8,7 +8,7 @@ plus aucune table d'authentification (la table `credentials` a été
 supprimée, voir migration correspondante).
 
 Il n'y a plus d'email saisi ni de mot de passe créé/haché : l'utilisateur
-choisit son nom dans une liste déroulante (voir src/ui/app.py, recherchable,
+choisit son nom dans une liste déroulante (recherchable,
 insensible casse/accents) puis saisit son PIN. Le PIN est stocké EN CLAIR
 dans le Sheet — choix assumé du docteur (Sheet réservé, pas de sensibilité
 bancaire), aucun anti-forçage demandé."""

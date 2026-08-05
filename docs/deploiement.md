@@ -25,9 +25,11 @@ Pour un essai de correction réel, sur une vraie copie :
 python manage.py verifier_installation --copie copie.pdf --test urie_3eme --eleve HAK-...
 ```
 
-C'est **le contrôle qui conditionne le retrait de Streamlit** : tant qu'une copie
-n'a pas traversé toute la chaîne — transcription, correction, diagnostic, rapport —
-avec les vraies API, l'ancienne interface reste le filet de sécurité.
+C'est **le seul contrôle qui prouve que la chaîne tient de bout en bout** —
+transcription, correction, diagnostic, rapport, avec les vraies API. Il
+conditionnait le retrait de Streamlit ; le retrait a eu lieu sans lui
+(D-CEO-39), et **il reste donc à passer**. Aucun filet ne le remplace : les
+tests simulent le pipeline.
 
 ---
 

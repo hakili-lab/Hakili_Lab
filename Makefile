@@ -1,7 +1,7 @@
 # Hakili Lab — Makefile cross-platform (Windows + Unix)
 # Windows : installer make via `winget install GnuWin32.Make` ou utiliser setup.ps1
 
-.PHONY: setup run run-streamlit verifier importer test test-django lint collectstatic clean
+.PHONY: setup run verifier importer test test-django lint collectstatic clean
 
 ifeq ($(OS),Windows_NT)
     PYTHON     = .venv\Scripts\python.exe
@@ -18,13 +18,9 @@ setup:
 	@echo ""
 	@echo "Environnement pret. Copiez .env.example en .env et renseignez vos cles."
 
-# Interface web Django. Streamlit reste disponible le temps de valider la
-# migration en conditions reelles — voir docs/urie_v2_roadmap.md.
+# Interface web Django — la seule depuis le retrait de Streamlit (D-CEO-39).
 run:
 	$(PYTHON) manage.py runserver
-
-run-streamlit:
-	$(PYTHON) -m streamlit run src/ui/app.py
 
 # Controle avant mise en service : configuration, base, Sheets, cles, referentiel.
 # Ajouter un essai de correction reel :

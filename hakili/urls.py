@@ -1,9 +1,8 @@
 """Routage racine — Hakili Lab.
 
-Migration de Streamlit vers Django (D-CEO-28) : les écrans de suivi sont servis
-ici, l'admin donne accès au référentiel importé. Le flux de correction (dépôt de
-copie, pipeline, validation enseignant) reste sur Streamlit le temps de sa
-migration — voir docs/urie_v2_roadmap.md.
+Django porte toute l'interface depuis le retrait de Streamlit (D-CEO-28 puis
+D-CEO-39) : écrans de suivi, flux de correction (dépôt de copie, pipeline,
+validation enseignant), et l'admin pour le référentiel importé.
 """
 from django.contrib import admin
 from django.urls import include, path
