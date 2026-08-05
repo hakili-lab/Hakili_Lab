@@ -63,6 +63,11 @@ class Settings(BaseSettings):
     database_url: str = ""
     debug: bool = False
 
+    # Django uniquement (hakili/settings.py la lit via os.environ) — déclarée
+    # ici seulement parce que ce Settings() partage le même .env et rejette
+    # (extra_forbidden) toute variable non déclarée.
+    hakili_acces_libre: bool = False
+
     # Google Sheets (source de vérité élèves/personnel, compte de service —
     # optionnel). Le personnel (enseignants, responsables, administrateur)
     # vit dans un SEUL Sheet fusionné — le rôle de chaque personne vient de

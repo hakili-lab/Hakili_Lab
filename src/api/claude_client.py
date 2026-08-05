@@ -372,6 +372,19 @@ class ClaudeClient:
                 )
         return self.client.messages.create(model=model, **kwargs)
 
+    @staticmethod
+    def _texte_reponse(response: Any) -> str:
+        """Texte du premier bloc `text` de la réponse.
+
+        `content[0]` n'est pas toujours ce bloc : certains modèles (ex. la
+        famille Sonnet 5) préfixent la réponse d'un `ThinkingBlock`, qui n'a
+        pas d'attribut `.text`.
+        """
+        for bloc in response.content:
+            if getattr(bloc, "type", None) == "text":
+                return bloc.text.strip()
+        raise ValueError(f"Aucun bloc texte dans la réponse (types : {[getattr(b, 'type', '?') for b in response.content]})")
+
     # ── Transcription ──────────────────────────────────────────────────────────
 
     def transcribe(self, copy_id: str, image_paths: list[Path]) -> ClaudeResponse:
@@ -640,7 +653,7 @@ class ClaudeClient:
                 "[%s] Diagnostic tronqué (stop_reason=max_tokens) — réponse incomplète, tentative de réparation JSON",
                 grades.copy_id,
             )
-        raw = response.content[0].text.strip()
+        raw = self._texte_reponse(response)
         return self._parse_response(raw, DiagnosticResult)
 
     # ── Diagnostic contraint (module 4) ───────────────────────────────────────
@@ -874,7 +887,7 @@ class ClaudeClient:
             ],
         )
 
-        raw = response.content[0].text.strip()
+        raw = self._texte_reponse(response)
         return self._parse_response(raw, RemediationSubject)
 
     # ── Sujet d'enrichissement (score parfait) ────────────────────────────────
@@ -918,7 +931,7 @@ class ClaudeClient:
             ],
         )
 
-        raw = response.content[0].text.strip()
+        raw = self._texte_reponse(response)
         result = self._parse_response(raw, RemediationSubject)
         if result.success and result.data is not None:
             result.data.is_enrichment = True
@@ -964,7 +977,7 @@ class ClaudeClient:
                 temperature=0,
                 messages=[{"role": "user", "content": content}],
             )
-            name = response.content[0].text.strip()
+            name = self._texte_reponse(response)
             # Rejet si la réponse ressemble à un texte d'échec plutôt qu'un nom
             if len(name) > 80 or "\n" in name:
                 return ""
@@ -1085,7 +1098,7 @@ class ClaudeClient:
             temperature=0,
             messages=[{"role": "user", "content": content}],
         )
-        return response.content[0].text.strip()
+        return self._texte_reponse(response)
 
     # ── Extraction barème depuis PDF/image ────────────────────────────────────
 

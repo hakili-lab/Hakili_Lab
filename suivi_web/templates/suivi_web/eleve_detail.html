@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block titre %}{{ eleve.nom }} {{ eleve.prenom }} — Hakili Lab{% endblock %}
 
+{% block page_titre %}{{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
 {% block contenu %}
 <a class="retour" href="{% url 'suivi_web:accueil' %}">&larr; Retour à la liste</a>
 
-<h1>{{ eleve.nom }} {{ eleve.prenom }}</h1>
 <p class="sous-titre">
   {{ eleve.classe|default:"classe non renseignée" }} ·
   {{ eleve.centre|default:"centre non renseigné" }}

@@ -2,10 +2,10 @@
 {% load maths %}
 {% block titre %}Parcours — {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
 
+{% block page_titre %}{{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
 {% block contenu %}
 <a class="retour" href="{% url 'suivi_web:eleve_detail' jeton_eleve %}">&larr; Fiche de l'élève</a>
 
-<h1>{{ eleve.nom }} {{ eleve.prenom }}</h1>
 <p class="sous-titre">Parcours ouvert le {{ session.date_debut }} · {{ session.get_etat_display }}</p>
 
 {% if plan.etapes %}

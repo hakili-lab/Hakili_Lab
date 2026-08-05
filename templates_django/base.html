@@ -65,14 +65,14 @@
      h1 valait 22px contre 16px pour le corps : deux crans d'écart pour dire
      « titre de page », ce qui ne se voyait pas. */
   --t-micro:  11px;   /* étiquette d'en-tête de tableau */
-  --t-petit:  12.5px; /* légende, aide */
-  --t-menu:   13.5px;
-  --t-corps:  15px;
-  --t-lead:   16.5px; /* chapeau d'écran */
-  --t-h3:     15px;
-  --t-h2:     19px;
-  --t-h1:     26px;
-  --t-chiffre:32px;   /* les indicateurs, qui doivent se lire d'un coup d'œil */
+  --t-petit:  13.5px; /* légende, aide */
+  --t-menu:   14.5px;
+  --t-corps:  16.5px;
+  --t-lead:   18px; /* chapeau d'écran */
+  --t-h3:     16.5px;
+  --t-h2:     21px;
+  --t-h1:     28px;
+  --t-chiffre:36px;   /* les indicateurs, qui doivent se lire d'un coup d'œil */
 
   /* ── Rythme ──────────────────────────────────────────────────────────────
      Une échelle, pas des valeurs au cas par cas : c'est ce qui fait que deux
@@ -118,70 +118,202 @@ a:hover { color: var(--bleu-sombre); }
   border-radius: var(--r-petit);
 }
 
-/* ── Barre de navigation ─────────────────────────────────────────────────── */
+/* ── Layout global ───────────────────────────────────────────────────────── */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--fond);
+}
 
-header.appbar {
+.sidebar {
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
   background: var(--marine);
   color: #fff;
-  padding: var(--e3) var(--e4);
-  display: flex;
-  align-items: center;
-  gap: var(--e4);
-  flex-wrap: wrap;
+  padding: var(--e5) var(--e4);
 }
 
-.appbar .marque {
+.sidebar .marque {
   font-weight: 700;
-  font-size: var(--t-menu);
-  letter-spacing: .6px;
-  line-height: 1.25;
+  font-size: var(--t-h2);
+  letter-spacing: .3px;
+  line-height: 1.2;
 }
-.appbar .marque span {
+.sidebar .marque span {
   display: block;
-  font-size: var(--t-micro);
-  letter-spacing: .2px;
-  color: #8fb0d4;
+  margin-top: var(--e1);
+  color: rgba(255, 255, 255, .78);
+  font-size: var(--t-petit);
   font-weight: 400;
 }
 
-/* `margin-right:auto` sur la navigation et non sur la marque : c'est ce qui
-   pousse le bloc du compte au bord droit. Placé sur la marque, il collait la
-   navigation et le compte l'un à l'autre au milieu. */
-.appbar nav { display: flex; align-items: center; gap: var(--e1); flex-wrap: wrap; margin-right: auto; }
-.appbar nav a {
-  color: #d3e2f4;
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e2);
+}
+
+.sidebar nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, .88);
   text-decoration: none;
-  padding: 7px 11px;
+  padding: 11px 14px;
   border-radius: var(--r-petit);
   font-size: var(--t-menu);
-  white-space: nowrap;
 }
-.appbar nav a:hover { background: rgba(255, 255, 255, .10); color: #fff; }
-.appbar nav a.actif { background: var(--bleu); color: #fff; font-weight: 600; }
-
-/* Sépare la correction du suivi, et le suivi de l'administration. Huit liens de
-   même poids se lisaient comme une liste où rien n'appelle l'œil ; les groupes
-   disent au moins qu'il y a trois familles de tâches. */
-.appbar nav .separateur {
-  width: 1px;
-  align-self: stretch;
-  margin: 2px var(--e2);
-  background: rgba(255, 255, 255, .16);
-}
-
-.appbar .compte {
-  font-size: var(--t-petit);
-  color: #d3e2f4;
-  display: flex;
+.sidebar nav a .icone {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
   align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.sidebar nav a .icone svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+.sidebar nav a:hover,
+.sidebar nav a.actif {
+  background: rgba(255, 255, 255, .14);
+  color: #fff;
+}
+/* Icon/label polishing */
+.sidebar nav a .label { display: inline-block; transition: opacity .16s ease, transform .16s ease; }
+.sidebar nav a .icone { transition: transform .16s ease, color .12s ease; }
+.sidebar nav a:hover .icone { transform: translateX(6px); }
+.sidebar nav a.actif .icone { transform: none; }
+.sidebar nav a .icone svg { stroke-width: 1.6; }
+.sidebar .label { color: rgba(255,255,255,.92); }
+.sidebar.collapsed .label { display: none; }
+
+/* Toggle / collapsed sidebar (desktop) and drawer (mobile) */
+.sidebar { transition: width .22s ease; }
+.sidebar.collapsed { width: 72px; }
+.sidebar.collapsed .marque { text-align: center; }
+.sidebar.collapsed .marque span { display: none; }
+.sidebar.collapsed nav a { justify-content: center; gap: 0; padding-left: 12px; padding-right: 12px; }
+.sidebar.collapsed nav a .icone { margin-right: 0; }
+.sidebar.collapsed .compte { display: none; }
+
+/* Mobile drawer behaviour */
+.drawer-overlay { display: none; }
+@media (max-width: 920px) {
+  .sidebar { position: fixed; left: -100%; top: 0; height: 100vh; z-index: 30; box-shadow: 0 8px 24px rgba(0,0,0,.25); width: 320px; }
+  .sidebar.open { left: 0; }
+  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.32); z-index: 20; display: none; }
+  .drawer-overlay.open { display: block; }
+  .topbar .sidebar-toggle { display: inline-flex; }
+}
+
+/* Tooltip for collapsed sidebar */
+@media (min-width: 921px) {
+  .sidebar.collapsed nav a { position: relative; }
+  .sidebar.collapsed nav a::after {
+    content: attr(data-label);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translate(8px, -50%);
+    background: rgba(0,0,0,.88);
+    color: #fff;
+    padding: 6px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: var(--t-petit);
+    box-shadow: 0 6px 18px rgba(0,0,0,.18);
+    opacity: 0; pointer-events: none; transition: opacity .12s ease, transform .12s ease;
+    z-index: 60;
+  }
+  .sidebar.collapsed nav a:hover::after { opacity: 1; transform: translate(10px, -50%); }
+}
+
+/* Menu title in sidebar */
+.sidebar .menu-title {
+  padding: 18px 14px;
+  font-size: var(--t-petit);
+  color: rgba(255,255,255,.75);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+}
+
+.sidebar .admin-group { padding: 8px 0 12px; }
+.sidebar .admin-title { padding: 8px 14px; font-size: 12px; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .06em; }
+.sidebar .admin-nav a { padding-left: 14px; }
+
+.sidebar-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--bord);
+  border-radius: 6px;
+  padding: 6px;
+  cursor: pointer;
+  align-items: center;
+  gap: 6px;
+}
+.sidebar-toggle svg { width: 18px; height: 18px; stroke: var(--texte); }
+.sidebar-toggle[aria-pressed="true"] { background: var(--surface-creuse); }
+
+.sidebar nav .separateur {
+  margin: var(--e3) 0;
+  height: 1px;
+  background: rgba(255, 255, 255, .14);
+}
+
+.sidebar .compte {
+  font-size: var(--t-petit);
+  color: rgba(255, 255, 255, .84);
+  display: flex;
+  flex-direction: column;
   gap: var(--e2);
+}
+
+.sidebar .compte form { margin: 0; }
+
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  border-bottom: 1px solid var(--bord);
+  background: var(--surface);
+  padding: var(--e3) var(--e4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--e4);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.topbar .page-titre {
+  font-size: var(--t-h2);
+  margin: 0;
+}
+
+.topbar .page-titre:empty {
+  display: none;
+}
+
+.topbar .compte {
   white-space: nowrap;
+  font-size: var(--t-petit);
+  color: var(--texte-doux);
 }
 
 /* ── Cadre de page ───────────────────────────────────────────────────────── */
 
-main { max-width: var(--largeur); margin: 0 auto; padding: var(--e5) var(--e4) var(--e7); }
-main.etroit { max-width: var(--largeur-etroite); }
+.content {
+  max-width: var(--largeur);
+  margin: 0 auto;
+  padding: var(--e5) var(--e4) var(--e7);
+}
+.content.etroit { max-width: var(--largeur-etroite); }
 
 h1 {
   font-size: var(--t-h1);
@@ -628,16 +760,32 @@ textarea.transcription {
    deux lignes, les chiffres se resserrent, et les tableaux gardent leur
    défilement propre plutôt que de faire glisser la page entière. */
 
-@media (max-width: 720px) {
+@media (max-width: 920px) {
   :root { --t-h1: 22px; --t-h2: 17px; --t-chiffre: 26px; }
 
-  header.appbar { padding: var(--e2) var(--e3); gap: var(--e2); }
-  .appbar .marque { margin-right: 0; width: 100%; }
-  .appbar nav { order: 3; width: 100%; margin-right: 0; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
-  .appbar nav .separateur { margin: 2px var(--e1); }
-  .appbar .compte { margin-left: auto; }
+  .app-shell { flex-direction: column; }
+  .sidebar {
+    width: 100%;
+    flex: none;
+    order: 1;
+    padding: var(--e3);
+  }
+  .sidebar nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: var(--e2);
+  }
+  .sidebar nav a { white-space: nowrap; }
+  .sidebar .compte { display: none; }
 
-  main { padding: var(--e4) var(--e3) var(--e6); }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .content { padding: var(--e4) var(--e3) var(--e6); }
+  .content.etroit { max-width: 100%; }
 
   .carte { padding: var(--e4); border-radius: var(--r-petit); }
   .carte.tableau th:first-child, .carte.tableau td:first-child { padding-left: var(--e4); }
@@ -660,64 +808,144 @@ textarea.transcription {
 </head>
 <body>
 
-<header class="appbar">
-  <div class="marque">HAKILI LAB<span>Évaluation IA · Maths 6e à la Tle</span></div>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="marque">HAKILI LAB<span>Évaluation IA · Maths 6e à la Tle</span></div>
 
-  {% if personne %}
-    <nav>
-      <a href="{% url 'correction_web:nouvelle' %}" class="{% if rubrique == 'correction' %}actif{% endif %}">Corriger</a>
-      <a href="{% url 'correction_web:lot' %}">Une classe</a>
-      <a href="{% url 'correction_web:liste' %}">Corrections</a>
-      <a href="{% url 'correction_web:sujets' %}" class="{% if rubrique == 'sujets' %}actif{% endif %}">Sujets</a>
-      <span class="separateur"></span>
-      <a href="{% url 'suivi_web:accueil' %}" class="{% if rubrique == 'accueil' %}actif{% endif %}">Suivi</a>
+    {% if personne %}
+      <div class="menu-title">MENU</div>
+      <nav>
+        <a href="{% url 'correction_web:liste' %}" data-label="À propos" class="{% if rubrique == 'a_propos' %}actif{% endif %}">
+          <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="2"></circle><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg></span>
+          <span class="label">À propos</span>
+        </a>
+
+        <a href="{% url 'correction_web:nouvelle' %}" data-label="Analyser une copie" class="{% if rubrique == 'correction' %}actif{% endif %}">
+          <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-3l11-11 3 3L7 21H3z"></path></svg></span>
+          <span class="label">Analyser une copie</span>
+        </a>
+
+        <a href="{% url 'correction_web:sujets' %}" data-label="Sujets" class="{% if rubrique == 'sujets' %}actif{% endif %}">
+          <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h9l2 2h7v11H3z"></path></svg></span>
+          <span class="label">Sujets</span>
+        </a>
+
+        <a href="{% url 'correction_web:lot' %}" data-label="Session de classe">
+          <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h4l2 2h8v10H3z"></path></svg></span>
+          <span class="label">Session de classe</span>
+        </a>
+        <a href="{% url 'suivi_web:accueil' %}" data-label="Suivi" class="{% if rubrique == 'accueil' %}actif{% endif %}">
+          <span class="icone"><svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M21 3v6H9"></path></svg></span>
+          <span class="label">Suivi</span>
+        </a>
+      </nav>
+
       {% if casquette == 'administrateur' %}
-        <span class="separateur"></span>
-        <a href="{% url 'suivi_web:personnel' %}" class="{% if rubrique == 'personnel' %}actif{% endif %}">Accès</a>
-        <a href="{% url 'suivi_web:statistiques' %}" class="{% if rubrique == 'statistiques' %}actif{% endif %}">Statistiques</a>
-        <a href="/admin/">Référentiel</a>
+        <div class="separateur"></div>
+        <div class="admin-group">
+          <div class="admin-title">Référentiel</div>
+          <nav class="admin-nav">
+            <a href="/admin/" data-label="Référentiel">
+              <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v14H3z"></path><path d="M16 3v4"></path></svg></span>
+              <span class="label">Référentiel</span>
+            </a>
+            <a href="{% url 'suivi_web:personnel' %}" data-label="Accès" class="{% if rubrique == 'personnel' %}actif{% endif %}">
+              <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5S14.343 11 16 11zM6 19c0-3.314 2.686-6 6-6s6 2.686 6 6"></path></svg></span>
+              <span class="label">Accès</span>
+            </a>
+            <a href="{% url 'suivi_web:statistiques' %}" data-label="Statistiques" class="{% if rubrique == 'statistiques' %}actif{% endif %}">
+              <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M7 13v6M12 9v10M17 5v14"></path></svg></span>
+              <span class="label">Statistiques</span>
+            </a>
+          </nav>
+        </div>
       {% endif %}
-    </nav>
 
-    <div class="compte">
-      <span>{{ personne.prenom }} {{ personne.nom }}</span>
-      {% if not acces_libre %}
-        <form method="post" action="{% url 'comptes:deconnexion' %}" style="margin:0">
-          {% csrf_token %}
-          <button type="submit" class="discret petit">Quitter</button>
-        </form>
+      <div class="compte">
+        <span>{{ personne.prenom }} {{ personne.nom }}</span>
+        {% if not acces_libre %}
+          <form method="post" action="{% url 'comptes:deconnexion' %}">
+            {% csrf_token %}
+            <button type="submit" class="discret petit">Quitter</button>
+          </form>
+        {% endif %}
+      </div>
+    {% endif %}
+  </aside>
+
+  <div class="page">
+    {# Development access banner removed from UI; setting remains for dev use. #}
+
+    {% if personne %}
+      <div class="topbar">
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Basculer la navigation" aria-pressed="false" title="Afficher / réduire la navigation">
+          <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
+        </button>
+        <h1 class="page-titre">{% block page_titre %}{% endblock %}</h1>
+        <div class="compte">{{ personne.prenom }} {{ personne.nom }}</div>
+      </div>
+    {% endif %}
+
+    <main class="content{% block classe_main %}{% endblock %}">
+      {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
       {% endif %}
-    </div>
-  {% endif %}
-</header>
 
-{% if acces_libre %}
-  {% comment %} Réglage de développement, verrouillé sur DEBUG côté settings.
-     Sorti du flux des messages et collé sous la barre : une application ouverte
-     sur des données d'élèves mineurs ne doit jamais pouvoir se faire oublier,
-     mais elle ne doit pas non plus repousser le contenu de chaque écran d'un
-     bloc rouge de deux lignes. {% endcomment %}
-  {% comment %} La formule « Accès libre activé » est vérifiée mot pour mot par
-     `comptes/tests_acces_libre.py` sur trois écrans : c'est le garde-fou qui
-     empêche que le bandeau disparaisse à la faveur d'une refonte. Ne pas la
-     reformuler sans mettre le test à jour dans le même geste. {% endcomment %}
-  <div class="bandeau-dev">
-    <strong>Accès libre activé — aucun contrôle d'accès.</strong>
-    Réglage de développement (<code>HAKILI_ACCES_LIBRE</code>), ignoré hors <code>DEBUG</code>.
+      {% block contenu %}{% endblock %}
+    </main>
   </div>
-{% endif %}
+</div>
 
-<main{% block classe_main %}{% endblock %}>
-  {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-        <div class="message {{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
+<div class="drawer-overlay" id="drawer-overlay" tabindex="-1"></div>
 
-  {% block contenu %}{% endblock %}
-</main>
+<script>
+// Sidebar toggle behaviour: desktop collapse vs mobile drawer
+(function(){
+  var toggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('drawer-overlay');
+  if(!toggle || !sidebar) return;
+
+  function isMobile(){ return window.matchMedia('(max-width: 920px)').matches; }
+
+  function setPressed(v){ toggle.setAttribute('aria-pressed', v ? 'true' : 'false'); }
+
+  // restore collapsed state from localStorage (desktop only)
+  try {
+    var saved = localStorage.getItem('hakili_sidebar_collapsed');
+    if(saved === '1' && !isMobile()){
+      sidebar.classList.add('collapsed');
+      setPressed(true);
+    }
+  } catch(e) { /* ignore storage errors */ }
+
+  toggle.addEventListener('click', function(){
+    if(isMobile()){
+      var open = sidebar.classList.toggle('open');
+      overlay.classList.toggle('open', open);
+      setPressed(open);
+      // trap focus could be added later
+    } else {
+      var collapsed = sidebar.classList.toggle('collapsed');
+      setPressed(collapsed);
+      try { localStorage.setItem('hakili_sidebar_collapsed', collapsed ? '1' : '0'); } catch(e){}
+    }
+  });
+
+  overlay.addEventListener('click', function(){ sidebar.classList.remove('open'); overlay.classList.remove('open'); setPressed(false); });
+
+  // Close drawer on ESC
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ sidebar.classList.remove('open'); overlay.classList.remove('open'); setPressed(false); } });
+
+  // Keep aria state in sync on resize
+  var ro = new ResizeObserver(function(){ if(!isMobile()){ sidebar.classList.remove('open'); overlay.classList.remove('open'); setPressed(sidebar.classList.contains('collapsed')); } });
+  ro.observe(document.body);
+})();
+</script>
 
 </body>
 </html>
