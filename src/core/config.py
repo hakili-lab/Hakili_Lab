@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     # Google Gemini (vision — gratuit jusqu'à 1 M tokens/jour)
     google_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.1-flash-lite"
     # "gemini" | "claude" — provider utilisé pour la transcription
     vision_provider: str = "claude"
 
