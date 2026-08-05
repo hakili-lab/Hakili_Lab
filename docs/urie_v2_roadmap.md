@@ -1,14 +1,14 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-08-01 (suite 4 — coûts en heures entières, bascule sur Sonnet 5, panne de format levée)
+**Dernière mise à jour :** 2026-08-01 (suite 5 — état des lieux, fiche du module 1 remise sur Django, compteurs de tests corrigés)
 **Où en est-on (résumé en une ligne) :** Modules 0, **1, 2 et 3 ✅ faits** · **Module 4 🟨 le moteur du diagnostic contraint tourne** — QCM court-circuités sans aucun appel de modèle, sortie strictement contrainte, rejet et redemande, écriture des problèmes en hypothèse, outil de mesure écrit · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. **Le module 4 a enfin un chiffre.** Les 5 copies du corpus sont transcrites (`data/productions/`) et la mesure plancher a tourné sur les 66 problèmes : **rappel 85 % sur la compétence, 65 % sur le couple `compétence × type`** sur Opus 4.7 — **70 % / 47 % sur Sonnet 5**, retenu « en attendant » le 2026-08-01 et sensiblement moins bon. Le point dur est désigné : **le type d'erreur**, et `ATT` en particulier — 4 inattentions dans l'étalon, aucune retrouvée. Les coûts passent à **l'heure entière supérieure** (décision du 2026-08-01, +33 % sur l'étalon) — **les seuils de palier A/B/C n'ont pas été rejugés en conséquence.** Le **branchement au pipeline attend un arbitrage** (coût, sort du rapport actuel). Hors code : un **sujet Urie imprimé et scanné**, les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
 
-**État vérifié le 2026-08-01 : 251 tests Django + 267 pytest = 518 tests passent.**
+**État vérifié le 2026-08-01 : 253 tests Django + 271 pytest = 524 tests passent.**
 
 **Pour reprendre le travail sur Django :**
 ```bash
-DEBUG=true DATABASE_URL="sqlite:///:memory:" python manage.py test         # les 170 tests Django
+DEBUG=true DATABASE_URL="sqlite:///:memory:" python manage.py test         # les 253 tests Django
 DEBUG=true python manage.py importer_referentiel --a-blanc                 # contrôle sans écriture
 DEBUG=true python manage.py runserver                                      # admin sur /admin/
 DEBUG=true python manage.py verifier_installation                          # contrôle avant mise en service
@@ -95,25 +95,29 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 
 ---
 
-### Module 1 — Socle de données (Neon/Postgres)
+### Module 1 — Socle de données (Neon/Postgres) ✅ **FAIT (2026-07-30)**
 **Objectif :** les 11 tables du guide, greffées sur la base Postgres existante — pas de SQLite séparée (décision actée, voir `CLAUDE.md`).
 
-> **Prérequis : lire `docs/harmonisation_donnees.md`.** Arbitrages A et D rendus (archivage fait, barème /20). Prévoir dès la première version les colonnes `question.reponse_attendue` et `question.solution`, même vides — les ajouter après coup coûterait une migration supplémentaire (arbitrage B encore en attente, mais le schéma ne doit pas l'attendre).
+> ⚠ **Écart avec le plan initial : le module a été fait en Django, pas en SQLAlchemy.** Cette fiche prescrivait des modèles dans `src/db/models.py` et une révision Alembic ; la décision de migrer l'interface vers Django (D-CEO-28) a été prise le même jour, et les 11 tables ont été créées comme apps Django (`referentiel/`, `suivi/`) avec les migrations Django. `src/db/models.py` **n'a pas été touché** et garde ses deux seules tables, `copie` et `document`, sous SQLAlchemy/Alembic. Les deux ORM cohabitent sur la même base Neon sans recouvrement d'écriture. C'est la raison pour laquelle `Evaluation.copy_id` est un champ texte et non une FK.
 
-- [ ] **Barème sur 20** (décision D) : `question.bareme` en `Numeric(8,4)`, converti à l'import par `bareme_classeur / 3` (partie A → 0,3333 ; partie B → 1,0).
-- [ ] **Règle de calcul du score, à appliquer partout :** la note se calcule contre la **somme réelle des `max_score`**, jamais contre un total déclaré en métadonnée. C'est la condition pour qu'une copie parfaite vaille exactement 20/20 malgré les tiers de point — et c'est aussi le correctif du bug §5.1 de `harmonisation_donnees.md`.
-- [ ] Ajouter dans `src/db/models.py` les modèles SQLAlchemy des 4 tables référentiel : `Competence`, `Prerequis`, `TypeErreur`, `CoutRemediation`.
-- [ ] Ajouter les 3 tables banque de questions : `Question`, `SignatureErreur`, `OptionQcm`.
-- [ ] Ajouter les 4 tables suivi : `SessionUrie` (nom retenu pour éviter l'ambiguïté avec la session Streamlit), `Evaluation` (FK nullable vers `Copie.copy_id`), `Reponse`, `Probleme`, `Transition`, `Seance` — soit 6 tables, pas 4 (le guide en compte 7 dans ce groupe en réalité : eleve/session/evaluation/reponse/probleme/transition/seance ; `eleve` est *exclue* ici puisque l'identité reste dans les Sheets, D-CEO-20).
-- [ ] Contraintes en base : `evaluation.type` ∈ {T0..T5}, `probleme.etat` ∈ {hypothese, confirme, ecarte, en_remediation, resolu, non_resolu, regresse, clos}, `session_urie.palier` ∈ {A, B, C} — via `Enum` Postgres natif ou `CheckConstraint`.
-- [ ] Générer et relire la révision Alembic (`alembic revision --autogenerate`, suite de `f8928cd01df9`).
-- [ ] **Si un `Enum` Postgres natif est utilisé :** vérifier que le `downgrade()` fait `DROP TYPE` explicitement (piège déjà rencontré en D-CEO-20/21 — un simple `drop_table` ne suffit pas).
-- [ ] Tester le cycle complet `alembic downgrade base` → `alembic upgrade head` (comme fait systématiquement dans les migrations précédentes du projet).
-- [ ] Écrire `import_referentiel.py` (racine ou `scripts/`, pattern idempotent de `seed_users.py`) : lit les 9 onglets via `openpyxl`, upsert les 7 tables référentiel + banque de questions par code (clé stable).
-- [ ] Faire tourner l'import contre le classeur réel, vérifier les compteurs (101 compétences, 7 types d'erreur, 280 questions, 1031 signatures, 284 options QCM, 444 coûts).
+- [x] **Barème sur 20** (décision D) : `question.bareme` en `DecimalField(max_digits=8, decimal_places=6)`, converti à l'import par `bareme_classeur / 3` (partie A → 0,3333 ; partie B → 1,0). `bareme_classeur` conserve la valeur d'origine entière.
+- [x] **Règle de calcul du score, à appliquer partout :** la note se calcule contre la **somme réelle des `max_score`**, jamais contre un total déclaré en métadonnée. C'est la condition pour qu'une copie parfaite vaille exactement 20/20 malgré les tiers de point — et c'est aussi le correctif du bug §5.1 de `harmonisation_donnees.md`.
+- [x] Les 4 tables référentiel : `Competence`, `Prerequis`, `TypeErreur`, `CoutRemediation` — dans `referentiel/models.py`.
+- [x] Les 3 tables banque de questions : `Question`, `SignatureErreur`, `OptionQcm`. Les colonnes `question.reponse_attendue` et `question.solution` ont été prévues **dès la première version, même vides** — l'arbitrage B est toujours en attente, mais aucune migration corrective ne sera nécessaire quand les 209 corrigés arriveront.
+- [x] Les tables suivi : `SessionUrie` (nom retenu pour éviter l'ambiguïté avec la session Streamlit), `Evaluation` (lien souple vers `Copie.copy_id`), `Reponse`, `Probleme`, `Transition`, `Seance` — soit 6 tables. `eleve` est *exclue*, l'identité restant dans les Sheets (D-CEO-20).
+- [x] Contraintes en base : `evaluation.type` ∈ {T0..T5}, `probleme.etat` ∈ {hypothese, confirme, ecarte, en_remediation, resolu, non_resolu, regresse, clos}, `session_urie.palier` ∈ {A, B, C} — par `TextChoices` + `CheckConstraint` Django, pas par `Enum` Postgres natif (ce qui évite du même coup le piège du `DROP TYPE` au `downgrade`, rencontré en D-CEO-20/21).
+- [x] Cycle descente/remontée des migrations testé, comme sur les migrations Alembic précédentes du projet.
+- [x] **`Transition` protégée par le code, pas par la discipline** : `Probleme.changer_etat()` refuse un enchaînement non prévu et écrit la transition dans la même opération atomique ; `Transition.save()` refuse toute modification après création ; l'admin met `etat` en lecture seule pour qu'on ne puisse pas contourner la méthode.
+- [x] Import idempotent : `manage.py importer_referentiel` (pattern de `seed_users.py`, option `--a-blanc`), lit les 9 onglets via `openpyxl`, upsert par code. Contrôle d'intégrité **avant** toute écriture — un code inconnu fait échouer l'import avec un message précis, plutôt que d'écrire à moitié.
+- [x] Import passé contre le classeur réel, compteurs vérifiés : **7 types · 101 compétences · 136 prérequis · 280 questions · 1031 signatures · 284 options QCM · 71 QCM corrigés · 209 sans corrigé**. Chiffres identiques au module 0. *(Les coûts étaient 444 à cette date ; ils sont passés à **606** depuis — 444 officiels + 162 estimés par le repli lycée, D-CEO-29.)*
+- [x] **Support SQLite ajouté** à `DATABASE_URL` pour que tests et intégration continue tournent sans Neon ; la production reste sur Neon. Réglages Neon repris de D-CEO-19 : `CONN_HEALTH_CHECKS` (= `pool_pre_ping`) et `CONN_MAX_AGE=300` (= `pool_recycle`).
 
-**Critère de fin :** l'import remplit les 7 tables référentiel/banque de questions sans erreur ; un élève fictif peut être suivi de T0 à T5 avec toutes ses transitions enregistrées (test manuel ou script jetable).
-**Fichiers concernés :** `src/db/models.py`, `migrations/versions/<nouvelle>.py`, `import_referentiel.py` (nouveau).
+**Critère de fin :** ✅ atteint — l'import remplit les 7 tables référentiel/banque de questions sans erreur, et **le parcours complet T0→T5 d'un élève fictif avec toutes ses transitions** est couvert par les tests. Vérifié en base : `L5` du test de 3ème redonne exactement la réponse du module 0 (`L.IDR × CPT`, bonne réponse `d`, distracteurs tagués CPT/PRC/PRC).
+**Fichiers concernés :** `referentiel/models.py`, `suivi/models.py`, `referentiel/migrations/`, `suivi/migrations/`, `referentiel/management/commands/importer_referentiel.py`, `hakili/settings.py`. **Pas** `src/db/models.py`.
+
+**Deux décisions de conception prises en cours de route, à ne pas défaire par mégarde :**
+1. **Les settings Django ne lisent pas `src/core/config.py`** — `Settings()` exige `anthropic_api_key` sans défaut, ce qui ferait échouer `manage.py migrate` sur une machine sans clé LLM, alors qu'une migration n'appelle aucun modèle.
+2. **`Evaluation.copy_id` est un champ texte, pas une clé étrangère.** Tentée d'abord en FK vers une `Copie` non gérée : Django ne crée pas les tables non gérées en base de test, donc toute insertion échouait, et le contournement ne marche pas non plus (les migrations figent `managed: False`). Le lien souple est de toute façon le bon choix — c'est le précédent de `identifiant_hakili` (D-CEO-20). Deviendra une vraie FK si `copie` passe un jour sous Django.
 
 ---
 
@@ -181,11 +185,11 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - **`RED`** est réservé par le référentiel à la partie B, « où la consigne précise que la démarche est évaluée autant que le résultat ». Les tests de l'ancien format ne posent jamais cette consigne. Il faudra des copies du **nouveau format**.
 - **`PRQ`** demande un échec corrélé sur des compétences partageant un prérequis *nommable*. Sur les cinq copies, les échecs ne convergent vers aucun ancêtre commun : le graphe des prérequis est trop maigre. C'est un défaut du référentiel, pas des copies.
 - [x] **Outil durci après trois copies** (voir le journal du 2026-07-31) : consultation du référentiel pendant le tagage, libellés rappelés au compte rendu, codes proches suggérés, contrôle de niveau, étanchéité avec le suivi réel, `manage.py corpus` pour relire l'étalon, rapport d'hésitations.
-- [ ] **Deux types d'erreur manquent au corpus : `PRQ` et `RED`.** Signalé par `manage.py corpus` — le module 4 ne pourra pas être mesuré sur eux. À chercher explicitement dans les deux dernières copies : `RED` est un résultat juste sans justification (partie B), `PRQ` un échec corrélé sur plusieurs compétences partageant un prérequis.
-- [ ] Pour chaque copie : relever chaque réponse fausse, chercher la signature correspondante dans `05_Grille_diagnostic`, noter le problème (`code_competence` + `code_type_erreur`).
-- [ ] Enregistrer chaque problème taggé dans les tables du Module 1 (`probleme`, `transition` en état `hypothese` ou directement `confirme` selon le protocole retenu pour le tagage manuel).
-- [ ] Noter chaque cas d'hésitation et pourquoi — ce sont des défauts potentiels du référentiel, à remonter à l'utilisateur (pas à corriger seul, cf. `CLAUDE.md` "ce qui n'est pas de ton ressort").
+- [x] Pour chaque copie : relever chaque réponse fausse, chercher la signature correspondante dans `05_Grille_diagnostic`, noter le problème (`code_competence` + `code_type_erreur`) — fait sur les 5 copies, 66 problèmes.
+- [x] Enregistrer chaque problème taggé dans les tables du Module 1 (`probleme` + `transition`) — fait, en état `hypothese` puis `confirme`, chaque transition écrite.
+- [x] Noter chaque cas d'hésitation et pourquoi — fait : rapport d'hésitations produit par l'outil de tagage, ce sont des défauts potentiels du référentiel à remonter à l'utilisateur (pas à corriger seul, cf. `CLAUDE.md` "ce qui n'est pas de ton ressort").
 - [x] Marquer explicitement ces copies comme « corpus de référence » — fait, voir ci-dessus.
+- [ ] ⚠ **`PRQ` et `RED` resteront non couverts par ce corpus** — signalé par `manage.py corpus`. Ce **n'est pas une tâche de tagage à reprendre** : les deux manques sont structurels (détail deux paragraphes plus haut), `RED` demande des copies du **nouveau format** et `PRQ` un graphe de prérequis plus fourni. La case reste ouverte parce que la limite tient toujours, pas parce qu'il resterait des copies à taguer.
 
 **Critère de fin :** au moins 5 copies entièrement taguées en base et marquées comme corpus de référence.
 **Fichiers concernés :** `suivi/models.py` (marqueur + `evaluation_origine`, `justification`), `suivi/management/commands/taguer_corpus.py`, `referentiel/couts.py` (`cout_precalcule`), `data/corpus/exemple.yaml`.
@@ -407,6 +411,44 @@ Limite structurelle assumée : certaines compétences ont un libellé volontaire
 ---
 
 ## Journal de bord
+
+### 2026-08-01 (suite 5) — État des lieux, et trois écarts de doc corrigés
+
+Session sans code : relecture de l'avancement, tests relancés, feuille de route
+remise d'aplomb sur trois points où elle ne disait plus la vérité.
+
+- **Compteurs de tests.** L'en-tête annonçait « 251 Django + 267 pytest = 518 »
+  alors que le journal de la même journée disait 524. Mesuré :
+  **253 Django + 271 pytest = 524, tout passe.** L'en-tête et la commande de
+  reprise (qui parlait encore de « 170 tests Django ») sont corrigés.
+- **🔴 La fiche du module 1 décrivait un module qui n'a pas été construit ainsi.**
+  Elle était marquée ✅ dans le tableau d'ensemble, mais ses 11 sous-tâches
+  étaient toutes vides et prescrivaient des **modèles SQLAlchemy dans
+  `src/db/models.py` + une révision Alembic**. Le module a été fait en **Django**
+  (`referentiel/`, `suivi/`, migrations Django), la bascule D-CEO-28 ayant été
+  décidée le même jour. C'était l'écart le plus coûteux des trois : quelqu'un
+  reprenant le chantier par cette fiche serait allé ajouter les 11 tables dans
+  `src/db/models.py`, **où elles existent déjà sous Django** — soit exactement le
+  doublon de source de vérité que ce projet a déjà démoli deux fois
+  (D-CEO-20/21). Fiche réécrite sur ce qui existe, avec l'écart signalé en tête
+  et les deux décisions de conception (settings sans `config.py`,
+  `copy_id` en texte) conservées.
+- **Quatre cases du module 3** restaient vides alors que le module est ✅ et que
+  le travail est fait (66 problèmes tagués, transitions écrites, hésitations
+  rapportées) — cochées. La cinquième, `PRQ`/`RED`, **reste ouverte à dessein**
+  mais était formulée comme une tâche de tagage à reprendre (« à chercher dans
+  les deux dernières copies », alors que les 5 sont taguées) : reformulée en
+  limite structurelle, ce qu'elle est.
+
+**Rien n'a été touché dans le code.** Les compteurs de coûts de la fiche du
+module 1 portent la mention du passage de 444 à 606 lignes (D-CEO-29), pour
+qu'on ne prenne pas le chiffre d'époque pour l'état courant.
+
+**Prochaine étape :** inchangée. Le levier hors code est le **sujet Urie imprimé
+et scanné** — une seule manipulation débloque le tramage (module 2) *et* la
+mesure juste du module 4. Côté code, le point dur reste le **type d'erreur**,
+`ATT` en tête. Et les **seuils A/B/C** n'ont toujours pas été rejugés après la
+hausse de ~33 % des coûts.
 
 ### 2026-08-01 (suite 4) — Coûts en heures entières, Sonnet 5, et un bug qui rendait « 0 problème » pour une panne de format
 
