@@ -170,8 +170,12 @@ class SeanceAdmin(admin.ModelAdmin):
 
 @admin.register(Copie)
 class CopieAdmin(admin.ModelAdmin):
-    """Table gérée par SQLAlchemy — consultation uniquement, pour relier une
-    évaluation à un scan existant."""
+    """Consultation uniquement, pour relier une évaluation à un scan existant.
+
+    La table est passée sous Django (D-CEO-40) mais reste en lecture seule ici :
+    une copie est produite par le pipeline, pas saisie à la main. La créer depuis
+    l'admin donnerait une copie sans scan, sans note et sans document — une ligne
+    qui ressemble à une copie sans en être une."""
 
     list_display = ("copy_id", "identifiant_hakili", "classe", "date_soumission", "notes_finales")
     search_fields = ("copy_id", "identifiant_hakili")

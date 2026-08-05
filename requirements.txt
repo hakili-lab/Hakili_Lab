@@ -41,9 +41,7 @@ mistralai>=1.0.0,<2.0.0   # Mistral Small 3.1 — v2.x a changé l'API
 tenacity==8.5.0
 
 # --- Base de données (portail de consultation Neon Postgres) ---
-sqlalchemy>=2.0.23
-alembic>=1.13.1
-psycopg2-binary>=2.9.9
+psycopg2-binary>=2.9.9   # pilote Postgres de Django (Neon)
 
 # --- Google Sheets (source de vérité élèves/profs, compte de service) ---
 gspread>=6.1.0,<7.0.0

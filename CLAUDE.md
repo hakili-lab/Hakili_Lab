@@ -22,7 +22,9 @@ Ce document a deux parties : l'état réel de l'infrastructure aujourd'hui, puis
 
 `src/api/`, `src/pipeline/`, `src/knowledge/`, `src/models/`, `src/core/`, `src/integrations/` sont **indépendants du framework** — ne pas y introduire de dépendance à Django. Cette discipline a survécu à la migration, elle n'est pas devenue inutile : c'est elle qui a rendu le retrait de Streamlit sans effet sur les tests.
 
-**Reste de la transition, pas encore fait :** `copie` et `document` vivent toujours sous SQLAlchemy/Alembic — c'est ce qui rend `Evaluation.copy_id` texte plutôt que clé étrangère. La condition qui bloquait leur passage sous Django (Streamlit les écrivait) est levée.
+**Transition achevée le 2026-08-05 (D-CEO-40) :** `copie` et `document` sont passées sous Django, SQLAlchemy et Alembic sont retirés. Un seul ORM, un seul système de migrations.
+
+⚠ **Une étape manuelle reste due sur Neon :** `python manage.py migrate suivi 0007 --fake`, une seule fois — les deux tables y existent déjà. Sans elle, le déploiement échoue bruyamment (transaction annulée, rien de perdu). Détail : `docs/deploiement.md`.
 
 **Commandes :**
 ```bash
@@ -32,18 +34,19 @@ DEBUG=true python manage.py importer_referentiel      # import du classeur (idem
 DEBUG=true DATABASE_URL="sqlite:///:memory:" python manage.py test   # tests Django
 python -m pytest tests/                               # tests du pipeline
 ```
-Note : `DATABASE_URL` suit la convention SQLAlchemy (`sqlite:///:memory:`, trois barres)
-— la même URL sert aux deux ORM.
+Note : `DATABASE_URL` garde la convention à **trois** barres (`sqlite:///:memory:`),
+héritée de SQLAlchemy — la forme est restée après son retrait, changer le format
+casserait les configurations en place pour rien.
 
-Deux pièges à connaître : les settings Django **ne lisent pas** `src/core/config.py` (son `Settings()` exige `anthropic_api_key`, ce qui casserait `migrate`), et `Evaluation.copy_id` est un **champ texte, pas une clé étrangère** — la table `copie` appartient à SQLAlchemy pendant la transition.
+Un piège à connaître : les settings Django **ne lisent pas** `src/core/config.py` (son `Settings()` exige `anthropic_api_key`, ce qui casserait `migrate`). `Evaluation.copy_id` reste un **champ texte** — la raison technique a disparu avec SQLAlchemy, en faire une clé étrangère est désormais possible mais c'est une décision séparée.
 
 ### Persistance : deux systèmes, un seul rôle chacun
 - **Google Sheets** (`src/integrations/google_sheets.py`) — source de vérité pour l'**identité** : élèves (`get_eleves()`) et personnel (`get_personnel()`, un seul Sheet fusionné pour enseignants/responsables/admin, colonne `role`). Contrôlé par un tiers (le docteur), lecture seule côté app. **Ne jamais recréer une table `eleve` ou `utilisateur` en base** — ça a déjà été fait et démoli deux fois (D-CEO-20, D-CEO-21) parce que ça crée une deuxième source de vérité qui diverge.
-- **Postgres/Neon** (`src/db/database.py`, `src/db/models.py`, migrations Alembic) — ne garde que ce qui concerne la correction elle-même : `copie` (copy_id, `identifiant_hakili` texte — pas de FK vers une table élève —, classe, notes) et `document` (scan/rapport/remédiation en BYTEA). Le pipeline y écrit en best-effort à 5 points d'injection (D-CEO-19) ; le seul point non best-effort est la vérification que l'élève existe dans le Sheet **avant** tout appel IA (D-CEO-20).
-- `pool_pre_ping=True` / `pool_recycle=300` sur le moteur SQLAlchemy — Neon met la base en veille, ne pas retirer ça sans comprendre pourquoi c'est là (D-CEO-19).
+- **Postgres/Neon** (ORM Django) — `copie` (copy_id, `identifiant_hakili` texte — pas de FK vers une table élève —, classe, notes) et `document` (scan/rapport/remédiation en `bytea`), dans `suivi/models.py` avec le reste. Le pipeline y écrit en best-effort à 5 points d'injection (D-CEO-19), **par `src/pipeline/depot.py`** et sans connaître Django ; le seul point non best-effort est la vérification que l'élève existe dans le Sheet **avant** tout appel IA (D-CEO-20).
+- `CONN_HEALTH_CHECKS` / `CONN_MAX_AGE=300` dans les settings — Neon met la base en veille, ne pas retirer ça sans comprendre pourquoi c'est là (D-CEO-19).
 
 ### Authentification et rôles
-Connexion par **nom (liste déroulante recherchable) + PIN à 4 chiffres**, les deux lus dans le Sheet personnel à chaque connexion — pas de mot de passe, pas de table `credentials` en base (supprimée, D-CEO-25). Rôles : `administrateur`, `responsable`, `enseignant`, dérivés de la colonne `role` du Sheet. `src/services/auth_service.py` porte la logique ; `UserRole` (`src/db/models.py`) n'est plus qu'un enum de confort, pas un type de colonne SQL.
+Connexion par **nom (liste déroulante recherchable) + PIN à 4 chiffres**, les deux lus dans le Sheet personnel à chaque connexion — pas de mot de passe, pas de table `credentials` en base (supprimée, D-CEO-25). Rôles : `administrateur`, `responsable`, `enseignant`, dérivés de la colonne `role` du Sheet. `src/services/auth_service.py` porte la logique ; `UserRole` (`src/core/roles.py`) n'est qu'un enum de confort, pas un type de colonne SQL.
 
 Centres dérivés dynamiquement des Sheets (`src/core/centre_normalizer.py`, `deriver_centres()`) — plus de liste figée. Un centre vu une seule fois est signalé "suspect" sans jamais être bloqué.
 
@@ -127,7 +130,7 @@ Sept états de session (D-CEO-34), dont **trois sorties sans remédiation à ne 
 Avant de coder sur ce dépôt :
 1. Lire `docs/decision_register.md` — décisions actives et datées.
 2. Si la tâche touche le chantier Urie v2 : lire aussi `protocole-urie.md`, `guide-urie.md`, et parcourir `Referentiel_Urie_v0.xlsx`.
-3. Lire `src/models/domain.py` (schémas pipeline existant) et `src/db/models.py` (schéma Postgres existant) avant d'ajouter un champ ou une table.
+3. Lire `src/models/domain.py` (schémas du pipeline) et `suivi/models.py` + `referentiel/models.py` (schéma Postgres) avant d'ajouter un champ ou une table.
 4. Proposer un plan si la tâche touche plusieurs modules ou plusieurs fichiers.
 5. Ne pas recréer ce qui existe — vérifier `src/knowledge/`, `src/pipeline/`, `src/api/`, `src/services/`, `src/integrations/` avant d'écrire une nouvelle fonction.
 6. Ne jamais réintroduire une table `eleve` ou `utilisateur`/`credentials` en Postgres — l'identité vit dans les Sheets (D-CEO-20/21/25).
@@ -157,9 +160,9 @@ make setup && make run          # lance Django
 make test
 make lint
 
-# Migrations (Alembic, base Neon)
-alembic upgrade head
-alembic downgrade -1
+# Migrations (Django, base Neon) — un seul système depuis D-CEO-40
+python manage.py migrate
+python manage.py makemigrations
 ```
 
 ---
@@ -186,8 +189,8 @@ alembic downgrade -1
 | `correction_web/` | Flux de correction sous Django — copie unique, lot, mode libre ; état en base, pas en session |
 | `suivi_web/jetons.py` | Jetons signés dans les URL à la place de `identifiant_hakili` (D-CEO-25) |
 | `referentiel/management/commands/importer_referentiel.py` | Import idempotent du classeur |
-| `src/db/models.py` | Schéma SQLAlchemy — `copie` et `document` seulement. Reliquat de la transition : peut passer sous Django depuis D-CEO-39 |
-| `src/db/database.py` | Connexion Neon (`pool_pre_ping`, `pool_recycle`) |
+| `src/pipeline/depot.py` | Contrat de persistance du pipeline — 4 méthodes, aucun framework (D-CEO-40) |
+| `correction_web/depot.py` | Son implémentation Django, installée par `CorrectionWebConfig.ready()`. Opérations **rejouables** : le retry du pipeline en dépend |
 | `src/integrations/google_sheets.py` | Source de vérité identité élèves/personnel |
 | `src/services/auth_service.py` | Authentification nom+PIN par rôle |
 | `src/core/tendance.py` | Calcul de tendance (pattern à réutiliser pour les indicateurs module 9) |

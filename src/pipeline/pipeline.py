@@ -53,6 +53,7 @@ from src.models.domain import (
     TeacherDecision,
     TranscriptionResult,
 )
+from src.pipeline.depot import depot
 from src.pipeline.ingestion import ingest_images, ingest_pdf
 from src.pipeline.orchestrator import (
     ValidationIssue,
@@ -156,10 +157,10 @@ def _client_label(client, step: str = "") -> str:
 
 
 # ── Persistance base de données (best-effort — ne bloque jamais le pipeline) ──
-# DATABASE_URL est optionnel (portail de consultation) : les imports du module
-# src.db.database sont donc faits ICI, à l'intérieur du try/except, pas en haut
-# du fichier — un import en tête de module ferait planter create_engine("") au
-# chargement de pipeline.py entier si aucune base n'est configurée.
+# Le pipeline ne connaît pas la base : il écrit dans le dépôt courant
+# (`src/pipeline/depot.py`), que l'application installe au démarrage. Sans base
+# configurée — portail de consultation, essais hors ligne — le dépôt neutre ne
+# fait rien et la correction se déroule quand même.
 #
 # Retry léger : une base serverless (ex. Neon) peut refuser la toute première
 # connexion après une période d'inactivité ("cold start") puis fonctionner
@@ -229,25 +230,19 @@ def _db_persist_scan(*, copy_id: str, file_paths: list[Path], identifiant_hakili
     classe_initiale = (eleve.get("classe") or "").strip() or _CLASSE_PLACEHOLDER
 
     try:
-        from src.db.database import SessionLocal
-        from src.services.copie_service import add_document_to_copie, create_copie
-
         scan_bytes = file_paths[0].read_bytes()
 
         @_retry_db
         def _write() -> None:
-            db = SessionLocal()
-            try:
-                create_copie(
-                    db=db,
-                    copy_id=copy_id,
-                    identifiant_hakili=identifiant_hakili,
-                    classe=classe_initiale,
-                    annee_scolaire=str(datetime.now().year),
-                )
-                add_document_to_copie(db, copy_id, "scan", scan_bytes)
-            finally:
-                db.close()
+            depot().creer_copie(
+                copy_id=copy_id,
+                identifiant_hakili=identifiant_hakili,
+                classe=classe_initiale,
+                annee_scolaire=str(datetime.now().year),
+            )
+            depot().ajouter_document(
+                copy_id=copy_id, type_document="scan", contenu=scan_bytes
+            )
 
         _write()
         logger.warning(
@@ -266,18 +261,13 @@ def _db_add_document(copy_id: str, doc_type: str, path: Path | None) -> None:
     if not path or not path.exists():
         return
     try:
-        from src.db.database import SessionLocal
-        from src.services.copie_service import add_document_to_copie
-
         doc_bytes = path.read_bytes()
 
         @_retry_db
         def _write() -> None:
-            db = SessionLocal()
-            try:
-                add_document_to_copie(db, copy_id, doc_type, doc_bytes)
-            finally:
-                db.close()
+            depot().ajouter_document(
+                copy_id=copy_id, type_document=doc_type, contenu=doc_bytes
+            )
 
         _write()
         logger.warning("[%s] [DB OK] Document '%s' ajouté", copy_id, doc_type)
@@ -311,16 +301,9 @@ def _db_update_notes(copy_id: str, notes_finales: float | None) -> None:
     if notes_finales is None:
         return
     try:
-        from src.db.database import SessionLocal
-        from src.services.copie_service import update_copie_notes
-
         @_retry_db
         def _write() -> None:
-            db = SessionLocal()
-            try:
-                update_copie_notes(db, copy_id, notes_finales)
-            finally:
-                db.close()
+            depot().maj_notes(copy_id=copy_id, notes_finales=notes_finales)
 
         _write()
         logger.warning("[%s] [DB OK] Note finale enregistrée : %.2f/20", copy_id, notes_finales)
@@ -333,16 +316,9 @@ def _db_update_classe(copy_id: str, classe: str) -> None:
     classe réellement extraite de l'en-tête transcrit. Best-effort — n'échoue
     jamais le pipeline."""
     try:
-        from src.db.database import SessionLocal
-        from src.services.copie_service import update_copie_classe
-
         @_retry_db
         def _write() -> None:
-            db = SessionLocal()
-            try:
-                update_copie_classe(db, copy_id, classe)
-            finally:
-                db.close()
+            depot().maj_classe(copy_id=copy_id, classe=classe)
 
         _write()
         logger.warning("[%s] [DB OK] Classe enregistrée : %s", copy_id, classe)

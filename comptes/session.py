@@ -14,7 +14,7 @@ from functools import wraps
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 
-from src.db.models import UserRole
+from src.core.roles import UserRole
 from src.services.identite_service import (
     casquette_par_defaut,
     roles_valides_de,

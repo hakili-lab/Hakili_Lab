@@ -1,10 +1,10 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-08-05 (module 2 supprimé et diagnostic branché sur la correction — D-CEO-38 ; Streamlit retiré — D-CEO-39)
+**Dernière mise à jour :** 2026-08-05 (simplification : module 2 supprimé et diagnostic branché sur la correction — D-CEO-38 ; Streamlit retiré — D-CEO-39 ; un seul ORM — D-CEO-40)
 **Où en est-on (résumé en une ligne) :** Modules 0, **1 et 3 ✅ faits** · **Module 2 ⛔ supprimé le 2026-08-05** — trois copies 5e réelles imprimées et scannées l'ont mis en défaut (les trois refusées, dérive jusqu'à 3 cm), et il reconstituait par la géométrie une correspondance que la correction produit déjà ; au passage le risque du tramage est levé, l'imprimante n'imprime pas les bandes de guidage du tout · **Module 4 🟨 le moteur tourne et il est branché** — `manage.py diagnostiquer --correction <id>` reprend une copie déjà corrigée, sans lecture ni appel de modèle supplémentaire, QCM court-circuités, décision enseignant prioritaire · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. Le chiffre du module 4 reste celui de la mesure plancher : **rappel 85 % sur la compétence, 65 % sur le couple `compétence × type`** (Opus 4.7), point dur = le type d'erreur, `ATT` en tête. **La mesure juste n'attend plus qu'une chose : corriger les 3 copies 5e** (`KOANDA-SAIBATA-5E`, `NABALOUM-MADJID-5E`, `OUATTARA-FADEL_5E`) puis comparer. Les seuils de palier A/B/C **n'ont toujours pas été rejugés** après la hausse de ~33 % des coûts.
 
-**État vérifié le 2026-08-05 : 268 tests Django + 239 pytest = 507 tests passent.** (Le total baisse : les 43 tests du module 2 sont partis avec lui, 15 tests neufs couvrent le branchement. Le retrait de Streamlit n'a touché aucun test.)
+**État vérifié le 2026-08-05 : 275 tests Django + 239 pytest = 514 tests passent.** ⚠ Avant la prochaine mise en ligne : `migrate suivi 0007 --fake` une fois sur Neon (D-CEO-40, `docs/deploiement.md`).
 
 ⚠ **Un point bloque l'usage de l'interface, et aucune ligne de code ne le lèvera :**
 le fichier de clé JSON du compte de service Google est introuvable sur la machine
@@ -453,6 +453,62 @@ Limite structurelle assumée : certaines compétences ont un libellé volontaire
 ---
 
 ## Journal de bord
+
+### 2026-08-05 (suite 3) — Un seul ORM : SQLAlchemy et Alembic retirés
+
+Troisième poste de la simplification. `copie` et `document` passent sous Django,
+et le second ORM disparaît : `src/db/`, `src/services/copie_service.py`,
+`migrations/` (4 révisions Alembic), `alembic.ini`, plus les deux dépendances.
+**24 paquets au lieu de 26.**
+
+Cette cohabitation n'avait jamais été un choix : elle datait de Streamlit, qui
+écrivait ces deux tables. Il n'en restait qu'un coût, dont un piège permanent —
+`Evaluation.copy_id` est un champ texte **parce que** Django ne pouvait pas
+poser de clé étrangère vers une table qu'il ne gérait pas.
+
+**La difficulté était le pipeline**, qui écrit en base à cinq points d'injection
+alors que `src/` ne doit dépendre d'aucun framework. La couture est
+`src/pipeline/depot.py` : un contrat de quatre méthodes, un dépôt courant que
+`CorrectionWebConfig.ready()` installe au démarrage, et un dépôt neutre par
+défaut pour que la correction tourne sans base. Le pipeline dépose, il ne sait
+pas dans quoi — et il y **perd** des lignes, toute la mécanique
+`SessionLocal()` / `try` / `finally: db.close()` ayant disparu.
+
+On aurait pu abandonner la règle, Django étant seul appelant depuis D-CEO-39.
+Elle est gardée sur deux constats : le retrait de Streamlit n'a touché aucun
+test précisément parce que `src/` ignorait l'interface, et les 239 tests de
+`tests/` importent le pipeline **sans configurer Django**.
+
+**🔴 Un défaut trouvé en chemin, invisible jusque-là.** Le pipeline enveloppe
+chaque écriture dans un retry, pour les refus de première connexion d'une base
+serverless. **Ce retry ne rattrapait rien** : la seconde tentative rappelait
+`create_copie`, qui échouait sur la clé primaire, ou `add_document_to_copie`,
+qui ajoutait un *second* document du même type — et `get_document_by_type`
+prenait « le premier trouvé », sans ordre garanti. Une copie recorrigée pouvait
+donc servir l'ancien rapport. Les quatre opérations du dépôt sont maintenant
+rejouables ; le retry fonctionne enfin.
+
+**⚠ Une étape manuelle avant la prochaine mise en ligne.** Sur Neon, `copie` et
+`document` existent déjà : la migration `suivi/0007` s'y applique **une fois
+avec `--fake`** (`docs/deploiement.md`). Sans ça le déploiement échoue sur
+« relation existe déjà », transaction annulée, rien de perdu — bruyant plutôt
+que silencieux. Écrite à la main, parce que Django ne sait pas convertir un
+modèle `managed = False` en modèle géré : il produit un `AlterModelOptions` qui
+ne crée aucune table, et on ne s'en aperçoit qu'à la première base neuve.
+
+**275 tests Django + 239 pytest passent** (514 au total). Sept tests neufs
+couvrent le dépôt. Les tests des vues de suivi ont **cessé de simuler la base** :
+ils créent de vraies lignes, ce qui teste davantage avec moins de code — c'était
+la contrepartie du `managed = False`, elle tombe avec lui.
+
+**Ce qui n'a pas bougé, et ne doit pas :** `identifiant_hakili` reste un champ
+texte, jamais une clé étrangère. Le passage sous Django rend une table `eleve`
+techniquement possible ; elle a déjà été démolie deux fois (D-CEO-20/21).
+
+**Reste de la liste de simplification :** les trois clients IA non retenus
+(1 671 lignes, arbitrage coût), la mesure plancher (276), le module 5 tel qu'il
+est spécifié, et le principe **dégrader plutôt que refuser**.
+
 
 ### 2026-08-05 (suite 2) — Streamlit retiré, et deux dépendances de moins que prévu
 

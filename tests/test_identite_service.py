@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.db.models import UserRole
+from src.core.roles import UserRole
 from src.services.identite_service import (
     apparier_eleve_par_nom_fichier,
     casquette_par_defaut,

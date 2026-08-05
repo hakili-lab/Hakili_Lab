@@ -141,7 +141,7 @@ class SheetBackend(BaseBackend):
         `is_staff` est accordé aux administrateurs pour qu'ils atteignent l'admin
         Django, où se consulte le référentiel.
         """
-        from src.db.models import UserRole
+        from src.core.roles import UserRole
 
         est_admin = UserRole.admin.value in roles
         utilisateur, cree = User.objects.get_or_create(

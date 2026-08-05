@@ -20,6 +20,8 @@ Deux points de conception à ne pas défaire
 """
 from __future__ import annotations
 
+import uuid
+
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
@@ -27,32 +29,62 @@ from django.utils import timezone
 
 
 class Copie(models.Model):
-    """Table `copie` existante, gérée par SQLAlchemy — Django ne fait que la lire.
+    """Une copie corrigée : l'objet que le pipeline produit et persiste.
 
-    `managed = False` : Django ne la crée pas, ne la modifie pas, ne la supprime
-    pas dans ses migrations. Elle sert à consulter une copie depuis l'admin et à
-    résoudre le lien d'une évaluation vers son scan.
+    **Passée sous Django le 2026-08-05 (D-CEO-40).** Elle appartenait à
+    SQLAlchemy parce que Streamlit l'écrivait ; Streamlit est parti (D-CEO-39) et
+    elle n'avait plus de raison de vivre dans un second ORM. La table est la
+    même — la migration qui l'adopte ne crée rien en production, elle s'y
+    applique avec `--fake` (voir `docs/deploiement.md`).
 
-    Aucune clé étrangère ne pointe vers elle — voir `Evaluation.copy_id` pour le
-    motif. **La condition qui bloquait est levée** : Streamlit est retiré
-    (D-CEO-39), et `copie` peut donc passer sous la responsabilité de Django,
-    `managed` devenir `True` et le lien devenir une vraie clé étrangère. Ce sera
-    un choix explicite, pas un effet de bord — il emporte la sortie de
-    SQLAlchemy et d'Alembic avec lui.
+    L'identité de l'élève (nom, prénom, centre, contact) n'est **pas** ici : elle
+    vit dans les Google Sheets. `identifiant_hakili` est un champ texte, jamais
+    une clé étrangère — c'est la discipline D-CEO-20, et c'est ce qui a permis de
+    démolir deux fois une table `eleve` sans rien casser.
     """
 
     copy_id = models.CharField(max_length=255, primary_key=True)
     identifiant_hakili = models.CharField(max_length=255)
     classe = models.CharField(max_length=50)
     annee_scolaire = models.CharField(max_length=50)
-    date_soumission = models.DateField()
+    date_soumission = models.DateField(default=timezone.localdate)
     notes_finales = models.FloatField(null=True, blank=True)
 
     class Meta:
-        managed = False
         db_table = "copie"
-        verbose_name = "copie (lecture seule)"
-        verbose_name_plural = "copies (lecture seule)"
+        verbose_name = "copie"
+        verbose_name_plural = "copies"
+
+    def __str__(self) -> str:
+        return self.copy_id
+
+
+class Document(models.Model):
+    """Un fichier attaché à une copie : le scan, le rapport, la remédiation.
+
+    Le contenu est stocké **en base** (`bytea`) et non sur disque : l'hébergement
+    n'a pas de volume persistant, un fichier écrit à côté disparaît au
+    redéploiement (`docs/deploiement.md`). Servi par jeton signé, jamais par une
+    URL portant `identifiant_hakili` (D-CEO-25).
+    """
+
+    TYPES = (("scan", "scan"), ("rapport", "rapport"), ("remediation", "remédiation"))
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    copie = models.ForeignKey(
+        Copie, on_delete=models.CASCADE, db_column="copy_id", related_name="documents"
+    )
+    type = models.CharField(max_length=50, choices=TYPES)
+    fichier = models.BinaryField()
+    date_creation = models.DateField(default=timezone.localdate)
+
+    class Meta:
+        db_table = "document"
+        verbose_name = "document"
+        verbose_name_plural = "documents"
+
+    def __str__(self) -> str:
+        return f"{self.type} de {self.copie_id}"
 
     def __str__(self) -> str:
         return self.copy_id

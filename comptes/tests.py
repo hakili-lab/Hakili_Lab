@@ -157,8 +157,7 @@ class TestAccesProtege(BaseAuth):
 
     def test_statistiques_accessibles_a_l_admin(self) -> None:
         self.connecter("ADMIN", "Hakili", "9999")
-        with patch("src.db.database.SessionLocal"):
-            reponse = self.client.get(reverse("suivi_web:statistiques"))
+        reponse = self.client.get(reverse("suivi_web:statistiques"))
         self.assertEqual(reponse.status_code, 200)
 
 
@@ -239,13 +238,10 @@ class TestPerimetreUnique(BaseAuth):
         )
 
     def test_administration_ouverte_a_l_admin(self) -> None:
-        from unittest.mock import patch
-
         self.connecter("ADMIN", "Hakili", "9999")
-        with patch("src.db.database.SessionLocal"):
-            self.assertEqual(
-                self.client.get(reverse("suivi_web:statistiques")).status_code, 200
-            )
+        self.assertEqual(
+            self.client.get(reverse("suivi_web:statistiques")).status_code, 200
+        )
 
     def test_aucune_donnee_sensible_a_l_ecran(self) -> None:
         self.connecter("ADMIN", "Hakili", "9999")

@@ -20,7 +20,7 @@ Tendance = Literal["progresse", "stagne", "regresse", "insuffisant"]
 
 class _CopieNotee(Protocol):
     """Ce dont calculer_tendance a besoin — n'importe quel objet avec ces
-    deux attributs convient (Copie de src.db.models, ou un objet de test)."""
+    deux attributs convient (`suivi.models.Copie`, ou un objet de test)."""
     notes_finales: float | None
     date_soumission: object  # comparable (date) — seul l'ordre relatif compte
 

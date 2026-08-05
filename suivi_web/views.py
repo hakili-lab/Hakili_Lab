@@ -17,13 +17,12 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from src.core.tendance import calculer_tendance
-from src.db.database import SessionLocal
 from src.integrations.google_sheets import GoogleSheetsError
 from src.services.identite_service import filtrer_par_recherche
 from src.services.user_service import get_accessible_eleves
 
 from comptes.session import admin_requis, connexion_requise, utilisateur_courant
-from suivi.models import EtatSession
+from suivi.models import Copie, EtatSession
 from suivi_web.jetons import identifiant_depuis_jeton, jeton_eleve
 
 logger = logging.getLogger(__name__)
@@ -62,12 +61,17 @@ def _copies_par_eleve(request, eleves: list[dict]) -> dict[str, list]:
     parfaitement affichable. On dégrade en retirant la tendance, en le disant, au
     lieu de refuser toute la page pour une colonne manquante.
     """
-    from src.services.copie_service import get_copies_pour_identifiants
-
     identifiants = [e.get("identifiant_hakili", "") for e in eleves]
-    db = SessionLocal()
+    if not identifiants:
+        return {}
     try:
-        return get_copies_pour_identifiants(db, identifiants)
+        # Une seule requête pour toute la liste : un centre peut compter
+        # plusieurs dizaines d'élèves, et une requête par élève (N+1) rendrait
+        # l'accueil inutilisable.
+        par_identifiant: dict[str, list[Copie]] = {i: [] for i in identifiants}
+        for copie in Copie.objects.filter(identifiant_hakili__in=identifiants):
+            par_identifiant.setdefault(copie.identifiant_hakili, []).append(copie)
+        return par_identifiant
     except Exception as exc:  # noqa: BLE001
         logger.warning("[DB] Copies indisponibles, tendance non calculée : %s", exc)
         messages.warning(
@@ -76,8 +80,6 @@ def _copies_par_eleve(request, eleves: list[dict]) -> dict[str, list]:
             "pas affichée. La liste des élèves, elle, est à jour.",
         )
         return {}
-    finally:
-        db.close()
 
 
 @connexion_requise
@@ -194,8 +196,6 @@ def eleve_detail(request, jeton: str):
     du profil ; sur un même élève ils affichaient la même chronologie — les
     fusionner supprime la duplication sans rien retirer.
     """
-    from src.services.copie_service import get_historique_eleve
-
     identifiant = identifiant_depuis_jeton(jeton)
     if identifiant is None:
         # Jeton forgé ou signé avec une autre clé : rien à révéler de plus.
@@ -203,14 +203,15 @@ def eleve_detail(request, jeton: str):
     eleve = _eleve_autorise(request, identifiant)
 
     copies, entrees, lecture_ok = [], [], True
-    db = SessionLocal()
     try:
-        from src.services.copie_service import get_documents_for_copie
-
-        copies = get_historique_eleve(db, identifiant)
+        copies = list(
+            Copie.objects.filter(identifiant_hakili=identifiant)
+            .order_by("-date_soumission")
+            .prefetch_related("documents")
+        )
         for copie in copies:
             documents = sorted(
-                get_documents_for_copie(db, copie.copy_id),
+                copie.documents.all(),
                 key=lambda d: _DOC_ORDRE.index(d.type) if d.type in _DOC_ORDRE else 9,
             )
             entrees.append(
@@ -230,8 +231,6 @@ def eleve_detail(request, jeton: str):
             request,
             "Les copies de cet élève ne sont pas accessibles pour l'instant.",
         )
-    finally:
-        db.close()
 
     tendance = calculer_tendance(copies)
     classe_css, libelle = _STYLE_TENDANCE.get(tendance, ("insuffisant", tendance))
@@ -269,28 +268,23 @@ def document(request, jeton: str, doc_type: str):
     lien : sans cela, une URL devinée suffirait à récupérer la copie d'un élève
     d'un autre centre.
     """
-    from src.services.copie_service import get_copie_by_id, get_document_by_type
     from src.services.identite_service import nom_fichier_document
 
     copy_id = identifiant_depuis_jeton(jeton)
     if copy_id is None:
         raise Http404("Lien invalide")
 
-    db = SessionLocal()
-    try:
-        copie = get_copie_by_id(db, copy_id)
-        if copie is None:
-            raise Http404("Copie inconnue")
+    copie = Copie.objects.filter(copy_id=copy_id).first()
+    if copie is None:
+        raise Http404("Copie inconnue")
 
-        eleve = _eleve_autorise(request, copie.identifiant_hakili)
+    eleve = _eleve_autorise(request, copie.identifiant_hakili)
 
-        doc = get_document_by_type(db, copy_id, doc_type)
-        if doc is None:
-            raise Http404("Document inconnu")
-        donnees = bytes(doc.fichier)
-        date_copie = copie.date_soumission
-    finally:
-        db.close()
+    doc = copie.documents.filter(type=doc_type).first()
+    if doc is None:
+        raise Http404("Document inconnu")
+    donnees = bytes(doc.fichier)
+    date_copie = copie.date_soumission
 
     mime, extension = _type_reel(donnees)
     nom = nom_fichier_document(
@@ -460,17 +454,12 @@ def statistiques(request):
     modification de code (D-CEO-25). Un centre vu une seule fois est signalé
     comme suspect, jamais bloqué ni corrigé.
     """
-    from src.db.models import Copie
-
     nb_copies = None
-    db = SessionLocal()
     try:
-        nb_copies = db.query(Copie).count()
+        nb_copies = Copie.objects.count()
     except Exception as exc:  # noqa: BLE001
         logger.warning("[DB] Comptage des copies impossible : %s", exc)
         messages.error(request, "Le comptage des copies est momentanément indisponible.")
-    finally:
-        db.close()
 
     eleves, centres, suspects = None, [], []
     try:

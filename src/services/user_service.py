@@ -21,7 +21,7 @@ objet de base : il n'existe aucune table portant l'identité (D-CEO-20, D-CEO-21
 """
 from __future__ import annotations
 
-from src.db.models import UserRole
+from src.core.roles import UserRole
 
 
 def get_accessible_eleves(user: dict) -> list[dict]:

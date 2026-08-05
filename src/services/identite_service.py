@@ -15,7 +15,7 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from src.db.models import UserRole
+from src.core.roles import UserRole
 
 # ── Rôles et casquettes ───────────────────────────────────────────────────────
 

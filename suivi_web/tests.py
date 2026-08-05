@@ -16,13 +16,14 @@ from django.test import TestCase
 from django.urls import reverse
 
 from comptes.tests import _ELEVES, _PERSONNEL, _cle
+from suivi.models import Copie, Document
 from suivi_web.jetons import identifiant_depuis_jeton, jeton_eleve
 
 _PDF = b"%PDF-1.4 faux document de test"
 
 
-def _copie(copy_id: str, identifiant: str, note=12.0):
-    return SimpleNamespace(
+def _copie(copy_id: str, identifiant: str, note=12.0) -> Copie:
+    return Copie.objects.create(
         copy_id=copy_id,
         identifiant_hakili=identifiant,
         classe="3e",
@@ -53,22 +54,10 @@ class BaseSuivi(TestCase):
         correctif_eleve.start()
         self.addCleanup(correctif_eleve.stop)
 
-        # La base n'est pas jointe : ces tests portent sur les autorisations.
-        correctif_copies = patch(
-            "src.services.copie_service.get_copies_pour_identifiants", return_value={}
-        )
-        correctif_copies.start()
-        self.addCleanup(correctif_copies.stop)
-
-        correctif_hist = patch(
-            "src.services.copie_service.get_historique_eleve", return_value=[]
-        )
-        correctif_hist.start()
-        self.addCleanup(correctif_hist.stop)
-
-        correctif_session = patch("src.db.database.SessionLocal")
-        correctif_session.start()
-        self.addCleanup(correctif_session.stop)
+        # Les copies ne sont plus simulées : `copie` et `document` sont sous
+        # Django depuis D-CEO-40, donc la base de test les porte pour de vrai.
+        # Ces tests portent sur les autorisations et n'ont besoin d'aucune copie ;
+        # ceux qui en veulent une la créent (voir TestAccesDocuments).
 
     def connecter(self, nom: str, prenom: str, pin: str):
         return self.client.post(
@@ -319,19 +308,9 @@ class TestAccesDocuments(BaseSuivi):
     def setUp(self) -> None:
         super().setUp()
         self.copie = _copie("copie-H1", "HAK-2026-0001")
-        self.doc = SimpleNamespace(type="rapport", fichier=_PDF)
-
-        correctif_copie = patch(
-            "src.services.copie_service.get_copie_by_id", return_value=self.copie
+        self.doc = Document.objects.create(
+            copie=self.copie, type="rapport", fichier=_PDF
         )
-        correctif_copie.start()
-        self.addCleanup(correctif_copie.stop)
-
-        correctif_doc = patch(
-            "src.services.copie_service.get_document_by_type", return_value=self.doc
-        )
-        correctif_doc.start()
-        self.addCleanup(correctif_doc.stop)
 
     def _url(self) -> str:
         return reverse(
@@ -376,5 +355,6 @@ class TestAccesDocuments(BaseSuivi):
         """Un scan peut être une photo, contrairement au rapport toujours en PDF :
         le format est lu dans les octets, pas déduit du champ `type`."""
         self.doc.fichier = b"\xff\xd8\xff\xe0 faux jpeg"
+        self.doc.save(update_fields=["fichier"])
         self.connecter("DIANE", "Abasse", "1234")
         self.assertEqual(self.client.get(self._url())["Content-Type"], "image/jpeg")

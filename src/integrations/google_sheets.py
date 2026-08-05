@@ -112,9 +112,9 @@ _COLONNES_PERSONNEL: dict[str, str] = {
 _COLONNES_PERSONNEL_OPTIONNELLES: frozenset[str] = frozenset({"classe", "email"})
 
 # Valeurs de rôle attendues dans la colonne "role" — DOIVENT correspondre
-# exactement aux valeurs de src.db.models.UserRole (responsable_centre.value,
+# exactement aux valeurs de src.core.roles.UserRole (responsable_centre.value,
 # enseignant.value). Dupliquées ici en constantes plutôt qu'importées : ce
-# module reste volontairement indépendant de src.db (testable sans base de
+# module reste volontairement indépendant de la persistance (testable sans base de
 # données, voir docstring de module).
 _ROLE_RESPONSABLE = "responsable"
 _ROLE_ENSEIGNANT = "enseignant"

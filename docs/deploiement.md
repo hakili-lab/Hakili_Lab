@@ -33,6 +33,30 @@ tests simulent le pipeline.
 
 ---
 
+## 🔴 Une étape manuelle, une seule fois, avant la prochaine mise en ligne
+
+`copie` et `document` sont passées de SQLAlchemy à Django le 2026-08-05
+(D-CEO-40). **Sur la base Neon, ces deux tables existent déjà** — elles ont été
+créées par les migrations Alembic. La migration Django qui les adopte n'a donc
+rien à créer là-bas, seulement à être enregistrée :
+
+```bash
+python manage.py migrate suivi 0007 --fake      # UNE SEULE FOIS, sur Neon
+python manage.py migrate                        # le reste normalement
+```
+
+**Si on l'oublie, le déploiement échoue bruyamment** — `relation "copie" existe
+déjà` — la transaction est annulée et aucune donnée n'est touchée. Le `release:`
+du Procfile s'arrête, la mise en ligne ne se fait pas. C'est le comportement
+voulu : mieux vaut un déploiement bloqué qu'une base à moitié migrée.
+
+Sur une base neuve (poste de développement, tests, nouvel environnement), il n'y
+a rien à faire : `migrate` crée les deux tables comme les autres.
+
+**Alembic n'existe plus.** `alembic.ini`, `migrations/` et `src/db/` ont été
+supprimés ; il n'y a plus qu'un ORM et qu'un système de migrations. Les anciennes
+révisions restent dans l'historique Git si une archéologie était nécessaire.
+
 ## Variables d'environnement
 
 | Variable | Obligatoire | Rôle |
