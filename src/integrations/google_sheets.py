@@ -59,6 +59,7 @@ from google.oauth2.service_account import Credentials
 from src.core.centre_normalizer import deriver_centres, fold_centre
 from src.core.classe_normalizer import normalize_classe, normalize_classe_avec_serie
 from src.core.config import settings
+from src.integrations import sheets_factices
 
 logger = logging.getLogger(__name__)
 
@@ -362,6 +363,21 @@ def _fetch_raw_rows(sheet_id: str, label: str) -> list[dict[str, Any]]:
     cache par IDENTIFIANT DE SHEET (pas par rôle logique) : si deux rôles
     logiques pointent vers le même sheet_id, ceci n'appelle l'API qu'une
     fois — le second appel sert directement depuis le cache."""
+    # Développement uniquement : jeu d'identités inventées, à la place de la
+    # lecture réseau et d'elle seule. Le branchement est ICI, au ras du réseau,
+    # pour que tout l'aval (résolution des colonnes, identifiant_hakili,
+    # centres, PIN) s'exécute pour de vrai — voir sheets_factices.actif(), qui
+    # refuse de répondre hors DEBUG.
+    if sheets_factices.actif():
+        factices = sheets_factices.lignes_brutes(sheet_id, label)
+        if factices is not None:
+            logger.warning(
+                "[SHEETS FACTICES] Sheet %s servi depuis le jeu de développement "
+                "(%d lignes) — aucune donnée réelle n'est lue.",
+                label, len(factices),
+            )
+            return factices
+
     if not sheet_id:
         raise GoogleSheetsConfigError(f"L'identifiant du Sheet {label} n'est pas configuré (.env).")
 
