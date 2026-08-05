@@ -16,44 +16,44 @@
 
 <form method="post" action="{% url 'correction_web:valider_notes' jeton %}">
   {% csrf_token %}
-  <div class="carte defilement">
+  <div class="carte tableau defilement">
     <table>
       <thead>
         <tr>
           <th>Question</th>
           <th>Attendu</th>
           <th>Réponse de l'élève</th>
-          <th>Note IA</th>
+          <th class="nombre">Note IA</th>
           <th>Votre décision</th>
         </tr>
       </thead>
       <tbody>
         {% for q in questions %}
-          <tr {% if q.a_revoir %}style="background:#fef5e7;"{% endif %}>
+          <tr{% if q.a_revoir %} class="a-revoir"{% endif %}>
             <td>
               <strong>{{ q.id }}</strong>
               {% if q.a_revoir %}<div class="aide">à revoir</div>{% endif %}
             </td>
-            <td style="max-width:220px;">{{ q.bonne_reponse|math }}</td>
-            <td style="max-width:220px;">{{ q.reponse_eleve|math }}</td>
-            <td>{{ q.note_ia|floatformat:"-2" }} / {{ q.max|floatformat:"-2" }}</td>
-            <td style="white-space:nowrap;">
-              <label style="font-weight:400;display:inline-flex;gap:5px;align-items:center;">
-                <input type="radio" name="decision_{{ q.id }}" value="accepted" checked
-                       style="width:auto;"> Accepter
+            <td class="texte">{{ q.bonne_reponse|math }}</td>
+            <td class="texte">{{ q.reponse_eleve|math }}</td>
+            <td class="nombre">{{ q.note_ia|floatformat:"-2" }} / {{ q.max|floatformat:"-2" }}</td>
+            <td class="action">
+              <label class="choix">
+                <input type="radio" name="decision_{{ q.id }}" value="accepted" checked> Accepter
               </label>
-              <label style="font-weight:400;display:inline-flex;gap:5px;align-items:center;margin-left:10px;">
-                <input type="radio" name="decision_{{ q.id }}" value="refused"
-                       style="width:auto;"> Refuser
+              <label class="choix">
+                <input type="radio" name="decision_{{ q.id }}" value="refused"> Refuser
               </label>
-              <input type="number" name="note_{{ q.id }}" min="0" max="{{ q.max }}" step="0.25"
-                     placeholder="note" style="width:88px;display:inline-block;margin-left:8px;">
+              <input class="mini" type="number" name="note_{{ q.id }}" min="0" max="{{ q.max }}"
+                     step="0.25" placeholder="note" aria-label="Votre note pour {{ q.id }}">
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-  <button type="submit">Valider et lancer le diagnostic</button>
+  <div class="actions">
+    <button type="submit">Valider et lancer le diagnostic</button>
+  </div>
 </form>
 {% endblock %}

@@ -12,23 +12,23 @@
   Ne réduisez pas la page à l'impression : les cadres doivent garder leur taille.
 </div>
 
-<div class="carte">
+<div class="carte tableau">
   <div class="defilement">
     <table>
       <thead>
-        <tr><th>Test</th><th>Classe</th><th>Questions</th><th></th></tr>
+        <tr><th>Test</th><th>Classe</th><th class="nombre">Questions</th><th class="action"></th></tr>
       </thead>
       <tbody>
         {% for t in tests %}
           <tr>
             <td><strong>{{ t.label }}</strong></td>
             <td>{{ t.niveaux }}</td>
-            <td>{{ t.questions }}</td>
-            <td style="white-space:nowrap;">
+            <td class="nombre">{{ t.questions }}</td>
+            <td class="action">
               {% if t.imprimable %}
-                <a class="bouton discret" style="padding:6px 12px;font-size:13px;"
+                <a class="bouton discret petit"
                    href="{% url 'correction_web:sujet' t.id %}" target="_blank" rel="noopener">Ouvrir</a>
-                <a class="bouton discret" style="padding:6px 12px;font-size:13px;"
+                <a class="bouton discret petit"
                    href="{% url 'correction_web:sujet' t.id %}?telecharger=1">Télécharger</a>
               {% else %}
                 <span class="aide">sujet non disponible</span>

@@ -5,110 +5,656 @@
 {% comment %} Le module 8 exige qu'un tuteur remplisse sa fiche depuis son téléphone en
    moins de deux minutes : la mise en page est pensée mobile d'abord. {% endcomment %}
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>{% block titre %}Hakili Lab{% endblock %}</title>
 <style>
-  :root {
-    --marine: #001e4a;
-    --bleu: #4a90e2;
-    --vert: #27ae60;
-    --orange: #e67e22;
-    --rouge: #c0392b;
-    --gris: #5a7aa8;
-    --fond: #f0f4f8;
-    --bord: #d8e2ee;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: var(--marine);
-    background: var(--fond);
-    line-height: 1.5;
-  }
-  a { color: var(--bleu); }
+/* ═══════════════════════════════════════════════════════════════════════════
+   SYSTÈME VISUEL — HAKILI LAB
+   ───────────────────────────────────────────────────────────────────────────
+   Tout le style de l'application tient ici. C'est volontaire tant qu'il n'y a
+   pas de chaîne de compilation d'actifs : une feuille servie en ligne évite un
+   aller-retour réseau, ce qui compte sur une connexion mobile burkinabè, et un
+   seul fichier évite qu'un écran dérive de son voisin.
 
-  header.appbar {
-    background: var(--marine);
-    color: #fff;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .appbar .marque { font-weight: 700; letter-spacing: .4px; font-size: 15px; }
-  .appbar .marque span { display: block; font-size: 10px; color: #7a9fc8; font-weight: 400; }
-  .appbar nav { display: flex; gap: 4px; flex-wrap: wrap; }
-  .appbar nav a {
-    color: #cfe0f5; text-decoration: none; padding: 6px 10px;
-    border-radius: 6px; font-size: 13px;
-  }
-  .appbar nav a:hover { background: rgba(255,255,255,.08); }
-  .appbar nav a.actif { background: var(--bleu); color: #fff; }
-  .appbar .compte { font-size: 12px; color: #cfe0f5; display: flex; align-items: center; gap: 8px; }
+   La règle qui rend ça tenable : **les écrans n'inventent pas de style.** Ils
+   assemblent les composants ci-dessous. Un besoin non couvert s'ajoute ici,
+   nommé, pour tous — pas en `style="..."` dans un template, où personne ne le
+   retrouvera.
 
-  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 48px; }
+   Pas de mode sombre. Non par oubli : ces écrans se lisent en classe et sur des
+   téléphones souvent bon marché, et un second thème doublerait la surface à
+   vérifier pour chaque écran de données. À rouvrir si l'usage du soir le
+   demande, pas avant.
+   ══════════════════════════════════════════════════════════════════════════ */
 
-  h1 { font-size: 22px; margin: 0 0 4px; }
-  .sous-titre { color: var(--gris); font-size: 13px; margin-bottom: 20px; }
+:root {
+  /* ── Couleurs ─────────────────────────────────────────────────────────────
+     Le marine et le bleu sont l'identité Hakili Lab, conservés. Ce qui est
+     nouveau, c'est la *gamme* : avant, six couleurs servaient à tout, si bien
+     qu'un texte secondaire et une bordure partageaient la même valeur et que
+     rien ne pouvait être nuancé sans inventer un ton sur place. */
+  --marine:        #001e4a;   /* texte principal, barre de navigation */
+  --marine-clair:  #0a3a7a;
+  --bleu:          #2f6fc4;   /* action : boutons, liens, sélection */
+  --bleu-sombre:   #245aa3;   /* survol d'une action */
+  --bleu-pale:     #eaf1fb;   /* fond d'une zone active ou informative */
 
-  .carte {
-    background: #fff; border: 1px solid var(--bord); border-radius: 8px;
-    padding: 18px; margin-bottom: 16px;
-  }
+  --texte:         #001e4a;
+  --texte-doux:    #52708f;   /* légendes, unités, texte de second plan */
+  --texte-faible:  #7d94ad;   /* mentions rares : horodatage, compteur */
 
-  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  select, input[type=text], input[type=password], input[type=number], input[type=search], textarea {
-    width: 100%; padding: 10px 12px; font-size: 16px;  /* 16px : évite le zoom auto sur iOS */
-    border: 1px solid var(--bord); border-radius: 6px; background: #fff;
-    color: var(--marine); font-family: inherit;
-  }
-  .champ { margin-bottom: 16px; }
-  .aide { font-size: 12px; color: var(--gris); margin-top: 4px; }
+  --fond:          #f4f7fb;   /* fond de page */
+  --surface:       #ffffff;   /* cartes, tableaux */
+  --surface-creuse:#f0f4f9;   /* encart à l'intérieur d'une carte */
+  --bord:          #dde5ef;
+  --bord-fort:     #c2d0e0;
 
-  button, .bouton {
-    background: var(--bleu); color: #fff; border: 0; border-radius: 6px;
-    padding: 11px 18px; font-size: 15px; font-weight: 600; cursor: pointer;
-    font-family: inherit; text-decoration: none; display: inline-block;
-  }
-  button:hover, .bouton:hover { filter: brightness(1.08); }
-  button.discret, .bouton.discret {
-    background: #fff; color: var(--marine); border: 1px solid var(--bord);
-  }
+  /* Sémantique. Chaque teinte a un ton plein (pastilles, texte) et un ton pâle
+     (fonds de message) — les prendre dans la même famille évite les mariages
+     douteux improvisés au cas par cas. */
+  --vert:          #1f8a4c;   --vert-pale:   #e7f6ed;
+  --orange:        #c9700d;   --orange-pale: #fdf1e0;
+  --rouge:         #c0392b;   --rouge-pale:  #fdecea;
+  --gris:          #6b7f94;   --gris-pale:   #eef2f6;
 
-  .messages { margin-bottom: 16px; }
-  .message {
-    padding: 11px 14px; border-radius: 6px; font-size: 14px; margin-bottom: 8px;
-    border-left: 4px solid;
-  }
-  .message.success { background: #eafaf1; border-color: var(--vert); }
-  .message.error   { background: #fdecea; border-color: var(--rouge); }
-  .message.warning { background: #fef5e7; border-color: var(--orange); }
-  .message.info    { background: #eef6ff; border-color: var(--bleu); }
+  /* Rétro-compatibilité : d'anciens templates lisent encore ces noms. */
+  --bleu-clair:    var(--bleu-pale);
 
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--bord); }
-  th { font-size: 12px; text-transform: uppercase; letter-spacing: .3px; color: var(--gris); }
-  .defilement { overflow-x: auto; }
+  /* ── Échelle typographique ───────────────────────────────────────────────
+     Un rapport constant (~1,25) au lieu des tailles relevées au jugé. Avant,
+     h1 valait 22px contre 16px pour le corps : deux crans d'écart pour dire
+     « titre de page », ce qui ne se voyait pas. */
+  --t-micro:  11px;   /* étiquette d'en-tête de tableau */
+  --t-petit:  12.5px; /* légende, aide */
+  --t-menu:   13.5px;
+  --t-corps:  15px;
+  --t-lead:   16.5px; /* chapeau d'écran */
+  --t-h3:     15px;
+  --t-h2:     19px;
+  --t-h1:     26px;
+  --t-chiffre:32px;   /* les indicateurs, qui doivent se lire d'un coup d'œil */
 
-  .pastille {
-    display: inline-block; padding: 2px 9px; border-radius: 11px;
-    font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap;
-  }
-  .pastille.progresse { background: var(--vert); }
-  .pastille.stagne { background: var(--orange); }
-  .pastille.regresse { background: var(--rouge); }
-  .pastille.insuffisant { background: #95a5a6; }
+  /* ── Rythme ──────────────────────────────────────────────────────────────
+     Une échelle, pas des valeurs au cas par cas : c'est ce qui fait que deux
+     écrans respirent pareil sans qu'on ait à les comparer. */
+  --e1: 4px;  --e2: 8px;  --e3: 12px; --e4: 16px;
+  --e5: 24px; --e6: 32px; --e7: 48px;
 
-  .casquette form { display: flex; align-items: center; gap: 6px; }
-  .casquette select { width: auto; padding: 4px 8px; font-size: 12px; }
+  --r-petit: 6px;
+  --r:       10px;
+  --r-rond:  999px;
 
-  @media (max-width: 620px) {
-    header.appbar { flex-direction: column; align-items: flex-start; }
-    main { padding: 14px 12px 40px; }
-    h1 { font-size: 19px; }
-  }
+  /* Ombres très légères : l'élévation sert à séparer une carte de son fond,
+     pas à la faire flotter. */
+  --ombre:      0 1px 2px rgba(0, 30, 74, .05);
+  --ombre-haute:0 4px 16px rgba(0, 30, 74, .10);
+
+  --largeur:  1120px;
+  --largeur-etroite: 620px;   /* formulaires : une colonne de lecture */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--t-corps);
+  line-height: 1.55;
+  color: var(--texte);
+  background: var(--fond);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--bleu); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--bleu-sombre); }
+
+/* Visible au clavier, invisible à la souris : la navigation au clavier est le
+   mode d'usage d'un enseignant qui saisit des notes à la chaîne. */
+:focus-visible {
+  outline: 2px solid var(--bleu);
+  outline-offset: 2px;
+  border-radius: var(--r-petit);
+}
+
+/* ── Barre de navigation ─────────────────────────────────────────────────── */
+
+header.appbar {
+  background: var(--marine);
+  color: #fff;
+  padding: var(--e3) var(--e4);
+  display: flex;
+  align-items: center;
+  gap: var(--e4);
+  flex-wrap: wrap;
+}
+
+.appbar .marque {
+  font-weight: 700;
+  font-size: var(--t-menu);
+  letter-spacing: .6px;
+  line-height: 1.25;
+}
+.appbar .marque span {
+  display: block;
+  font-size: var(--t-micro);
+  letter-spacing: .2px;
+  color: #8fb0d4;
+  font-weight: 400;
+}
+
+/* `margin-right:auto` sur la navigation et non sur la marque : c'est ce qui
+   pousse le bloc du compte au bord droit. Placé sur la marque, il collait la
+   navigation et le compte l'un à l'autre au milieu. */
+.appbar nav { display: flex; align-items: center; gap: var(--e1); flex-wrap: wrap; margin-right: auto; }
+.appbar nav a {
+  color: #d3e2f4;
+  text-decoration: none;
+  padding: 7px 11px;
+  border-radius: var(--r-petit);
+  font-size: var(--t-menu);
+  white-space: nowrap;
+}
+.appbar nav a:hover { background: rgba(255, 255, 255, .10); color: #fff; }
+.appbar nav a.actif { background: var(--bleu); color: #fff; font-weight: 600; }
+
+/* Sépare la correction du suivi, et le suivi de l'administration. Huit liens de
+   même poids se lisaient comme une liste où rien n'appelle l'œil ; les groupes
+   disent au moins qu'il y a trois familles de tâches. */
+.appbar nav .separateur {
+  width: 1px;
+  align-self: stretch;
+  margin: 2px var(--e2);
+  background: rgba(255, 255, 255, .16);
+}
+
+.appbar .compte {
+  font-size: var(--t-petit);
+  color: #d3e2f4;
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  white-space: nowrap;
+}
+
+/* ── Cadre de page ───────────────────────────────────────────────────────── */
+
+main { max-width: var(--largeur); margin: 0 auto; padding: var(--e5) var(--e4) var(--e7); }
+main.etroit { max-width: var(--largeur-etroite); }
+
+h1 {
+  font-size: var(--t-h1);
+  line-height: 1.2;
+  letter-spacing: -.4px;
+  margin: 0 0 var(--e1);
+}
+h2 {
+  font-size: var(--t-h2);
+  line-height: 1.3;
+  letter-spacing: -.2px;
+  margin: var(--e6) 0 var(--e2);
+}
+h3 { font-size: var(--t-h3); margin: 0 0 var(--e2); }
+
+/* Le chapeau qui suit un titre : ce qu'il faut savoir avant de lire l'écran. */
+.sous-titre {
+  color: var(--texte-doux);
+  font-size: var(--t-petit);
+  margin: 0 0 var(--e5);
+  max-width: 72ch;   /* au-delà, l'œil perd la ligne suivante */
+}
+h2 + .sous-titre { margin-bottom: var(--e3); }
+
+/* Légende d'un champ, d'un chiffre, d'un code. */
+.aide {
+  font-size: var(--t-petit);
+  color: var(--texte-doux);
+  margin-top: var(--e1);
+}
+
+/* ── Cartes ──────────────────────────────────────────────────────────────── */
+
+.carte {
+  background: var(--surface);
+  border: 1px solid var(--bord);
+  border-radius: var(--r);
+  padding: var(--e4) var(--e5);
+  margin-bottom: var(--e4);
+  box-shadow: var(--ombre);
+}
+.carte > :first-child { margin-top: 0; }
+.carte > :last-child { margin-bottom: 0; }
+
+/* Une carte qui appelle une décision : liseré d'accent sur le bord d'attaque. */
+.carte.appel      { border-left: 3px solid var(--bleu); }
+.carte.appel.grave{ border-left-color: var(--rouge); }
+
+/* Une carte qui n'est qu'un contenant : pas de fond, pas d'ombre. */
+.carte.plate { background: none; box-shadow: none; border-style: dashed; }
+
+/* Encart à l'intérieur d'une carte — remplace les
+   `background:var(--fond);border-radius:6px;padding:12px` recopiés à la main. */
+.encart {
+  background: var(--surface-creuse);
+  border-radius: var(--r-petit);
+  padding: var(--e3) var(--e4);
+  margin-top: var(--e3);
+}
+.encart .aide { margin-top: 0; margin-bottom: var(--e2); }
+
+/* ── Indicateurs ─────────────────────────────────────────────────────────── */
+/* La rangée de chiffres en tête d'écran (problèmes, volume, palier, effectif).
+   Elle existait sur trois écrans, réécrite trois fois en styles inline avec
+   trois tailles différentes. */
+
+.stats { display: flex; flex-wrap: wrap; gap: var(--e5) var(--e7); }
+.stat { min-width: 88px; }
+.stat .etiquette {
+  display: block;
+  font-size: var(--t-petit);
+  color: var(--texte-doux);
+  margin-bottom: 2px;
+}
+.stat .valeur {
+  display: block;
+  font-size: var(--t-chiffre);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+.stat .valeur .unite { font-size: var(--t-lead); font-weight: 600; letter-spacing: 0; margin-left: 1px; }
+.stat .mention { display: block; font-size: var(--t-petit); margin-top: 2px; }
+.stat .mention.alerte { color: var(--rouge); font-weight: 600; }
+.stat.secondaire .valeur { font-size: var(--t-h2); }
+.stat .valeur.reussi { color: var(--vert); }
+.stat .valeur.rate   { color: var(--rouge); }
+
+/* Un indicateur qui n'a pas de valeur. Composé en petit et en clair : à la
+   taille des chiffres, « — » ressemble à une barre et « non notée » à un mot
+   qu'on aurait crié. */
+.stat .valeur.absente {
+  font-size: var(--t-corps);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--texte-doux);
+  padding-top: var(--e2);
+}
+
+/* Une lacune du diagnostic : citée, donc marquée comme une citation. */
+.lacune { border-left: 3px solid var(--rouge); padding-left: var(--e3); margin-bottom: var(--e3); }
+.lacune p { margin: var(--e1) 0 0; font-size: var(--t-petit); }
+.lacune:last-child { margin-bottom: 0; }
+
+/* ── Formulaires ─────────────────────────────────────────────────────────── */
+
+label { display: block; font-size: var(--t-petit); font-weight: 600; margin-bottom: var(--e1); }
+label .facultatif { font-weight: 400; color: var(--texte-doux); }
+
+/* Les champs de fichier ne se stylent pas comme les autres : on cadre le
+   contrôle natif au lieu de le déguiser, un faux bouton de dépôt casserait
+   l'appareil photo sur Android. */
+input[type=file] {
+  width: 100%;
+  font-size: var(--t-petit);
+  padding: var(--e2);
+  border: 1px dashed var(--bord-fort);
+  border-radius: var(--r-petit);
+  background: var(--surface-creuse);
+}
+
+select, input[type=text], input[type=password], input[type=number],
+input[type=search], input[type=date], textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;                /* 16px pile : en dessous, iOS zoome au focus */
+  font-family: inherit;
+  line-height: 1.4;
+  color: var(--texte);
+  background: var(--surface);
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--r-petit);
+}
+select:hover, input:hover, textarea:hover { border-color: var(--texte-faible); }
+select:focus, input:focus, textarea:focus {
+  border-color: var(--bleu);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--bleu-pale);
+}
+input::placeholder, textarea::placeholder { color: var(--texte-faible); }
+
+.champ { margin-bottom: var(--e4); }
+.champ:last-child { margin-bottom: 0; }
+.champ .aide { margin-top: var(--e1); }
+
+/* Champs côte à côte quand ils tiennent, empilés sinon. L'espacement vient du
+   `gap` du conteneur et non de la marge des champs : sinon le bouton aligné en
+   bas de rangée tombe une marge trop bas. */
+.champs { display: flex; gap: var(--e4); flex-wrap: wrap; }
+.champs > .champ { flex: 1 1 220px; margin-bottom: 0; }
+
+/* Barre d'actions en pied de formulaire. `.haut` quand elle ouvre un écran au
+   lieu de le fermer — le retrait du haut viendrait alors doubler celui du
+   chapeau. */
+.actions { display: flex; gap: var(--e2); flex-wrap: wrap; align-items: center; margin-top: var(--e4); }
+.actions.haut { margin-top: 0; margin-bottom: var(--e4); }
+.actions.bas-de-champ { margin-top: 0; align-self: flex-end; }
+
+/* ── Boutons ─────────────────────────────────────────────────────────────── */
+
+button, .bouton {
+  background: var(--bleu);
+  color: #fff;
+  border: 1px solid var(--bleu);
+  border-radius: var(--r-petit);
+  padding: 10px 18px;
+  font-size: var(--t-corps);
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.35;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+button:hover, .bouton:hover {
+  background: var(--bleu-sombre);
+  border-color: var(--bleu-sombre);
+  color: #fff;
+}
+button:active, .bouton:active { transform: translateY(1px); }
+button[disabled], .bouton[disabled] { opacity: .5; cursor: not-allowed; }
+
+button.discret, .bouton.discret {
+  background: var(--surface);
+  color: var(--texte);
+  border-color: var(--bord-fort);
+}
+button.discret:hover, .bouton.discret:hover {
+  background: var(--surface-creuse);
+  color: var(--texte);
+  border-color: var(--texte-faible);
+}
+
+/* Action lourde de conséquences — dérogation au palier C, par exemple. Elle
+   reste discrète de forme : le rouge signale, il n'invite pas. */
+button.grave, .bouton.grave {
+  background: var(--surface);
+  color: var(--rouge);
+  border-color: var(--rouge);
+}
+button.grave:hover, .bouton.grave:hover { background: var(--rouge-pale); color: var(--rouge); }
+
+button.petit, .bouton.petit { padding: 5px 11px; font-size: var(--t-petit); }
+
+/* ── Messages ────────────────────────────────────────────────────────────── */
+
+.messages { margin-bottom: var(--e4); }
+.message {
+  padding: var(--e3) var(--e4);
+  border-radius: var(--r-petit);
+  font-size: var(--t-corps);
+  margin-bottom: var(--e2);
+  border-left: 3px solid;
+}
+.message:last-child { margin-bottom: 0; }
+.message.success { background: var(--vert-pale);   border-color: var(--vert); }
+.message.error   { background: var(--rouge-pale);  border-color: var(--rouge); }
+.message.warning { background: var(--orange-pale); border-color: var(--orange); }
+.message.info    { background: var(--bleu-pale);   border-color: var(--bleu); }
+.message code { background: rgba(0, 30, 74, .07); padding: 1px 5px; border-radius: 4px; font-size: .9em; }
+
+/* Le bandeau des réglages de développement. Voyant, mais en tête de page et non
+   dans le flux des messages métier : il doit se remarquer sans se confondre
+   avec un message qui parle du travail en cours. */
+.bandeau-dev {
+  background: var(--rouge);
+  color: #fff;
+  font-size: var(--t-petit);
+  padding: var(--e2) var(--e4);
+  text-align: center;
+}
+.bandeau-dev strong { font-weight: 700; }
+.bandeau-dev code { background: rgba(255, 255, 255, .18); padding: 1px 5px; border-radius: 4px; }
+
+/* ── Tableaux ────────────────────────────────────────────────────────────── */
+
+table { width: 100%; border-collapse: collapse; font-size: var(--t-corps); }
+th, td { text-align: left; padding: 11px var(--e3); border-bottom: 1px solid var(--bord); }
+th {
+  font-size: var(--t-micro);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  font-weight: 700;
+  color: var(--texte-doux);
+  border-bottom-color: var(--bord-fort);
+  white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--surface-creuse); }
+td.nombre, th.nombre { text-align: right; font-variant-numeric: tabular-nums; }
+td.action, th.action { text-align: right; white-space: nowrap; }
+
+/* Un tableau dans une carte touche déjà ses bords : on annule le rembourrage
+   de la carte plutôt que de le compenser au cas par cas. */
+.carte.tableau { padding: var(--e2) 0; }
+.carte.tableau th:first-child, .carte.tableau td:first-child { padding-left: var(--e5); }
+.carte.tableau th:last-child,  .carte.tableau td:last-child  { padding-right: var(--e5); }
+
+/* Le compte de lignes sous un tableau. Dans une `.carte.tableau`, il doit
+   retrouver le rembourrage que la carte a abandonné. */
+.carte.tableau .pied { padding: var(--e2) var(--e5) var(--e2); margin: 0; }
+
+/* Une ligne que l'IA signale comme douteuse. Le fond ne suffit pas — il
+   disparaît au survol et ne se voit pas d'une impression en noir et blanc :
+   le liseré à gauche, lui, tient. */
+tr.a-revoir > td { background: var(--orange-pale); }
+tr.a-revoir > td:first-child { box-shadow: inset 3px 0 0 var(--orange); }
+tr.a-revoir:hover > td { background: #fbe9cf; }
+
+/* Cellule de texte long dans un tableau dense (énoncé, réponse d'élève). */
+td.texte { max-width: 260px; min-width: 140px; }
+
+/* Un choix « accepter / refuser » posé à côté de son intitulé. */
+.choix {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e1);
+  font-weight: 400;
+  font-size: var(--t-petit);
+  margin: 0 var(--e3) 0 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.choix input[type=radio] { width: auto; margin: 0; accent-color: var(--bleu); }
+
+/* Champ étroit inséré dans une ligne de tableau. */
+input.mini { width: 84px; display: inline-block; padding: 6px 8px; font-size: var(--t-corps); }
+
+/* La transcription d'une page : chasse fixe, parce qu'on y compare des
+   caractères un à un — un `1` et un `l` doivent se distinguer. */
+textarea.transcription {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: var(--e2);
+}
+
+/* Un tableau large défile dans son cadre — jamais la page. */
+.defilement { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ── Pastilles ───────────────────────────────────────────────────────────── */
+
+.pastille {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--r-rond);
+  font-size: var(--t-petit);
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+/* Tendance d'un élève (src/core/tendance.py) — pleine, elle doit s'attraper du
+   coin de l'œil dans une liste de trente lignes. */
+.pastille.progresse   { background: var(--vert);   color: #fff; }
+.pastille.stagne      { background: var(--orange); color: #fff; }
+.pastille.regresse    { background: var(--rouge);  color: #fff; }
+.pastille.insuffisant { background: var(--gris);   color: #fff; }
+
+/* Type d'erreur — la liste fermée du protocole. Teintée et non pleine, parce
+   qu'elle qualifie une ligne au lieu de l'alerter : dans un plan de dix étapes,
+   dix pastilles pleines feraient un damier illisible.
+
+   Le rouge va au conceptuel, le plus coûteux à reprendre ; le gris à `ATT`, seul
+   type non remédiable — sa couleur dit déjà qu'il ne coûte rien. */
+.pastille.type-erreur { background: var(--gris-pale); color: var(--texte-doux); border-color: var(--bord-fort); }
+.pastille.te-CPT { background: var(--rouge-pale);  color: #96271c; border-color: #f1c9c4; }
+.pastille.te-PRQ { background: var(--orange-pale); color: #96540a; border-color: #f0d5ae; }
+.pastille.te-MOD { background: #efe9fb;            color: #5b3fa6; border-color: #d8ccf2; }
+.pastille.te-PRC { background: var(--bleu-pale);   color: #24578f; border-color: #c6d9f1; }
+.pastille.te-CNS { background: #e6f4f6;            color: #1c6470; border-color: #c2e0e5; }
+.pastille.te-RED { background: #f3eee6;            color: #6d5a3c; border-color: #ddd2be; }
+.pastille.te-ATT { background: var(--gris-pale);   color: var(--gris); border-color: var(--bord-fort); }
+
+/* État d'un problème ou d'une session. */
+.pastille.etat { background: var(--surface); color: var(--texte-doux); border-color: var(--bord-fort); }
+.pastille.etat.actif   { background: var(--bleu-pale);  color: var(--bleu-sombre); border-color: #c6d9f1; }
+.pastille.etat.acquis  { background: var(--vert-pale);  color: var(--vert); border-color: #bfe3cd; }
+.pastille.etat.sortie  { background: var(--gris-pale);  color: var(--gris); border-color: var(--bord-fort); }
+
+/* Palier. C n'est pas « pire que B » : c'est une orientation hors dispositif,
+   et l'écran doit le dire d'un coup d'œil (D-CEO-34). */
+.palier { font-weight: 700; }
+.palier.A { color: var(--vert); }
+.palier.B { color: var(--orange); }
+.palier.C { color: var(--rouge); }
+
+/* ── Listes d'éléments ───────────────────────────────────────────────────── */
+/* Les « lignes » d'un parcours : hypothèses, lacunes écartées, séances. Le
+   motif était recopié en inline sur trois écrans avec trois rembourrages. */
+
+.lignes { display: flex; flex-direction: column; }
+.lignes > .ligne {
+  display: flex;
+  gap: var(--e3);
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: var(--e2) 0;
+  border-bottom: 1px solid var(--bord);
+}
+.lignes > .ligne:last-child { border-bottom: none; }
+.lignes > .ligne.pale { color: var(--texte-doux); }
+
+/* En-tête d'une étape de plan : rang, intitulé à gauche ; type et coût à droite. */
+.entete-etape {
+  display: flex;
+  gap: var(--e3);
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.entete-etape .titre { display: flex; gap: var(--e2); align-items: baseline; flex-wrap: wrap; }
+.entete-etape .cote  { display: flex; gap: var(--e3); align-items: baseline; white-space: nowrap; }
+
+/* Le numéro d'ordre d'une étape — l'ordre du plan est une donnée, pas une
+   décoration : il suit le graphe des prérequis. */
+.rang {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px; height: 25px;
+  border-radius: 50%;
+  background: var(--marine);
+  color: #fff;
+  font-size: var(--t-petit);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Un code du référentiel (L.IDR, CPT, G13). Ce n'est pas de la prose : la
+   chasse fixe le fait voir comme un identifiant, et évite qu'on le lise. */
+.code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .82em;
+  color: var(--texte-doux);
+  background: var(--surface-creuse);
+  border: 1px solid var(--bord);
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+/* Un coût en heures, aligné d'une ligne à l'autre. */
+.cout { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cout .unite { font-weight: 600; color: var(--texte-doux); }
+
+/* Une signature d'erreur : ce que l'élève a produit → ce que ça révèle. */
+.signature { font-size: var(--t-petit); margin-bottom: var(--e1); line-height: 1.5; }
+.signature:last-child { margin-bottom: 0; }
+.signature .production   { color: var(--rouge); }
+.signature .lecture      { color: var(--texte-doux); }
+
+/* ── Divers ──────────────────────────────────────────────────────────────── */
+
+.retour { display: inline-block; font-size: var(--t-petit); margin-bottom: var(--e3); }
+
+/* Jauge de progression d'une correction. Sa largeur est calculée côté serveur
+   (`style="width:…%"` sur `.jauge > span`) : c'est une donnée, pas une décision
+   de mise en forme, et c'est le seul style en ligne légitime de l'application. */
+.jauge {
+  background: var(--surface-creuse);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-rond);
+  height: 10px;
+  overflow: hidden;
+}
+.jauge > span {
+  display: block;
+  height: 100%;
+  background: var(--bleu);
+  border-radius: var(--r-rond);
+  transition: width .4s ease;
+}
+.vide { color: var(--texte-doux); }
+.casquette form { display: flex; align-items: center; gap: var(--e1); }
+.casquette select { width: auto; padding: 4px 8px; font-size: var(--t-petit); }
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+/* Pas une réduction de la version large : sur un téléphone, la barre passe en
+   deux lignes, les chiffres se resserrent, et les tableaux gardent leur
+   défilement propre plutôt que de faire glisser la page entière. */
+
+@media (max-width: 720px) {
+  :root { --t-h1: 22px; --t-h2: 17px; --t-chiffre: 26px; }
+
+  header.appbar { padding: var(--e2) var(--e3); gap: var(--e2); }
+  .appbar .marque { margin-right: 0; width: 100%; }
+  .appbar nav { order: 3; width: 100%; margin-right: 0; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+  .appbar nav .separateur { margin: 2px var(--e1); }
+  .appbar .compte { margin-left: auto; }
+
+  main { padding: var(--e4) var(--e3) var(--e6); }
+
+  .carte { padding: var(--e4); border-radius: var(--r-petit); }
+  .carte.tableau th:first-child, .carte.tableau td:first-child { padding-left: var(--e4); }
+  .carte.tableau th:last-child,  .carte.tableau td:last-child  { padding-right: var(--e4); }
+
+  .stats { gap: var(--e4) var(--e5); }
+  th, td { padding: 9px var(--e2); }
+
+  /* Une action seule tient toute la largeur : c'est plus sûr au pouce. */
+  .actions > button:only-child, .actions > .bouton:only-child { width: 100%; }
+}
+
+@media print {
+  header.appbar, .bandeau-dev, .actions, .retour { display: none; }
+  body { background: #fff; }
+  .carte { box-shadow: none; break-inside: avoid; }
+}
 </style>
 {% block tete %}{% endblock %}
 </head>
@@ -123,8 +669,10 @@
       <a href="{% url 'correction_web:lot' %}">Une classe</a>
       <a href="{% url 'correction_web:liste' %}">Corrections</a>
       <a href="{% url 'correction_web:sujets' %}" class="{% if rubrique == 'sujets' %}actif{% endif %}">Sujets</a>
+      <span class="separateur"></span>
       <a href="{% url 'suivi_web:accueil' %}" class="{% if rubrique == 'accueil' %}actif{% endif %}">Suivi</a>
       {% if casquette == 'administrateur' %}
+        <span class="separateur"></span>
         <a href="{% url 'suivi_web:personnel' %}" class="{% if rubrique == 'personnel' %}actif{% endif %}">Accès</a>
         <a href="{% url 'suivi_web:statistiques' %}" class="{% if rubrique == 'statistiques' %}actif{% endif %}">Statistiques</a>
         <a href="/admin/">Référentiel</a>
@@ -136,27 +684,30 @@
       {% if not acces_libre %}
         <form method="post" action="{% url 'comptes:deconnexion' %}" style="margin:0">
           {% csrf_token %}
-          <button type="submit" class="discret" style="padding:5px 10px;font-size:12px;">Quitter</button>
+          <button type="submit" class="discret petit">Quitter</button>
         </form>
       {% endif %}
     </div>
   {% endif %}
 </header>
 
-<main>
-  {% if acces_libre %}
-    {% comment %} Réglage de développement, verrouillé sur DEBUG côté settings.
-       Le bandeau est volontairement voyant : une application ouverte sur des
-       données d'élèves mineurs ne doit jamais pouvoir se faire oublier. {% endcomment %}
-    <div class="message error" style="border-left-width:6px;font-weight:600;">
-      Accès libre activé — aucun contrôle d'accès.
-      <span style="font-weight:400;">
-        Réglage de développement (<code>HAKILI_ACCES_LIBRE</code>), ignoré hors
-        <code>DEBUG</code>. À retirer dès que les Google Sheets sont configurés.
-      </span>
-    </div>
-  {% endif %}
+{% if acces_libre %}
+  {% comment %} Réglage de développement, verrouillé sur DEBUG côté settings.
+     Sorti du flux des messages et collé sous la barre : une application ouverte
+     sur des données d'élèves mineurs ne doit jamais pouvoir se faire oublier,
+     mais elle ne doit pas non plus repousser le contenu de chaque écran d'un
+     bloc rouge de deux lignes. {% endcomment %}
+  {% comment %} La formule « Accès libre activé » est vérifiée mot pour mot par
+     `comptes/tests_acces_libre.py` sur trois écrans : c'est le garde-fou qui
+     empêche que le bandeau disparaisse à la faveur d'une refonte. Ne pas la
+     reformuler sans mettre le test à jour dans le même geste. {% endcomment %}
+  <div class="bandeau-dev">
+    <strong>Accès libre activé — aucun contrôle d'accès.</strong>
+    Réglage de développement (<code>HAKILI_ACCES_LIBRE</code>), ignoré hors <code>DEBUG</code>.
+  </div>
+{% endif %}
 
+<main{% block classe_main %}{% endblock %}>
   {% if messages %}
     <div class="messages">
       {% for message in messages %}

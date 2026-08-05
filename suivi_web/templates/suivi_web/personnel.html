@@ -20,7 +20,7 @@
   </div>
 {% endif %}
 
-<div class="carte">
+<div class="carte tableau">
   {% if lignes %}
     <div class="defilement">
       <table>
@@ -48,13 +48,13 @@
         </tbody>
       </table>
     </div>
-    <p class="aide">
+    <p class="aide pied">
       {{ lignes|length }} personne{{ lignes|length|pluralize }} dans le Sheet.
       Le centre est informatif : depuis que Hakili Lab fonctionne comme centre
       d'encadrement, toute personne autorisée accède à tous les élèves.
     </p>
   {% else %}
-    <p>Aucune personne chargée.</p>
+    <p class="pied vide">Aucune personne chargée.</p>
   {% endif %}
 </div>
 {% endblock %}

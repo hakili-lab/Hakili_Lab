@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block titre %}Corriger une classe — Hakili Lab{% endblock %}
+{% block classe_main %} class="etroit"{% endblock %}
 
 {% block contenu %}
 <h1>Corriger une classe</h1>
@@ -12,7 +13,7 @@
   sans ambiguïté est écartée et signalée — jamais attribuée au hasard.
 </div>
 
-<div class="carte" style="max-width:640px;">
+<div class="carte">
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
@@ -39,19 +40,21 @@
                 placeholder="Appliquées à toutes les copies du lot"></textarea>
     </div>
 
-    <button type="submit">Lancer la correction du lot</button>
+    <div class="actions">
+      <button type="submit">Lancer la correction du lot</button>
+    </div>
   </form>
 </div>
 
-<div class="carte" style="max-width:640px;">
-  <h2 style="font-size:15px;margin-top:0;">Ce qui se passe ensuite</h2>
-  <p style="font-size:14px;">
+<div class="carte">
+  <h3>Ce qui se passe ensuite</h3>
+  <p>
     Chaque copie est transcrite et corrigée automatiquement, puis vous attend dans
     la liste des corrections avec sa proposition de notes. La transcription n'est
     pas soumise à relecture en mode lot — la relire trente fois coûterait plus de
     temps que la correction elle-même.
   </p>
-  <p style="font-size:14px;">
+  <p>
     <strong>Le tableau de validation, lui, est conservé :</strong> aucune note ne
     devient définitive sans votre accord.
   </p>

@@ -3,34 +3,37 @@
 {% block titre %}Parcours — {{ eleve.nom }} {{ eleve.prenom }}{% endblock %}
 
 {% block contenu %}
-<p><a href="{% url 'suivi_web:eleve_detail' jeton_eleve %}">&larr; Fiche de l'élève</a></p>
+<a class="retour" href="{% url 'suivi_web:eleve_detail' jeton_eleve %}">&larr; Fiche de l'élève</a>
 
 <h1>{{ eleve.nom }} {{ eleve.prenom }}</h1>
 <p class="sous-titre">Parcours ouvert le {{ session.date_debut }} · {{ session.get_etat_display }}</p>
 
 {% if plan.etapes %}
-  <div class="carte" style="display:flex;gap:32px;flex-wrap:wrap;">
-    <div>
-      <div class="aide">Problèmes à traiter</div>
-      <div style="font-size:28px;font-weight:700;">{{ plan.nb_problemes }}</div>
-    </div>
-    <div>
-      <div class="aide">Volume estimé</div>
-      <div style="font-size:28px;font-weight:700;">{{ plan.total_heures|floatformat:"-2" }} h</div>
-    </div>
-    <div>
-      <div class="aide">Palier</div>
-      <div style="font-size:28px;font-weight:700;">
-        {{ session.palier|default:plan.palier }}
-        {% if palier_c %}<span style="font-size:13px;color:var(--rouge);">hors dispositif</span>{% endif %}
+  <div class="carte">
+    <div class="stats">
+      <div class="stat">
+        <span class="etiquette">Problèmes à traiter</span>
+        <span class="valeur">{{ plan.nb_problemes }}</span>
       </div>
-    </div>
-    {% if session.date_inscription %}
-      <div>
-        <div class="aide">Inscrit le</div>
-        <div style="font-size:20px;font-weight:700;">{{ session.date_inscription }}</div>
+      {% comment %} L'unité reste dans le même nœud de texte que le nombre : les
+         heures se lisent bien à pleine taille, et « 4 h » d'un seul tenant est
+         ce que vérifie `suivi_web/tests.py`. {% endcomment %}
+      <div class="stat">
+        <span class="etiquette">Volume estimé</span>
+        <span class="valeur">{{ plan.total_heures|floatformat:"-2" }} h</span>
       </div>
-    {% endif %}
+      <div class="stat">
+        <span class="etiquette">Palier</span>
+        <span class="valeur palier {{ session.palier|default:plan.palier }}">{{ session.palier|default:plan.palier }}</span>
+        {% if palier_c %}<span class="mention alerte">hors dispositif</span>{% endif %}
+      </div>
+      {% if session.date_inscription %}
+        <div class="stat secondaire">
+          <span class="etiquette">Inscrit le</span>
+          <span class="valeur">{{ session.date_inscription }}</span>
+        </div>
+      {% endif %}
+    </div>
   </div>
 
   {% if plan.repose_sur_estimation %}
@@ -45,11 +48,11 @@
 {% comment %} L'inscription engage un volume horaire et vraisemblablement une
    facturation : elle passe par un formulaire POST, jamais par un lien. {% endcomment %}
 {% if peut_inscrire %}
-  <div class="carte" style="border-left:4px solid var(--bleu);">
-    <h2 style="font-size:16px;margin-top:0;">Inscrire au programme de remédiation</h2>
+  <div class="carte appel{% if palier_c %} grave{% endif %}">
+    <h3>Inscrire au programme de remédiation</h3>
 
     {% if palier_c %}
-      <div class="message error" style="margin-top:0;">
+      <div class="message error">
         <strong>Palier C — {{ plan.total_heures|floatformat:"-2" }} h estimées.</strong>
         Cet élève ne relève pas d'une remédiation courte, mais d'un accompagnement
         régulier. Proposer un parcours court garantirait un échec.
@@ -62,26 +65,28 @@
           <input type="text" id="motif" name="motif" required
                  placeholder="Sera conservé dans l'historique du parcours">
         </div>
-        <button type="submit" class="discret" style="border-color:var(--rouge);color:var(--rouge);">
-          Inscrire malgré le palier C
-        </button>
+        <div class="actions">
+          <button type="submit" class="grave">Inscrire malgré le palier C</button>
+        </div>
       </form>
     {% else %}
-      <p style="font-size:14px;">
+      <p>
         L'élève entrera officiellement en remédiation. Les
         {{ plan.nb_problemes }} problème{{ plan.nb_problemes|pluralize }} confirmé{{ plan.nb_problemes|pluralize }}
         passeront en cours de traitement, et le décompte du volume horaire démarrera aujourd'hui.
       </p>
       <form method="post" action="{% url 'suivi_web:inscrire' jeton %}">
         {% csrf_token %}
-        <button type="submit">Inscrire au programme</button>
+        <div class="actions">
+          <button type="submit">Inscrire au programme</button>
+        </div>
       </form>
     {% endif %}
   </div>
 {% endif %}
 
 {% if plan.etapes %}
-  <h2 style="font-size:16px;">Plan de remédiation</h2>
+  <h2>Plan de remédiation</h2>
   <p class="sous-titre">
     Dans cet ordre : un problème dont un prérequis est lui-même en difficulté se
     traite <strong>après</strong> ce prérequis. Travailler l'inverse serait du temps perdu.
@@ -89,22 +94,21 @@
 
   {% for etape in plan.etapes %}
     <div class="carte">
-      <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:baseline;">
-        <div>
-          <span style="display:inline-block;width:26px;height:26px;line-height:26px;
-                       text-align:center;background:var(--marine);color:#fff;
-                       border-radius:50%;font-size:13px;font-weight:700;">{{ etape.rang }}</span>
-          <strong style="margin-left:8px;">{{ etape.competence.libelle }}</strong>
-          <span class="aide">[{{ etape.competence.code }}] · {{ etape.competence.niveau_intro }}</span>
+      <div class="entete-etape">
+        <div class="titre">
+          <span class="rang">{{ etape.rang }}</span>
+          <strong>{{ etape.competence.libelle }}</strong>
+          <span class="code">{{ etape.competence.code }}</span>
+          <span class="aide">{{ etape.competence.niveau_intro }}</span>
         </div>
-        <div style="white-space:nowrap;">
-          <span class="pastille stagne">{{ etape.type_erreur.libelle }}</span>
-          <strong style="margin-left:8px;">{{ etape.cout|floatformat:"-2" }} h</strong>
+        <div class="cote">
+          <span class="pastille type-erreur te-{{ etape.type_erreur.code }}">{{ etape.type_erreur.libelle }}</span>
+          <span class="cout">{{ etape.cout|floatformat:"-2" }} h</span>
         </div>
       </div>
 
       {% if etape.prerequis_aussi_en_difficulte %}
-        <p class="aide" style="margin-top:10px;">
+        <p class="aide">
           À traiter après :
           {% for p in etape.prerequis_aussi_en_difficulte %}
             <strong>{{ p.libelle }}</strong>{% if not forloop.last %} · {% endif %}
@@ -113,12 +117,12 @@
       {% endif %}
 
       {% if etape.signatures %}
-        <div style="margin-top:12px;background:var(--fond);border-radius:6px;padding:12px;">
-          <div class="aide" style="margin-bottom:6px;">Ce que produit cette erreur</div>
+        <div class="encart">
+          <div class="aide">Ce que produit cette erreur</div>
           {% for s in etape.signatures %}
-            <div style="font-size:13px;margin-bottom:5px;">
-              <span style="color:var(--rouge);">{{ s.production_eleve|math }}</span>
-              <span style="color:var(--gris);"> → {{ s.interpretation|math }}</span>
+            <div class="signature">
+              <span class="production">{{ s.production_eleve|math }}</span>
+              <span class="lecture"> → {{ s.interpretation|math }}</span>
             </div>
           {% endfor %}
         </div>
@@ -128,34 +132,42 @@
 {% endif %}
 
 {% if hypotheses %}
-  <h2 style="font-size:16px;">Lacunes à confirmer</h2>
+  <h2>Lacunes à confirmer</h2>
   <p class="sous-titre">
     Détectées au test de niveau, pas encore vérifiées. Le test de confirmation
     dira lesquelles sont réelles.
   </p>
   <div class="carte">
-    {% for p in hypotheses %}
-      <div style="padding:6px 0;border-bottom:1px solid var(--bord);">
-        <strong>{{ p.competence.libelle }}</strong>
-        <span class="aide">[{{ p.competence.code }}] · {{ p.type_erreur.libelle }}</span>
-      </div>
-    {% endfor %}
+    <div class="lignes">
+      {% for p in hypotheses %}
+        <div class="ligne">
+          <span>
+            <strong>{{ p.competence.libelle }}</strong>
+            <span class="code">{{ p.competence.code }}</span>
+          </span>
+          <span class="pastille type-erreur te-{{ p.type_erreur.code }}">{{ p.type_erreur.libelle }}</span>
+        </div>
+      {% endfor %}
+    </div>
   </div>
 {% endif %}
 
 {% if ecartes %}
-  <h2 style="font-size:16px;">Écartées</h2>
+  <h2>Écartées</h2>
   <p class="sous-titre">Vérifiées et non confirmées — c'était une erreur ponctuelle.</p>
   <div class="carte">
-    {% for p in ecartes %}
-      <div style="padding:6px 0;color:var(--gris);font-size:14px;">
-        {{ p.competence.libelle }} <span class="aide">{{ p.type_erreur.libelle }}</span>
-      </div>
-    {% endfor %}
+    <div class="lignes">
+      {% for p in ecartes %}
+        <div class="ligne pale">
+          <span>{{ p.competence.libelle }} <span class="code">{{ p.competence.code }}</span></span>
+          <span class="aide">{{ p.type_erreur.libelle }}</span>
+        </div>
+      {% endfor %}
+    </div>
   </div>
 {% endif %}
 
 {% if not plan.etapes and not hypotheses and not ecartes %}
-  <div class="carte"><p>Aucun problème enregistré sur ce parcours.</p></div>
+  <div class="carte"><p class="vide">Aucun problème enregistré sur ce parcours.</p></div>
 {% endif %}
 {% endblock %}

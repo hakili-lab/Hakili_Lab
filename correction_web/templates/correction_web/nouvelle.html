@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block titre %}Corriger une copie — Hakili Lab{% endblock %}
+{% block classe_main %} class="etroit"{% endblock %}
 
 {% block contenu %}
 <h1>Corriger une copie</h1>
 <p class="sous-titre">L'IA propose une note par question ; vous validez chacune d'elles.</p>
 
-<div class="carte" style="max-width:640px;">
+<div class="carte">
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
@@ -37,7 +38,7 @@
     </div>
 
     <div class="champ">
-      <label for="sujet">Sujet du devoir <span style="font-weight:400;">— test personnalisé uniquement</span></label>
+      <label for="sujet">Sujet du devoir <span class="facultatif">— test personnalisé uniquement</span></label>
       <input type="file" id="sujet" name="sujet" accept=".pdf,.jpg,.jpeg,.png">
       <p class="aide">Laissez vide si vous avez choisi un test du catalogue.</p>
     </div>
@@ -55,7 +56,9 @@
                 placeholder="Points de vigilance, tolérances, attentes propres à ce devoir"></textarea>
     </div>
 
-    <button type="submit">Lancer la correction</button>
+    <div class="actions">
+      <button type="submit">Lancer la correction</button>
+    </div>
   </form>
 </div>
 {% endblock %}

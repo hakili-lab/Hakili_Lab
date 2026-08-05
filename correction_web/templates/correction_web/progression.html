@@ -18,20 +18,19 @@
 <p class="sous-titre">{{ correction.get_etat_display }}</p>
 
 {% if correction.echouee %}
-  <div class="carte">
+  <div class="carte appel grave">
     <div class="message error">La correction n'a pas abouti.</div>
     {% for erreur in correction.erreurs %}
-      <p style="font-size:13px;color:var(--gris);">{{ erreur }}</p>
+      <p class="aide">{{ erreur }}</p>
     {% endfor %}
-    <a class="bouton" href="{% url 'correction_web:nouvelle' %}">Relancer une correction</a>
+    <div class="actions">
+      <a class="bouton" href="{% url 'correction_web:nouvelle' %}">Relancer une correction</a>
+    </div>
   </div>
 {% else %}
   <div class="carte">
-    <p style="font-weight:600;margin-top:0;">{{ correction.etape }}</p>
-    <div style="background:var(--fond);border-radius:6px;height:12px;overflow:hidden;">
-      <div style="width:{{ correction.progression }}%;height:100%;background:var(--bleu);
-                  transition:width .4s ease;"></div>
-    </div>
+    <p><strong>{{ correction.etape }}</strong></p>
+    <div class="jauge"><span style="width:{{ correction.progression }}%"></span></div>
     <p class="aide">{{ correction.progression }} % — cette page se met à jour toute seule.</p>
   </div>
 {% endif %}

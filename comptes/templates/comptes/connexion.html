@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block titre %}Connexion — Hakili Lab{% endblock %}
+{% block classe_main %} class="etroit"{% endblock %}
 
 {% block contenu %}
 <h1>Connexion</h1>
 <p class="sous-titre">Sélectionnez votre nom, puis saisissez votre code PIN.</p>
 
-<div class="carte" style="max-width:420px;">
+<div class="carte">
   {% if personnel %}
     <form method="post" novalidate>
       {% csrf_token %}
@@ -30,12 +31,16 @@
                pattern="[0-9]*" autocomplete="off" required>
       </div>
 
-      <button type="submit">Se connecter</button>
+      <div class="actions">
+        <button type="submit">Se connecter</button>
+      </div>
     </form>
   {% else %}
     <p>La liste du personnel n'a pas pu être chargée.</p>
     <p class="aide">Réessayez dans un instant. Si le problème persiste, contactez le docteur.</p>
-    <a class="bouton discret" href="{% url 'comptes:connexion' %}">Réessayer</a>
+    <div class="actions">
+      <a class="bouton discret" href="{% url 'comptes:connexion' %}">Réessayer</a>
+    </div>
   {% endif %}
 </div>
 {% endblock %}

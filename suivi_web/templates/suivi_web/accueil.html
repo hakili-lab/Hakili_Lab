@@ -13,7 +13,9 @@
 {% if lecture_impossible %}
   <div class="carte">
     <p>La liste des élèves n'a pas pu être chargée.</p>
-    <a class="bouton discret" href="">Réessayer</a>
+    <div class="actions">
+      <a class="bouton discret" href="">Réessayer</a>
+    </div>
   </div>
 {% else %}
 
@@ -24,20 +26,22 @@
   {% endif %}
 
   <div class="carte">
-    <form method="get" style="display:flex;gap:8px;align-items:flex-end;">
-      <div style="flex:1;">
+    <form method="get" class="champs">
+      <div class="champ">
         <label for="q">Rechercher</label>
         {% comment %} La recherche ignore l'ordre des mots : « Sanou Feryel » retrouve
            « Feryel SANOU » (bug corrigé une fois, voir identite_service). {% endcomment %}
         <input type="search" id="q" name="q" value="{{ recherche }}"
                placeholder="Nom ou prénom">
       </div>
-      <button type="submit">Chercher</button>
-      {% if recherche %}<a class="bouton discret" href="?">Effacer</a>{% endif %}
+      <div class="actions bas-de-champ">
+        <button type="submit">Chercher</button>
+        {% if recherche %}<a class="bouton discret" href="?">Effacer</a>{% endif %}
+      </div>
     </form>
   </div>
 
-  <div class="carte">
+  <div class="carte tableau">
     {% if lignes %}
       <div class="defilement">
         <table>
@@ -46,8 +50,8 @@
               <th>Élève</th>
               <th>Classe</th>
               <th>Centre</th>
-              <th>Copies</th>
-              <th>Dernière note</th>
+              <th class="nombre">Copies</th>
+              <th class="nombre">Dernière note</th>
               <th>Tendance</th>
             </tr>
           </thead>
@@ -62,10 +66,10 @@
                 </td>
                 <td>{{ ligne.eleve.classe|default:"—" }}</td>
                 <td>{{ ligne.eleve.centre|default:"—" }}</td>
-                <td>{{ ligne.nb_copies }}</td>
-                <td>
+                <td class="nombre">{{ ligne.nb_copies }}</td>
+                <td class="nombre">
                   {% if ligne.derniere_note is not None %}{{ ligne.derniere_note|floatformat:2 }}/20
-                  {% else %}<span style="color:var(--gris)">non notée</span>{% endif %}
+                  {% else %}<span class="vide">non notée</span>{% endif %}
                 </td>
                 <td><span class="pastille {{ ligne.tendance }}">{{ ligne.tendance_libelle }}</span></td>
               </tr>
@@ -73,12 +77,12 @@
           </tbody>
         </table>
       </div>
-      <p class="aide">{{ lignes|length }} élève{{ lignes|length|pluralize }} affiché{{ lignes|length|pluralize }}.</p>
+      <p class="aide pied">{{ lignes|length }} élève{{ lignes|length|pluralize }} affiché{{ lignes|length|pluralize }}.</p>
     {% elif recherche %}
-      <p>Aucun élève ne correspond à « {{ recherche }} ».</p>
+      <p class="pied vide">Aucun élève ne correspond à « {{ recherche }} ».</p>
     {% else %}
-      <p>Aucun élève dans votre périmètre.</p>
-      <p class="aide">
+      <p class="pied vide">Aucun élève dans votre périmètre.</p>
+      <p class="aide pied">
         Les élèves sont gérés dans le Google Sheet — si un élève manque, il doit y être ajouté.
       </p>
     {% endif %}
