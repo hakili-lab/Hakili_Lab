@@ -1,10 +1,17 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-08-01 (suite 5 — état des lieux, fiche du module 1 remise sur Django, compteurs de tests corrigés)
+**Dernière mise à jour :** 2026-08-05 (travail des 2-3 août remis dans le suivi : système visuel, jeu factice, configuration consolidée)
 **Où en est-on (résumé en une ligne) :** Modules 0, **1, 2 et 3 ✅ faits** · **Module 4 🟨 le moteur du diagnostic contraint tourne** — QCM court-circuités sans aucun appel de modèle, sortie strictement contrainte, rejet et redemande, écriture des problèmes en hypothèse, outil de mesure écrit · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. **Le module 4 a enfin un chiffre.** Les 5 copies du corpus sont transcrites (`data/productions/`) et la mesure plancher a tourné sur les 66 problèmes : **rappel 85 % sur la compétence, 65 % sur le couple `compétence × type`** sur Opus 4.7 — **70 % / 47 % sur Sonnet 5**, retenu « en attendant » le 2026-08-01 et sensiblement moins bon. Le point dur est désigné : **le type d'erreur**, et `ATT` en particulier — 4 inattentions dans l'étalon, aucune retrouvée. Les coûts passent à **l'heure entière supérieure** (décision du 2026-08-01, +33 % sur l'étalon) — **les seuils de palier A/B/C n'ont pas été rejugés en conséquence.** Le **branchement au pipeline attend un arbitrage** (coût, sort du rapport actuel). Hors code : un **sujet Urie imprimé et scanné**, les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
 
-**État vérifié le 2026-08-01 : 253 tests Django + 271 pytest = 524 tests passent.**
+**État vérifié le 2026-08-05 : 253 tests Django + 282 pytest = 535 tests passent.**
+
+⚠ **Un point bloque l'usage de l'interface, et aucune ligne de code ne le lèvera :**
+le fichier de clé JSON du compte de service Google est introuvable sur la machine
+(`verifier_installation` le signale). Sans lui, les Sheets sont injoignables et
+personne ne peut se connecter. À retélécharger et à déposer dans
+`Hakili_Lab/credentials/`. En développement, `HAKILI_SHEETS_FACTICES=true`
+contourne le manque avec des élèves inventés (D-CEO-37) — sans le résoudre.
 
 **Pour reprendre le travail sur Django :**
 ```bash
@@ -314,6 +321,9 @@ Le branchement se rouvrira quand la mesure existera, et il faudra alors trancher
 - [ ] Écran 2 : fiche de séance tuteur, 5 champs (problèmes travaillés, blocage, déblocage, travail donné, appréciation), utilisable au téléphone en moins de 2 minutes.
 - [x] Réutiliser l'auth déjà en place plutôt que créer un nouveau système d'accès — fait côté Django (`comptes/`, décorateurs `connexion_requise` / `admin_requis`), et non plus dans `src/ui/app.py`.
 - [x] Acquis en chemin, à ne pas refaire : l'**admin Django sur les 11 tables** couvre la consultation et la correction ponctuelle, et l'écran `/parcours/<jeton>/` porte déjà l'inscription au programme.
+- [x] Acquis les 2-3 août, **hors de ce module** : un **système visuel unifié** dans `templates_django/base.html` (composants nommés, gamme de couleurs, échelles typographique et d'espacement) sur lequel les onze écrans existants ont été repris, et un **jeu d'identités factices** (D-CEO-37) qui rend les écrans travaillables sans les Sheets. Les deux écrans à construire ci-dessus s'appuieront dessus — ils n'en sont pas plus avancés pour autant.
+
+> ⚠ **Ne pas confondre.** Le travail de présentation des 2-3 août ne coche aucune des deux premières cases : elles demandent des écrans qui **n'existent pas**, pas une meilleure mise en page de ceux qui existent. Le module reste amorcé, au même point qu'au 30 juillet.
 
 **Critère de fin :** un tuteur remplit une fiche de séance depuis son téléphone en moins de 2 minutes ; une évaluation complète peut être corrigée à l'écran sans manipuler de fichier.
 **Fichiers concernés :** `src/ui/app.py` (nouveaux onglets/vues).
@@ -411,6 +421,74 @@ Limite structurelle assumée : certaines compétences ont un libellé volontaire
 ---
 
 ## Journal de bord
+
+### 2026-08-05 — Quatre jours de travail remis dans le suivi, et la règle qui a sauté
+
+Session de rattrapage. Le travail des **2 et 3 août n'était ni commité ni
+documenté** : ni journal, ni registre de décisions, ni fiche de module. Il est
+maintenant dans l'historique, en trois commits, et cette entrée dit ce qu'il
+contient — c'est le rôle de ce fichier.
+
+**Ce qui avait été fait hors du suivi :**
+
+1. **Un système visuel unifié** (`templates_django/base.html`, +667 lignes, et
+   les onze templates repris dessus). Les écrans avaient été écrits pour
+   fonctionner, pas pour être lus : six couleurs pour tout, tailles au jugé,
+   `style="..."` posés au cas par cas. Le rendu change, les vues ne changent
+   pas — les 253 tests Django passent sans une retouche.
+2. **Un jeu d'identités factices** (`src/integrations/sheets_factices.py`) et
+   **trois parcours de démonstration** (`manage.py donnees_demo`). Sans
+   identifiants de Sheet, cinq écrans sur sept affichaient « momentanément
+   indisponible » : la mise en page était intravaillable. Décision consignée
+   en **D-CEO-37**, parce que ça touche à la discipline d'identité
+   (D-CEO-20/21/25) et que ça méritait mieux qu'un commit muet.
+3. **Des corrections réelles ont tourné** les 2 et 3 août (`runs/`, rapports
+   PDF produits). Rien n'en a été consigné — aucun enseignement n'en a été
+   tiré, et c'est autant de perdu.
+
+**🔴 La règle qui a sauté, et il faut la nommer.** `CLAUDE.md` dit : « Ne pas
+ouvrir le chantier du site web en parallèle du chantier Urie v2. Un seul
+chantier prioritaire à la fois. » C'est exactement ce qui s'est passé, quatre
+jours durant, pendant que le module 4 attendait sa mesure juste. Le travail
+livré est bon et il servira ; ce n'est pas lui qui est en cause, c'est le fait
+qu'il ait déplacé la priorité sans que la décision soit prise ni écrite.
+
+**⚠ Et ce travail ne fait pas avancer le module 8.** La tentation serait de
+cocher des cases : il n'y a rien à cocher. Le module 8 demande **deux écrans**
+— saisie/correction des réponses d'une évaluation, et fiche de séance tuteur —
+et **aucun des deux n'existe**. Ce qui a été fait, c'est la présentation des
+écrans déjà là. Utile, pas comptable ici.
+
+**Configuration.** Les clés du projet étaient éparpillées entre `../.env` (non
+lu par le code) et `Hakili_Lab/.env`. Tout est consolidé dans le second, seul
+fichier lu (`hakili/settings.py` et `src/core/config.py`), et le premier est
+neutralisé — deux copies de secrets ne peuvent que diverger en silence. Les six
+clés ont été vérifiées valides auprès de leur fournisseur le 2026-08-05.
+Gemini, DeepSeek et Mistral sont réactivés sur leurs étapes respectives : la
+condition posée le 01/08 (« tant que ces clés sont vides, rester sur Claude »)
+n'a plus lieu d'être, et `VISION_PROVIDER=claude` coûtait plus cher pour le
+même travail. `DIAGNOSTIC_PROVIDER` **reste sur Claude** — `diagnose_constrained`
+est le seul client à porter l'outil à `enum`, première des trois barrières du
+module 4.
+
+**🔴 Un manque bloquant, découvert en consolidant :** le fichier de clé JSON du
+compte de service Google est **introuvable sur la machine**. `verifier_installation`
+le signale comme seul point à corriger. Sans lui, les Sheets sont injoignables
+et **personne ne peut se connecter à l'interface** — le jeu factice masque le
+problème en développement, il ne le résout pas. À retélécharger depuis la
+console Google Cloud, à déposer dans `Hakili_Lab/credentials/`.
+
+**Une scorie à traiter un jour :** `sheets_factices.comptes_demonstration()`
+n'est appelée nulle part. Sa raison d'être est d'afficher les PIN de
+démonstration sur l'écran de connexion — sans quoi le jeu factice est
+inutilisable, puisqu'on ne devine pas un PIN. Soit on la branche, soit on la
+retire.
+
+**Vérifié le 2026-08-05 : 253 tests Django + 282 pytest = 535 tests passent.**
+
+**Prochaine étape : inchangée depuis le 1er août, et c'est bien le problème.**
+Le levier reste le **sujet Urie imprimé et scanné** — une manipulation, qui
+débloque le tramage (module 2) *et* la mesure juste du module 4.
 
 ### 2026-08-01 (suite 5) — État des lieux, et trois écarts de doc corrigés
 

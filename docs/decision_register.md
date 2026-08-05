@@ -673,6 +673,26 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 
 ---
 
+### D-CEO-37 — Identités factices en développement, sans deuxième source de vérité *(nouveau 2026-08-05)*
+**Décision :** un jeu d'élèves et de personnel **inventés** (`src/integrations/sheets_factices.py`) peut remplacer la lecture des Google Sheets **en développement seulement**, branché au ras du réseau et verrouillé sur `DEBUG`.
+
+**Le problème qu'il traite.** L'identité vit dans les Sheets du docteur et nulle part ailleurs (D-CEO-20/21/25). Sur une machine de développement, les identifiants de Sheet ne sont pas renseignés : `get_eleves()` et `get_personnel()` échouent, et **cinq écrans sur sept** affichent « momentanément indisponible ». Impossible d'y travailler la mise en page, impossible de se connecter, impossible de voir un parcours. Le travail sur l'interface se faisait donc à l'aveugle, ou en renseignant les vrais Sheets sur un poste de développement — ce qui est pire.
+
+**Pourquoi ce n'est pas la deuxième source de vérité que ce projet a démolie deux fois.** Le défaut d'une deuxième source n'est pas qu'elle existe, c'est qu'elle **diverge en silence** de la première et finisse par être prise pour elle. Trois propriétés l'en empêchent ici :
+1. **Rien n'est écrit** — des lignes en mémoire, aucune table, aucune migration, aucun fichier. Il n'y a rien qui puisse diverger.
+2. **Inatteignable en production** — il faut `HAKILI_SHEETS_FACTICES` **et** `DEBUG`. Hors `DEBUG`, le réglage est ignoré et l'oubli journalisé bruyamment, comme `HAKILI_ACCES_LIBRE`. Servir des élèves inventés à un enseignant qui croit consulter sa classe serait **pire qu'un écran en panne** : l'écran en panne, on le signale ; des données plausibles mais fausses, on les recopie.
+3. **Branché à la place de la lecture réseau, pas de la logique** — le point d'insertion est `_fetch_raw_rows`, et les lignes rendues portent les **en-têtes réels du Sheet** (`"Contact Parents"`, `"Prenom"`, `"Role"`…). Tout l'aval s'exécute pour de vrai : résolution tolérante des colonnes, construction de `identifiant_hakili`, normalisation des classes, dérivation des centres, vérification du PIN. Un écran qui marche sur ces données marche sur les vraies, et une régression dans cette chaîne se voit ici aussi.
+
+**Le jeu couvre les cas limites, pas le cas nominal.** Les 7 niveaux ; un centre vu une seule fois (le cas « suspect » de `deriver_centres()`, signalé sans jamais être bloqué) ; deux frères et sœurs au même contact, qui vérifient que `build_identifiant_hakili` les distingue ; une personne affectée à **deux centres**, dont le Sheet réel porte deux lignes et que `_load_personnel` doit regrouper en un seul compte. Un jeu nominal n'aurait exercé aucun de ces chemins.
+
+**Ce qui l'accompagne :** `manage.py donnees_demo` crée trois parcours de démonstration pour l'écran `/parcours/<jeton>/` — en attente d'inscription, en remédiation, et palier C, le seul cas où `inscrire()` refuse sans motif tracé (D-CEO-34). Les états sont atteints par `changer_etat()`, jamais en écrivant `etat`, pour que chaque `Transition` existe. La commande refuse de tourner hors `DEBUG` (ces sessions portent un palier, donc un devis) et **ne touche jamais aux cinq sessions `CORPUS-*`**, qui sont l'étalon du module 4.
+
+**Ce que ça ne résout pas :** le fichier de clé JSON du compte de service reste nécessaire pour tout usage réel. Le jeu factice **masque** son absence en développement, il ne la remplace pas.
+
+**Vérifié :** 11 tests, dont le refus hors `DEBUG` avec journalisation, et le fait qu'un Sheet inconnu rende `None` et non une liste vide — une liste vide afficherait « aucun élève » au lieu de la panne de configuration.
+
+---
+
 ## Tableau de synthèse
 
 | ID | Sujet | Décision finale | Date |
@@ -711,6 +731,7 @@ Les deux modes partagent le même pipeline. Le mode Batch ajoute une boucle d'it
 | **D-CEO-27** | **7 tests Urie générés depuis le classeur** | **Énoncés non extractibles des PDF (maths en vectoriel, WeasyPrint) → source = `Referentiel_Urie_v0.xlsx` via `scripts/generer_baremes_urie.py` ; 280 questions, 71 QCM corrigés, 209 corrigés en attente ; classe canonique unique par test ; copie parfaite = 20,0/20 vérifiée** | **2026-07-30** |
 | **D-CEO-35** | **Gabarit des zones lu dans le PDF** | **Les sujets conservent cadres ancrés et codes ; la position des zones est lue à la source, pas détectée sur le scan. L'OCR sort de la chaîne — c'était le premier point de panne, et une confusion de code aurait fauté sans rien signaler. Règles exprimées en plages, pas en valeurs relevées** | **2026-07-31** |
 | **D-CEO-36** | **Recalage ancré sur le contenu ; rien contre le tramage** | **La page est recalée sur les cadres, jamais sur le rectangle de page ; l'inclinaison s'estime sur les coordonnées de l'encre, pas en tournant l'image ; l'appariement page scannée ↔ page du sujet n'est pas 1:1 (12 pages scannées pour un sujet de 10). Aucun mécanisme livré contre le tramage d'impression : le repli prévu (effacer les lignes à leur position) est impossible, les « lignes » pavent toute la zone** | **2026-08-01** |
+| **D-CEO-37** | **Identités factices en développement** | **Élèves et personnel inventés à la place de la lecture des Sheets, verrouillés sur `DEBUG` + `HAKILI_SHEETS_FACTICES` : rien n'est écrit, le branchement est au ras du réseau (`_fetch_raw_rows`) avec les en-têtes réels, donc toute la chaîne aval s'exécute pour de vrai. Cas limites couverts (centre vu une fois, fratrie, double affectation). `donnees_demo` ajoute trois parcours, sans jamais toucher aux sessions `CORPUS-*`** | **2026-08-05** |
 | **D-CEO-34** | **États de session et inscription** | **Sept états ; l'inscription bascule les problèmes, date la facturation et refuse le palier C sans motif tracé. Trois sorties sans remédiation distinguées — « aucune lacune » est une réussite, pas un abandon** | **2026-07-30** |
 | **D-CEO-33** | **Cycle : T2 retiré, tests répétables** | **Cinq étapes au lieu de six ; un même type d'évaluation peut se répéter (rang automatique) tant que les lacunes persistent. Les indicateurs, qui comptent des transitions, restent valides** | **2026-07-30** |
 | **D-CEO-32** | **Périmètre unique** | **Centre d'encadrement, pas école : toute personne autorisée voit tous les élèves et corrige toute copie. Cloisonnement centre/classe retiré, sélecteur de casquette supprimé ; le Sheet reste la source des accès, avec un écran de consultation** | **2026-07-30** |
