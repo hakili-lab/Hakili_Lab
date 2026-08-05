@@ -38,10 +38,8 @@ def ingest_pdf(pdf_path: Path, copy_id: str, output_dir: Path, dpi: int = 150) -
         copy_id: Identifiant anonyme de la copie
         output_dir: Dossier de sortie (sera créé si nécessaire)
         dpi: Résolution de rendu. 150 par défaut (D-CEO-10, optimal pour la
-            transcription pleine page). La découpe par zones demande davantage :
-            un scan à 200 DPI rendu à 150 perd de la définition sur une image
-            qui sera ensuite recadrée au dixième de la page. Voir
-            `zones.resolution_scan()` pour connaître la résolution de la source.
+            transcription pleine page, qui est la seule lecture faite d'une
+            copie depuis le retrait du module 2).
 
     Returns:
         IngestionResult avec les chemins des images extraites

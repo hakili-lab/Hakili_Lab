@@ -49,10 +49,13 @@ from referentiel.contexte import PROFONDEUR_PREREQUIS, chaine_prerequis
 from referentiel.models import Competence, FormatQuestion, Question, TypeErreur
 from referentiel.niveaux import deja_enseigne
 from src.models.domain import (
+    CopyGrade,
     DiagnosticContraint,
     ProblemeDetecte,
+    Rubric,
     SortieDiagnosticContraint,
     SourceProbleme,
+    TeacherDecision,
 )
 
 logger = logging.getLogger(__name__)
@@ -76,21 +79,93 @@ _LETTRE_MARQUEE = re.compile(r"^[^\w]*([A-Za-z])[).:]")
 class ReponseEleve:
     """Ce qu'on a lu sur la copie pour une question.
 
-    Volontairement détachée du modèle Django `Reponse` : le module 2 produit des
-    zones découpées avant qu'aucune ligne ne soit en base, et une copie de
-    l'ancien format n'a pas de `Reponse` enregistrable du tout (elle n'a aucune
-    des 280 questions Urie). Le moteur travaille donc sur une entrée simple, et
+    Volontairement détachée du modèle Django `Reponse` : une copie de l'ancien
+    format n'a pas de `Reponse` enregistrable du tout (elle n'a aucune des 280
+    questions Urie). Le moteur travaille donc sur une entrée simple, et
     l'écriture en base est une étape séparée (`suivi/diagnostic.py`).
+
+    En production, ces objets viennent de la correction déjà faite —
+    `reponses_depuis_correction()` ci-dessous. Ils peuvent aussi être écrits à la
+    main dans un fichier YAML (`manage.py diagnostiquer --fichier`), ce qui sert
+    aux essais et au rejeu.
     """
 
     code_question: str
     contenu: str = ""
-    #: Zone détectée vierge par le module 2. Distinct d'un contenu vide : une
-    #: transcription ratée n'est pas une absence de réponse.
+    #: L'élève n'a rien écrit. Distinct d'un contenu vide côté outillage : une
+    #: lecture ratée n'est pas une absence de réponse, et les deux ne se
+    #: diagnostiquent pas pareil — une zone vierge est un signal, une lecture
+    #: ratée est un trou.
     vide: bool = False
+    #: Quelque chose est écrit mais n'a pas pu être lu. Ni diagnosticable ni
+    #: assimilable à une absence : la question part en écartée, sous un motif qui
+    #: dit à l'enseignant qu'il y a là une réponse à relire.
+    illisible: bool = False
     #: `True` = question réussie, à ne pas diagnostiquer. `None` = non corrigée,
     #: on diagnostique — l'appelant décide s'il filtre en amont.
     correcte: bool | None = None
+
+
+#: Ce que la correction écrit dans `observed_answer` quand l'élève n'a rien
+#: écrit (`prompts/grading_prompt.md`, étape 1). Constante plutôt que littéral :
+#: c'est un contrat entre deux étapes, pas un détail de formatage.
+MARQUEUR_ABSENCE = "—"
+#: Et ce qu'elle écrit quand il y a une réponse mais qu'elle ne se lit pas.
+MARQUEUR_ILLISIBLE = "[ILLISIBLE]"
+
+
+def reponses_depuis_correction(grade: CopyGrade, rubric: Rubric) -> list[ReponseEleve]:
+    """Les réponses de l'élève, telles que la correction les a déjà relevées.
+
+    **C'est le seul chemin d'entrée du diagnostic en production, et il ne coûte
+    rien.** La correction lit la copie page entière et rend, pour chaque question
+    du barème, ce que l'élève a écrit (`observed_answer`) et si c'est juste. Or
+    l'identifiant d'item du barème **est** le code de question du référentiel
+    (`D1`, `L5`…) : la correspondance est directe, sans géométrie, sans découpe,
+    et sans un seul appel de modèle supplémentaire.
+
+    C'est ce qui a permis de retirer le module 2. Il découpait la copie en une
+    image par question pour reconstituer cette même correspondance à partir de la
+    position des cadres sur le scan — donc en exigeant une impression sans
+    réduction, un scan droit, et le bon nombre de pages dans le bon ordre. Le code
+    de la question est imprimé dans son cadre, à côté de la réponse : le lire est
+    plus robuste que le déduire d'une géométrie qu'on ne maîtrise pas.
+
+    Deux règles de conversion valent d'être dites :
+
+    - **Les questions réussies ne sont pas soumises** (`correcte=True`). Le
+      diagnostic cherche des lacunes ; une réussite n'en porte pas.
+    - **La décision de l'enseignant prime sur la proposition de l'IA** pour
+      décider ce qui est réussi — c'est la règle du projet sur le score, elle
+      vaut tout autant ici : diagnostiquer une question que l'enseignant vient de
+      valider produirait une lacune que personne ne constate.
+    """
+    maxima = {item.id: item.max_score for item in rubric.items}
+    reponses: list[ReponseEleve] = []
+
+    for question in grade.questions:
+        if question.teacher_decision == TeacherDecision.refused and question.teacher_score is not None:
+            score = question.teacher_score
+        else:
+            score = question.score
+
+        maximum = maxima.get(question.rubric_item_id)
+        # Sans maximum connu, on ne peut pas dire qu'une question est réussie :
+        # `None` fait diagnostiquer, ce qui est le sens sûr de l'incertitude.
+        correcte = None if maximum is None else score >= maximum
+
+        contenu = (question.observed_answer or "").strip()
+        reponses.append(
+            ReponseEleve(
+                code_question=question.rubric_item_id,
+                contenu=contenu,
+                vide=contenu in ("", MARQUEUR_ABSENCE),
+                illisible=MARQUEUR_ILLISIBLE in contenu,
+                correcte=correcte,
+            )
+        )
+
+    return reponses
 
 
 @dataclass
@@ -264,10 +339,18 @@ def preparer(niveau_test: str, reponses: list[ReponseEleve]) -> _Lot:
             )
             continue
 
+        if reponse.illisible:
+            # Il y a une réponse, elle n'a pas été lue. La soumettre reviendrait à
+            # faire diagnostiquer « [ILLISIBLE] », dont le modèle ne peut rien
+            # tirer d'autre qu'une invention. L'enseignant, lui, a la copie.
+            lot.ecartees[reponse.code_question] = (
+                "réponse non déchiffrée à la lecture — à relire sur la copie"
+            )
+            continue
+
         if question.format == FormatQuestion.CONSTRUCTION:
             # Juger une perpendiculaire demande de mesurer la figure, pas de lire
-            # une réponse. Le module 2 marque déjà ces zones non diagnosticables ;
-            # elles relèvent de la saisie humaine (module 8).
+            # une réponse : ces questions relèvent de la saisie humaine (module 8).
             lot.ecartees[reponse.code_question] = (
                 "construction géométrique — relève de la saisie humaine (module 8)"
             )

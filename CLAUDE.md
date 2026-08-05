@@ -102,7 +102,7 @@ Le diagnostic structuré (module 4) **remplace directement** l'actuel `Diagnosti
 
 ### Les 9 modules — suivi détaillé dans `docs/urie_v2_roadmap.md`
 
-Ce chantier se déroule en 9 modules dépendants (0 → 9, chacun a besoin des précédents : appropriation du référentiel, socle de données, lecture des copies par zones, corpus de référence, diagnostic contraint, composition du test de confirmation, palier et plan de remédiation, génération des fiches, interfaces de saisie, restitution et indicateurs).
+Ce chantier se déroule en 9 modules dépendants (0 → 9, chacun a besoin des précédents : appropriation du référentiel, socle de données, ~~lecture des copies par zones~~ (supprimé, D-CEO-38), corpus de référence, diagnostic contraint, composition du test de confirmation, palier et plan de remédiation, génération des fiches, interfaces de saisie, restitution et indicateurs).
 
 **`docs/urie_v2_roadmap.md` est la seule source de vérité sur l'avancement** — statut par module, sous-tâches, critères de fin, jalons de validation, et un journal de bord daté. **Lis-le en début de session, mets-le à jour en fin de session.** Ne pas recréer un deuxième tableau de suivi ici : ce serait reproduire l'erreur "deux sources de vérité" déjà corrigée deux fois sur ce projet (D-CEO-20, D-CEO-21).
 
@@ -178,7 +178,7 @@ alembic downgrade -1
 | Fichier | Rôle |
 |---|---|
 | `src/pipeline/pipeline.py` | Pipeline de correction principal (Phase A/B, déjà scindé) |
-| `src/pipeline/zones.py` | Lecture des copies par zones (module 2) — gabarit lu **dans le PDF du sujet**, pas détecté sur le scan : ni détection de rectangles ni OCR, contrairement à `guide-urie.md`. Recalage ancré sur les cadres, appariement des pages non supposé 1:1 (D-CEO-35, D-CEO-36) |
+| ~~`src/pipeline/zones.py`~~ | **Supprimé le 2026-08-05 (D-CEO-38).** Le module 2 découpait la copie par zones ; trois copies réelles imprimées et scannées l'ont mis en défaut, et il reconstituait par la géométrie une correspondance que la correction produit déjà. Ne pas le reconstruire sans lire D-CEO-38 |
 | `src/models/domain.py` | Schémas Pydantic pipeline — `TeacherDecision`, `CopyGrade`, `DiagnosticResult` |
 | `hakili/settings.py` | Configuration Django — base Neon, sécurité, support SQLite pour les tests |
 | `referentiel/models.py` | 7 tables du référentiel et de la banque de questions (importées du classeur) |
@@ -186,7 +186,7 @@ alembic downgrade -1
 | `suivi/plan.py` | Plan de remédiation — tri topologique sur les prérequis, coût, palier (module 6) |
 | `referentiel/couts.py` | Formule de coût — arrondi 0,5 h, plancher 0,5, plafond 4, volume de repli lycée (D-CEO-29) |
 | `referentiel/contexte.py` | Ancrage du diagnostic reconstruit depuis le référentiel (D-CEO-30) |
-| `referentiel/diagnostic.py` | **Diagnostic contraint (module 4)** — QCM court-circuités sans appel de modèle, codes admis par question, rejet et redemande |
+| `referentiel/diagnostic.py` | **Diagnostic contraint (module 4)** — QCM court-circuités sans appel de modèle, codes admis par question, rejet et redemande. `reponses_depuis_correction()` est le point d'entrée en production : il reprend les réponses de la correction déjà faite (D-CEO-38) |
 | `suivi/diagnostic.py` | Écriture des problèmes du module 4 en `hypothese` — refuse d'écrire dans une évaluation du corpus |
 | `suivi/mesure.py` | Écart module 4 ↔ corpus : exacts, compétence juste mais type faux, manqués, en trop, écart de coût |
 | `referentiel/niveaux.py` | Ordre des niveaux — une seule définition, partagée par le tagage du corpus et le diagnostic |

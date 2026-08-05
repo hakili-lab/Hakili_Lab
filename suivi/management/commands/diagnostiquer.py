@@ -1,10 +1,21 @@
 """
 Diagnostic contraint d'une copie (module 4).
 
+    python manage.py diagnostiquer --correction 42                # une copie corrigée
     python manage.py diagnostiquer --fichier data/reponses/copie.yaml
-    python manage.py diagnostiquer --fichier … --sans-modele      # QCM seuls
-    python manage.py diagnostiquer --fichier … --enregistrer      # écrit en base
+    python manage.py diagnostiquer --correction 42 --sans-modele  # QCM seuls
+    python manage.py diagnostiquer --correction 42 --enregistrer 7   # écrit en base
     python manage.py diagnostiquer --fichier … --comparer 12      # contre le corpus
+
+Les deux entrées, et pourquoi il y en a deux
+--------------------------------------------
+`--correction` est le chemin de production : il repart d'une copie **déjà
+corrigée**, dont chaque réponse a été relevée par la correction et validée par
+l'enseignant. Aucune lecture supplémentaire de la copie, aucun découpage — le
+barème porte les mêmes codes de question que le référentiel.
+
+`--fichier` reste pour les essais et le rejeu : un YAML écrit à la main se relit,
+se compare et se reprend, ce qui n'est vrai d'aucune sortie de modèle.
 
 Pourquoi l'écriture n'est pas le comportement par défaut
 --------------------------------------------------------
@@ -24,7 +35,7 @@ Format du fichier de réponses
         reponse: "a"            # QCM : la lettre cochée
       - question: L7
         reponse: ""
-        vide: true              # zone détectée vierge par le module 2
+        vide: true              # l'élève n'a rien écrit
       - question: N3
         reponse: "12,5"
         correcte: true          # question réussie — non diagnostiquée
@@ -37,7 +48,11 @@ from pathlib import Path
 import yaml
 from django.core.management.base import BaseCommand, CommandError
 
-from referentiel.diagnostic import ReponseEleve, diagnostiquer
+from referentiel.diagnostic import (
+    ReponseEleve,
+    diagnostiquer,
+    reponses_depuis_correction,
+)
 from referentiel.models import Competence, NiveauTest, TypeErreur
 from src.models.domain import SourceProbleme
 from suivi.diagnostic import enregistrer
@@ -49,7 +64,15 @@ class Command(BaseCommand):
     help = "Diagnostic contraint d'une copie — module 4 du chantier Urie v2."
 
     def add_arguments(self, parser) -> None:
-        parser.add_argument("--fichier", required=True, help="Fichier YAML des réponses.")
+        entree = parser.add_mutually_exclusive_group(required=True)
+        entree.add_argument(
+            "--correction",
+            type=int,
+            metavar="ID_CORRECTION",
+            help="Copie déjà corrigée : les réponses sont reprises de la "
+            "correction, sans relire la copie.",
+        )
+        entree.add_argument("--fichier", help="Fichier YAML des réponses.")
         parser.add_argument(
             "--sans-modele",
             action="store_true",
@@ -81,12 +104,15 @@ class Command(BaseCommand):
         except (AttributeError, OSError):  # flux déjà remplacé (tests)
             pass
 
-        chemin = Path(options["fichier"])
-        if not chemin.exists():
-            raise CommandError(f"{chemin} est introuvable.")
+        if options["correction"]:
+            niveau, reponses, copy_id = self._depuis_correction(options["correction"])
+        else:
+            chemin = Path(options["fichier"])
+            if not chemin.exists():
+                raise CommandError(f"{chemin} est introuvable.")
 
-        donnees = yaml.safe_load(chemin.read_text(encoding="utf-8")) or {}
-        niveau, reponses, copy_id = self._valider(donnees, chemin)
+            donnees = yaml.safe_load(chemin.read_text(encoding="utf-8")) or {}
+            niveau, reponses, copy_id = self._valider(donnees, chemin)
 
         client = None if options["sans_modele"] else self._client()
 
@@ -138,6 +164,67 @@ class Command(BaseCommand):
             )
 
         return niveau, reponses, str(donnees.get("copy_id") or chemin.stem)
+
+    def _depuis_correction(self, identifiant: int) -> tuple[str, list[ReponseEleve], str]:
+        """Reprend les réponses d'une copie déjà corrigée.
+
+        Rien n'est relu de la copie : la correction a déjà relevé, pour chaque
+        question du barème, ce que l'élève a écrit. Les seuls contrôles portent
+        sur ce qui rendrait la reprise fausse plutôt qu'incomplète — un test hors
+        référentiel, ou une correction qui n'est pas allée jusqu'au bout.
+        """
+        from correction_web.models import Correction
+        from correction_web.serialisation import deserialiser
+
+        try:
+            correction = Correction.objects.get(pk=identifiant)
+        except Correction.DoesNotExist:
+            raise CommandError(f"Aucune correction n'a l'identifiant {identifiant}.")
+
+        if not correction.bareme_id.startswith("urie_"):
+            raise CommandError(
+                f"La correction {identifiant} porte sur "
+                f"{correction.bareme_id or 'le mode libre'}, dont les questions ne "
+                f"sont pas celles du référentiel Urie. Le diagnostic contraint ne "
+                f"peut rien y rattacher."
+            )
+        niveau = correction.bareme_id.removeprefix("urie_")
+        if niveau not in NiveauTest.values:
+            raise CommandError(f"Niveau {niveau!r} inconnu (barème {correction.bareme_id}).")
+
+        if not correction.resultat:
+            raise CommandError(
+                f"La correction {identifiant} n'a pas de résultat enregistré "
+                f"(état : {correction.etat})."
+            )
+
+        resultat = deserialiser(correction.resultat)
+        if resultat.grade is None or resultat.rubric is None:
+            raise CommandError(
+                f"La correction {identifiant} n'est pas allée jusqu'à la notation "
+                f"(état : {correction.etat}) — il n'y a pas de réponses à reprendre."
+            )
+
+        reponses = reponses_depuis_correction(resultat.grade, resultat.rubric)
+        traitees = [r for r in reponses if r.correcte is not True]
+        self.stdout.write(
+            f"Correction {identifiant} — {correction.copy_id}, {correction.bareme_id} : "
+            f"{len(reponses)} question(s), dont {len(traitees)} non réussie(s) à "
+            f"diagnostiquer."
+        )
+        if not correction.resultat.get("grade", {}).get("validation_complete"):
+            # Le diagnostic prend la décision de l'enseignant quand elle existe ;
+            # si la relecture n'est pas finie, il travaille en partie sur des
+            # propositions de l'IA. Ça ne l'empêche pas de tourner, mais celui qui
+            # lit le compte rendu doit le savoir.
+            self.stdout.write(
+                self.style.WARNING(
+                    "  ⚠ La validation enseignant de cette copie n'est pas terminée : "
+                    "les questions non tranchées sont prises telles que l'IA les a notées."
+                )
+            )
+
+        return niveau, reponses, correction.copy_id
 
     def _client(self):
         """Le client de diagnostic, ou rien — sans jamais faire échouer la commande.

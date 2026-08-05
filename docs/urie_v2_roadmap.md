@@ -1,10 +1,10 @@
 # Feuille de route — Chantier Urie v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-08-05 (travail des 2-3 août remis dans le suivi : système visuel, jeu factice, configuration consolidée)
-**Où en est-on (résumé en une ligne) :** Modules 0, **1, 2 et 3 ✅ faits** · **Module 4 🟨 le moteur du diagnostic contraint tourne** — QCM court-circuités sans aucun appel de modèle, sortie strictement contrainte, rejet et redemande, écriture des problèmes en hypothèse, outil de mesure écrit · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. **Le module 4 a enfin un chiffre.** Les 5 copies du corpus sont transcrites (`data/productions/`) et la mesure plancher a tourné sur les 66 problèmes : **rappel 85 % sur la compétence, 65 % sur le couple `compétence × type`** sur Opus 4.7 — **70 % / 47 % sur Sonnet 5**, retenu « en attendant » le 2026-08-01 et sensiblement moins bon. Le point dur est désigné : **le type d'erreur**, et `ATT` en particulier — 4 inattentions dans l'étalon, aucune retrouvée. Les coûts passent à **l'heure entière supérieure** (décision du 2026-08-01, +33 % sur l'étalon) — **les seuils de palier A/B/C n'ont pas été rejugés en conséquence.** Le **branchement au pipeline attend un arbitrage** (coût, sort du rapport actuel). Hors code : un **sujet Urie imprimé et scanné**, les **209 corrigés** (arbitrage B), et un **essai réel de bout en bout** avant de retirer Streamlit.
+**Dernière mise à jour :** 2026-08-05 (module 2 supprimé, diagnostic branché sur la correction — D-CEO-38)
+**Où en est-on (résumé en une ligne) :** Modules 0, **1 et 3 ✅ faits** · **Module 2 ⛔ supprimé le 2026-08-05** — trois copies 5e réelles imprimées et scannées l'ont mis en défaut (les trois refusées, dérive jusqu'à 3 cm), et il reconstituait par la géométrie une correspondance que la correction produit déjà ; au passage le risque du tramage est levé, l'imprimante n'imprime pas les bandes de guidage du tout · **Module 4 🟨 le moteur tourne et il est branché** — `manage.py diagnostiquer --correction <id>` reprend une copie déjà corrigée, sans lecture ni appel de modèle supplémentaire, QCM court-circuités, décision enseignant prioritaire · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. Le chiffre du module 4 reste celui de la mesure plancher : **rappel 85 % sur la compétence, 65 % sur le couple `compétence × type`** (Opus 4.7), point dur = le type d'erreur, `ATT` en tête. **La mesure juste n'attend plus qu'une chose : corriger les 3 copies 5e** (`KOANDA-SAIBATA-5E`, `NABALOUM-MADJID-5E`, `OUATTARA-FADEL_5E`) puis comparer. Les seuils de palier A/B/C **n'ont toujours pas été rejugés** après la hausse de ~33 % des coûts.
 
-**État vérifié le 2026-08-05 : 253 tests Django + 282 pytest = 535 tests passent.**
+**État vérifié le 2026-08-05 : 268 tests Django + 239 pytest = 507 tests passent.** (Le total baisse : les 43 tests du module 2 sont partis avec lui, 15 tests neufs couvrent le branchement.)
 
 ⚠ **Un point bloque l'usage de l'interface, et aucune ligne de code ne le lèvera :**
 le fichier de clé JSON du compte de service Google est introuvable sur la machine
@@ -44,9 +44,9 @@ Note : `DATABASE_URL` suit la convention SQLAlchemy — `sqlite:///:memory:`, **
 |---|---|---|---|
 | 0 | Appropriation du référentiel | ✅ Fait (2026-07-30) | — |
 | 1 | Socle de données (Neon, Django) | ✅ Fait (2026-07-30) | — |
-| 2 | Lecture des copies par zones | ✅ Fait (2026-08-01) — gabarit, recalage, appariement, pipeline | — (un risque de tramage reste à trancher sur papier, voir la fiche) |
+| 2 | ~~Lecture des copies par zones~~ | ⛔ **Supprimé (2026-08-05, D-CEO-38)** — remplacé par la reprise de la correction | — |
 | 3 | Corpus de référence | ✅ Fait (2026-07-31) — 5 copies, 66 problèmes | — (PRQ et RED non couverts, voir la fiche) |
-| 4 | Diagnostic contraint | 🟨 En cours (2026-08-01) — moteur fait, **rien pour le mesurer** | Des copies au nouveau format (voir la fiche) |
+| 4 | Diagnostic contraint | 🟨 En cours (2026-08-05) — moteur fait, **branché sur la correction** | La mesure juste : reste à corriger les 3 copies 5e puis à comparer |
 | 5 | Composition du test de confirmation (T1) | ⬜ À faire | Module 4 |
 | 6 | Palier et plan de remédiation | 🟨 En cours (2026-07-30) — moteur fait, séances à planifier | Module 4 pour l'alimenter en vrais problèmes |
 | 7 | Génération des fiches | ⬜ À faire | Module 6 |
@@ -128,45 +128,54 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 
 ---
 
-### Module 2 — Lecture des copies par zones ✅ **FAIT (2026-08-01)**
-**Objectif :** transformer un sujet rempli et scanné en une liste `(code_question, image_de_la_réponse)`.
+### Module 2 — Lecture des copies par zones ⛔ **SUPPRIMÉ (2026-08-05, D-CEO-38)**
+**Ce module n'existe plus. Ne pas le reconstruire sans lire D-CEO-38 en entier.**
 
-> **Écart assumé avec `guide-urie.md`, et c'est le point de conception du module.** Le guide prescrit de *détecter* les rectangles sur le scan puis de lire au **OCR** le code de chaque cadre. Inutile : les 7 sujets sont produits par WeasyPrint et leur PDF **porte déjà** la position exacte de chaque cadre et son code. Le gabarit est donc lu à la source, pas deviné sur le scan. Ça supprime l'étape la plus fragile de la chaîne — un OCR sur trois caractères à 150 DPI aurait été le premier point de panne, et une confusion `G1`/`G7` aurait attribué une réponse à la mauvaise question **sans que rien ne le signale**. Ne restaient sur le scan que le recalage et l'appariement des pages — faits depuis.
+**Ce qu'il devait faire :** transformer un sujet rempli et scanné en une liste
+`(code_question, image_de_la_réponse)`, pour que le module 4 dispose de la
+réponse à *une* question isolée.
 
-- [x] **Gabarit extrait du PDF source** (`extraire_gabarit`) : code, page, rectangle, format et nombre de lignes de chaque cadre. **Vérifié 280/280 sur les 7 sujets**, 0 manquant, 0 en trop, 0 doublon.
-- [x] **Règles de lecture exprimées en plages, pas en constantes relevées** (D-CEO-35) : plages de gris et fractions de la largeur de page, au lieu de l'égalité à 0,478431 / 480 pt / 8 lignes. Le sujet est un document vivant — régénéré, il changera de marges et de teintes, et une égalité stricte aurait fait échouer la lecture **totalement** (zéro cadre trouvé), pas partiellement. Au-delà de 2 lignes de guidage, la question est rédigée, qu'il y en ait 6, 8 ou 10.
-- [x] Le format se **déduit de la géométrie** (1 ligne = `qcm`, 2 = `court`, ≥3 = `redige`, 0 ligne = `construction`) et n'est pas lu dans le barème — les deux sont ensuite confrontés (`verifier_gabarit`). C'est le garde-fou contre un sujet d'une autre version que celle chargée en base : les codes ou les formats divergent, et on le sait **avant** d'attribuer des réponses aux mauvaises questions.
-- [x] Découpe de l'intérieur du cadre (`decouper_zones`), une image PNG par code, échelle déduite de l'image (aucune hypothèse de résolution).
-- [x] Suppression des lignes de guidage par seuillage — blanchiment plutôt que binarisation franche, pour qu'un trait de crayon clair reste lisible.
-- [x] **Le code typographié est effacé de la zone découpée.** Il est imprimé en noir dans le coin du cadre : le seuillage ne peut pas l'écarter, et le laisser ferait passer pour remplie une zone restée vierge. Sa position exacte vient du PDF, comme le reste.
-- [x] Détection des zones **vierges** (`vide`, `taux_encre`) — « pas de réponse » est une donnée de diagnostic à part entière, et ça évite d'envoyer une image blanche au modèle.
-- [x] Les **4** formats sont gérés, pas 3 : `qcm` (71), `court` (139), `redige` (63) et `construction` (7, non prévu par `guide-urie.md`).
-- [x] **Le scan se fait hors plateforme** — ce qui entre est un PDF multipage ou des images. `resolution_scan()` donne la définition native de la source pour ne pas rendre un scan 200 DPI dans une image 150 DPI, et `ingest_pdf(dpi=…)` accepte désormais la résolution voulue (150 reste le défaut, D-CEO-10).
-- [x] **Garde-fou : un scan brut passé à la découpe est refusé.** Les proportions d'un scan ne sont pas celles du sujet (mesures ci-dessous) ; découpé tel quel le décalage atteint plusieurs millimètres en bas de page — assez pour attraper la ligne de la question voisine, pas assez pour que le résultat ait l'air faux.
-- [x] **Seuil d'encre confronté à un scan réel** : `SEUIL_ENCRE_DEFAUT = 140` tombe au milieu d'un large plateau (la proportion de pixels sombres ne bouge que de 1,85 % à 3,47 % entre les seuils 120 et 200). Réglage non critique tant que le scan n'est pas sous-exposé.
-- [x] **Recalage du scan sur le gabarit** (inclinaison, échelle, translation), **par page** — `recaler_page`.
-- [x] **Appariement des pages scannées aux pages du sujet** — `apparier_pages`. Le scan mesuré comptait **12 pages pour un sujet de 10** ; découpées dans l'ordre, toutes les zones auraient été prises sur la mauvaise page, avec un résultat d'apparence normale.
-- [x] **Format `construction` orienté vers la saisie humaine** — `ZoneDecoupee.diagnosticable` est faux pour ces 7 questions (et pour toute zone vierge). Elles se découpent comme les autres ; juger une perpendiculaire demande de mesurer la figure, pas de lire une réponse.
-- [x] **Point d'insertion posé dans le pipeline** — `_lire_zones`, entre l'ingestion et la transcription, déclenché par la seule présence d'un `sujet_pdf` (les tests archivés n'en ont pas et gardent la transcription pleine page). La transcription continue de lire la page entière : dans ce format l'élève compose *sur le sujet* (D-CEO-27).
-- [ ] 🔴 **Risque ouvert, et il a changé de nature — le tramage d'impression.** Une imprimante laser rend un aplat gris 0,749 par un **tramage de points noirs**, que le seuillage ne peut pas écarter. Constaté sur un scan réel de l'ancien format, dont les pointillés imprimés survivent.
-  **Ce que la version précédente de cette fiche donnait comme repli ne marche pas.** Elle disait : « l'effacement devra s'appuyer sur la position connue des lignes (elle est dans le gabarit) ». Mesuré depuis sur les 7 sujets : les « lignes de guidage » **ne sont pas des traits** mais des bandes de 21 pt **jointives** (853 relevées, espacement égal à la hauteur) qui pavent toute la zone de réponse. L'élève écrit sur un **aplat gris**, pas sur un lignage. Leur position, c'est la zone entière — l'effacer par position l'effacerait entière.
-  Le vrai problème est donc le retrait d'une **trame étendue à toute la zone**, un filtrage qui distingue un point isolé d'un trait de stylo. Il dépend de la finesse de la trame, de la résolution du scanner et de l'épaisseur du trait — trois grandeurs qu'aucun rendu numérique ne donne. **Se tranche en une manipulation :** imprimer un sujet Urie, le scanner **même vierge**, mesurer. Verrouillé par un test paramétré sur les 7 sujets pour que la fausse piste ne soit pas re-suivie.
+**Pourquoi il a été retiré.** Trois copies réelles de 5ème — imprimées,
+composées, scannées à 200 DPI — sont passées dans la chaîne le 2026-08-05.
+**Les trois ont été refusées, aucune n'était découpable.** La cause a été
+mesurée et elle n'est pas réparable par un réglage : après impression laser et
+numérisation, le bord d'un cadre ne subsiste qu'entre 243 et 248 contre un
+papier à 251,6, alors qu'il est à 121–156 dans le PDF. Le seuil d'encre du
+recalage (140) ne le voyait jamais et s'accrochait au texte imprimé — échelle
+fausse jusqu'à −10 %, soit **85 pt (3 cm) de dérive** en bas de page, et **4
+pages sur 10 acceptées** avec 20 à 35 pt de décalage. Une zone découpée
+attrapait l'énoncé imprimé et perdait le bas de la réponse ; ailleurs les cadres
+tombaient une question plus bas, chacun contenant de l'écriture — donc sans que
+rien n'ait l'air anormal.
 
-**Critère de fin :** ✅ atteint côté code — sur un sujet rempli et scanné (simulé : inclinaison, échelle, marges, pages intercalées), les cadres sont détectés, associés à leur code, et découpés proprement. Reste la calibration sur papier, ci-dessus.
-**Fichiers concernés :** `src/pipeline/zones.py`, `src/pipeline/pipeline.py` (`_lire_zones`, `PipelineResult.zones`), `src/knowledge/test_registry.py` (`HakiliTest.formats`), réutilise `src/pipeline/ingestion.py`.
-**Tests :** `tests/test_zones.py` (43) — sur un sujet fabriqué dans le test, sur des numérisations simulées, et sur les vrais sujets (ignorés si les PDF sont absents, ils ne sont pas versionnés).
+Le fond du problème n'est pas ce seuil : c'est que ce module faisait dépendre le
+diagnostic de la **géométrie d'un objet physique** qu'on ne maîtrise pas.
+Impression sans réduction, scan droit, bon nombre de pages dans le bon ordre,
+cadres survivant au toner. En production de masse, aucune de ces conditions
+n'est tenable, et chacune était un refus de copie.
 
-**⚠ Ce qu'il reste à obtenir :** un **sujet Urie** (`Test_diagnostique_entree_*.pdf`) imprimé et scanné, **même vierge**, pour trancher le tramage. Consignes d'impression sur `/sujets/` : noir et blanc, recto seul, **sans réduction**.
+**Ce qui le remplace était déjà en service.** La correction lit la copie page
+entière et rend, pour chaque question du barème, ce que l'élève a écrit
+(`observed_answer`) et si c'est juste. L'identifiant d'item du barème **est** le
+code de question du référentiel : la correspondance existait déjà, sans
+géométrie et sans appel de modèle supplémentaire. Voir
+`referentiel.diagnostic.reponses_depuis_correction()`.
 
-#### Ce qu'un scan réel a appris (mesuré le 2026-07-31 sur `TEST 4 3e.pdf`, HP Scan, 200 DPI, 12 pages)
+**✅ Le risque du tramage est levé, dans l'autre sens.** C'était la question
+ouverte depuis le 1er août. Mesuré : à l'intérieur d'un cadre, le scan est
+uniformément blanc (moyenne 251,6, écart-type 1,1, **0,00 % de pixels sous
+200**) là où le PDF porte des gris à 191–246. L'imprimante n'a pas tramé les
+bandes de guidage — elle ne les a pas imprimées. Il n'y avait rien à filtrer.
 
-| Mesure | Valeur | Ce que ça impose |
-|---|---|---|
-| Taille de page | 612 pt de large, hauteur **variable de 835 à 851 pt d'une feuille à l'autre du même fichier** | Le recalage ne peut pas s'appuyer sur le rectangle de la page. Il doit s'ancrer sur le **contenu** — les cadres eux-mêmes — et se faire **page par page**. |
-| Inclinaison | −1,25° · −1,25° · +1,00° selon la page | Redressement **par page**, jamais global. |
-| Papier / encre | papier à 254, distribution franchement bimodale | Seuil d'encre non critique (plateau 120–200). |
-| Couleur de l'encre | 75 % des pixels sombres = imprimé (neutre), 22 % = stylo bleu (élève), 2,3 % = **rouge (correction de l'enseignant)** | Sur les copies déjà corrigées à la main, la correction du professeur est **séparable par la couleur**. Sans ce tri, un diagnostic lirait la correction de l'enseignant comme la production de l'élève. Compte surtout pour le **module 3** (corpus constitué d'anciennes copies). |
-| Nombre de pages | 12 pages pour un sujet qui en compte 10 (page de garde + page de renseignements) | L'appariement page scannée ↔ page du sujet ne peut pas être supposé 1:1. À traiter avec le recalage. |
+**Supprimé :** `src/pipeline/zones.py` (893 lignes), `tests/test_zones.py`
+(578), `_lire_zones` et `PipelineResult.zones`. **Conservé :**
+`HakiliTest.formats` — le format d'une question décide de ce que le diagnostic
+peut en faire.
+
+**Ce que ça change pour les sujets :** rien à l'impression. Les cadres et les
+codes restent utiles à l'élève et à la lecture, mais ils ne sont plus une
+dépendance du diagnostic.
+
 
 ---
 
@@ -223,7 +232,8 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - [x] **Transcription des 5 copies du corpus** (`data/productions/corpus_*.yaml`) — lue sur les scans, sans lire le tagage des copies 1 à 4. Les 5 fichiers passent la validation de format **et** le contrôle anti-recopie.
 - [x] **Mesure plancher exécutée sur les 5 copies (2026-08-01)** — **rappel compétence 85 %, couple exact 65 %, précision 61 %** sur 66 problèmes. Tableau par copie et analyse au journal. **Le point dur est le type d'erreur, pas la compétence**, et `ATT` n'est jamais retrouvé — ce qui surfacture, puisque c'est le seul type à coût nul.
 - [ ] 🔴 **Mesure en configuration de production** — attend des copies au nouveau format, voir ci-dessous.
-- [ ] **Point d'intégration dans le pipeline** — **différé** (arbitrage du 2026-08-01) : le module s'alimente à la main tant qu'il n'est pas mesuré, conformément au jalon go/no-go.
+- [x] **Point d'entrée en production — fait le 2026-08-05** (D-CEO-38) : `reponses_depuis_correction()` reprend les réponses de la **correction déjà faite**, et `manage.py diagnostiquer --correction <id>` les diagnostique. Aucune lecture supplémentaire de la copie, aucun appel de modèle en plus, et la décision de l'enseignant prime sur celle de l'IA pour dire ce qui est réussi. C'est ce qui a remplacé le module 2.
+- [ ] **Déclenchement automatique** — toujours différé, et le motif n'a pas changé : tant que la mesure juste n'existe pas, rien ne s'approche d'un enseignant. Ce qui reste à trancher est plus étroit qu'avant, puisqu'il n'y a plus de surcoût d'appel : à quel moment du flux de correction le diagnostic part, et ce que devient le rapport en texte libre.
 - [ ] Atteindre 100 sorties consécutives valides. Demande des clés d'API, et des copies au nouveau format.
 
 **Critère de fin :** 100 sorties consécutives valides + écart diagnostic automatique / tagage manuel mesuré et consigné.
@@ -259,14 +269,36 @@ Le diagnostic contraint travaille **par question** : il reçoit l'énoncé, la c
 - **Deux passages n'ont pas été transcrits faute de lecture sûre** et c'est dit dans les fichiers : l'annotation de l'angle au rapporteur de `CORPUS-6E-05` (se lit « 40 » ou « 60 »), et deux des quatre égalités vectorielles de `CORPUS-3E-01`. Inventer une lecture pour compléter aurait mis une erreur dans l'instrument de mesure.
 - **La copie 5 a été transcrite après lecture de son tagage** (sa fiche avait été ouverte plus tôt dans la session) ; les copies 1 à 4 l'ont été à l'aveugle. Si l'écart mesuré sur la copie 5 se détache nettement des quatre autres, cette asymétrie est la première explication à envisager.
 
-#### Point d'intégration dans le pipeline — **différé (arbitrage du 2026-08-01)**
-Le branchement est mécaniquement trivial : pour les 7 tests Urie, l'identifiant d'item du barème **est** le code de question du référentiel (`D1`, `L5`…), et `observed_answer` porte la réponse de l'élève. Il n'est pas fait, et c'est délibéré — le motif n'est pas technique :
+#### Point d'entrée en production — **fait le 2026-08-05 (D-CEO-38)**
+`manage.py diagnostiquer --correction <id>` part d'une copie **déjà corrigée** :
+la correction a lu la page entière et relevé, pour chaque question du barème, ce
+que l'élève a écrit (`observed_answer`) et si c'est juste. L'identifiant d'item
+du barème **est** le code de question du référentiel (`D1`, `L5`…) — la
+correspondance est directe.
 
-- **en parallèle du diagnostic actuel** : deux appels de modèle par copie, contre une cible de ~$0,02/copie ;
-- **en remplacement** : le rapport PDF et le sujet de remédiation se nourrissent du texte libre. Les couper maintenant retirerait à l'enseignant un livrable qui marche, pour une liste de codes que rien ne met encore en forme — ce sont les modules 7 (fiches) et 9 (rapport) qui doivent arriver d'abord ;
-- **différé — retenu** : le module s'alimente à la main (`manage.py diagnostiquer`) le temps d'être mesuré. C'est ce que dit le jalon go/no-go de ce document : rien ne s'approche d'un enseignant avant l'écart mesuré.
+**Le coût qui bloquait n'existe plus.** L'arbitrage du 2026-08-01 opposait
+« en parallèle » (deux appels de modèle par copie, contre une cible de
+~$0,02/copie) et « en remplacement » (couper un livrable qui marche). Reprendre
+la correction ne coûte **aucun appel supplémentaire** : la lecture de la copie a
+déjà eu lieu. Sur les QCM, il n'y a même aucun appel du tout — 71 questions sur
+280.
 
-Le branchement se rouvrira quand la mesure existera, et il faudra alors trancher entre parallèle et remplacement.
+Trois règles ont été posées en chemin, et elles valent d'être connues :
+- **Les questions réussies ne sont pas soumises.** Le diagnostic cherche des
+  lacunes ; une réussite n'en porte pas.
+- **La décision de l'enseignant prime sur celle de l'IA** pour dire ce qui est
+  réussi. Diagnostiquer une question que l'enseignant vient de valider
+  produirait une lacune que personne ne constate.
+- **« Illisible » n'est pas « rien écrit ».** Une lecture ratée est un trou : la
+  question part en écartée, avec un motif qui dit à l'enseignant qu'il y a là une
+  réponse à relire. Une zone vierge, elle, est un signal de diagnostic.
+
+Ce qui reste à trancher est plus étroit : **à quel moment du flux** le
+diagnostic se déclenche tout seul, et **ce que devient le rapport en texte
+libre** — les modules 7 (fiches) et 9 (rapport) doivent arriver d'abord, sans
+quoi on retirerait à l'enseignant un livrable qui marche pour une liste de codes
+que rien ne met en forme. Le jalon go/no-go tient : rien ne s'approche d'un
+enseignant avant l'écart mesuré.
 
 ---
 
@@ -421,6 +453,96 @@ Limite structurelle assumée : certaines compétences ont un libellé volontaire
 ---
 
 ## Journal de bord
+
+### 2026-08-05 (suite) — ⛔ Le module 2 est supprimé, et le module 4 est branché
+
+Le levier attendu depuis le 1er août est arrivé : **trois copies de 5ème,
+imprimées, composées par des élèves et scannées** (200 DPI couleur, 10/9/10
+pages). Elles devaient trancher le tramage et débloquer la mesure juste. Elles
+ont fait les deux, et un peu plus.
+
+**Ce que le papier a dit.**
+
+1. **Le tramage n'existe pas.** À l'intérieur d'un cadre, le scan est
+   uniformément blanc — moyenne 251,6, écart-type 1,1, **0,00 % de pixels sous
+   200** — là où le PDF porte des gris à 191, 208, 212, 229, 246. L'imprimante
+   n'a pas tramé les bandes de guidage : elle ne les a pas imprimées. Le risque
+   ouvert de D-CEO-36 se referme sans qu'une ligne ait été écrite contre lui.
+2. **Mais le même délavage a emporté le bord des cadres, qui était l'ancre du
+   recalage.** Dans le PDF, un bord est une rangée dont 100 % des pixels sont à
+   121–156 ; dans le scan, plus rien sous 235, et les bords ne réapparaissent
+   qu'entre 243 et 248 contre un papier à 251,6. `SEUIL_ENCRE_DEFAUT = 140` ne
+   les voyait **jamais** : le recalage s'accrochait au texte imprimé.
+3. **Conséquence mesurée** contre une vérité terrain obtenue par corrélation
+   avec le sujet rendu : échelle fausse jusqu'à −10 %, soit **85 pt (3 cm) de
+   dérive** en bas de page. Sur les 10 pages d'une copie, 2 refusées à juste
+   titre, 4 correctes… et **4 acceptées (score 50 %) avec 20 à 35 pt de
+   décalage**. Le score ne discriminait pas : la plupart des pages n'ont que 2
+   cadres, donc 4 bords, donc un score qui ne peut valoir que 0/25/50/75/100 %.
+4. **Vérifié à l'œil**, parce qu'un chiffre de dérive ne dit pas ce qu'on perd :
+   sur une page, le cadre découpé attrapait l'énoncé imprimé et perdait le bas
+   de la réponse ; sur une autre, les trois cadres tombaient **une question plus
+   bas**, chacun contenant de l'écriture — donc sans que rien n'ait l'air
+   anormal. C'est exactement le mode de panne que ce module devait empêcher.
+
+**Les trois copies ont été refusées par la chaîne. Aucune n'était découpable.**
+Pour l'une des trois, le refus était d'ailleurs légitime et sans rapport : 9
+pages scannées pour un sujet qui en compte 10.
+
+**Une correction était possible, elle a été écartée.** Chercher les repères
+juste sous le niveau du papier (papier − 6) ramène 8 pages sur 10 à moins de
+7 pt de dérive, et fait passer les pages fautives de 5/5/8 à 1/1/3 sur les trois
+copies. Mais elle échoue encore sur une page par copie **en annonçant 100 % de
+confiance**, ce qui est le pire des cas. Et surtout elle ne touche pas au fond :
+ce module faisait dépendre le diagnostic de la **géométrie d'un objet physique**
+qu'on ne maîtrise pas — impression sans réduction, scan droit, bon nombre de
+pages dans le bon ordre, cadres survivant au toner. En production de masse,
+chacune de ces conditions est un refus de copie.
+
+**Ce qui le remplace était déjà en service, et le pipeline le disait.** On lit
+dans `pipeline.py` : « le module 4 n'existe pas encore : **personne ne consomme
+les zones** ». Pendant ce temps la correction lit la page entière et rend, pour
+chaque question du barème, `observed_answer` et le score — et le code d'item du
+barème **est** le code de question du référentiel. La correspondance que 893
+lignes de géométrie reconstituaient existait déjà, produite par une étape en
+service, sans un appel de modèle de plus.
+
+**Fait :**
+- Supprimé : `src/pipeline/zones.py` (893 lignes), `tests/test_zones.py` (578),
+  `_lire_zones`, `PipelineResult.zones`. Conservé : `HakiliTest.formats`, qui
+  décide de ce que le diagnostic peut faire d'une réponse.
+- Ajouté : `referentiel.diagnostic.reponses_depuis_correction()` et
+  `manage.py diagnostiquer --correction <id>`, qui repart d'une copie corrigée.
+- Trois règles posées au passage : les questions réussies ne sont pas soumises ;
+  **la décision de l'enseignant prime sur celle de l'IA** pour dire ce qui est
+  réussi ; et « illisible » cesse d'être confondu avec « rien écrit » — le
+  moteur annonçait « réponse illisible » parmi ses cas écartés sans avoir de
+  quoi le distinguer.
+- Consigné en **D-CEO-38**. **D-CEO-35 et D-CEO-36 sont marquées caduques**,
+  conservées pour mémoire.
+
+**268 tests Django + 239 pytest passent.** Le total descend de 535 à 507 : les
+43 tests du module 2 sont partis avec lui, 15 tests neufs couvrent le
+branchement (correspondance des codes, réussite non diagnostiquée, priorité de
+l'enseignant dans les deux sens, absence vs illisible, QCM sans appel, et les
+refus de la commande sur un mode libre ou une correction non notée).
+
+**⚠ Ce que ce travail ne fait pas.** Il ne donne toujours pas le chiffre du
+module 4. Le branchement rend la mesure juste **possible** ; elle demande
+maintenant de **corriger les trois copies 5e** dans l'application, puis de
+comparer. C'est la prochaine étape, et elle ne dépend plus d'aucune calibration.
+
+**Le contexte de la décision, à ne pas perdre.** Elle a été prise après un
+constat de l'utilisateur : le projet s'était trop complexifié, et en production
+de masse on ne peut pas exiger que toutes les copies respectent un format
+strict. Le module 2 était le premier poste de cette dérive. D'autres ont été
+identifiés et attendent leur tour : Streamlit (3 106 lignes), les trois clients
+IA non retenus (1 671), la double persistance SQLAlchemy/Alembic à côté de
+l'ORM Django (450), la mesure plancher (276), et le module 5 tel qu'il est
+spécifié. Ainsi que le principe général : **dégrader plutôt que refuser** — une
+page manquante ou un scan bancal doivent marquer la copie « à revoir », jamais
+la jeter.
+
 
 ### 2026-08-05 — Quatre jours de travail remis dans le suivi, et la règle qui a sauté
 

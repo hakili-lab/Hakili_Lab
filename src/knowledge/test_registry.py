@@ -156,8 +156,9 @@ class HakiliTest:
     official_answers: str = ""  # Corrigé officiel formaté pour injection dans le prompt
     archive: bool = False       # True = plus proposé pour une nouvelle correction
     sujet_pdf: Path | None = None  # sujet imprimable, None si absent
-    # {code question: format} — vide pour les tests archivés, qui n'ont pas de
-    # cadres ancrés. Sert au garde-fou de la lecture par zones (module 2).
+    # {code question: format} — vide pour les tests archivés. Le format décide
+    # de ce que le diagnostic contraint peut faire d'une réponse : un QCM se
+    # tranche sans modèle, une construction géométrique ne se diagnostique pas.
     formats: dict[str, str] = field(default_factory=dict)
 
 
@@ -235,10 +236,8 @@ def _build_rubric_from_yaml(bareme_yaml_path: Path) -> tuple["Rubric", int, dict
                     items.append(RubricItem(id=qid, label=label, max_score=pts))
 
     # Format de chaque question (qcm / court / redige / construction). Seuls les
-    # barèmes Urie v2 le portent — il vient du classeur. `src/pipeline/zones.py`
-    # le confronte à la géométrie des cadres du sujet : si les deux divergent,
-    # c'est que le sujet scanné n'est pas de la version chargée en base, et on
-    # l'apprend avant d'attribuer des réponses aux mauvaises questions.
+    # barèmes Urie v2 le portent — il vient du classeur, et c'est la même valeur
+    # que porte `referentiel.Question.format` en base.
     meta["formats"] = {
         q["code"]: q["format"]
         for q in (raw.get("questions") or [])

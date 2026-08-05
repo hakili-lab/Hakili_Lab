@@ -225,3 +225,95 @@ class TestMesure(TestCase):
     def test_repartition_par_type(self) -> None:
         couples = [("L.IDR", "CPT"), ("M.PER", "CPT"), ("N.ADD", "PRC")]
         self.assertEqual(repartition_par_type(couples), {"CPT": 2, "PRC": 1})
+
+
+class CommandeDepuisCorrection(TestCase):
+    """`manage.py diagnostiquer --correction <id>` — le chemin de production.
+
+    Ce que ces tests protègent : la commande refuse **avant** de diagnostiquer
+    quand la reprise serait fausse plutôt qu'incomplète. Un diagnostic tiré d'une
+    correction en mode libre rattacherait des réponses à des questions qui ne
+    sont pas les leurs, et rien dans le compte rendu ne le signalerait.
+    """
+
+    def _correction(self, **kwargs):
+        from correction_web.models import Correction
+
+        defauts = dict(
+            copy_id="copie-01", identifiant_hakili="HK-0042",
+            bareme_id="urie_5eme", resultat=None,
+        )
+        return Correction.objects.create(**{**defauts, **kwargs})
+
+    def _lancer(self, correction) -> str:
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        sortie = StringIO()
+        call_command(
+            "diagnostiquer", correction=correction.pk, sans_modele=True, stdout=sortie
+        )
+        return sortie.getvalue()
+
+    def test_correction_inconnue(self) -> None:
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+
+        with self.assertRaisesMessage(CommandError, "identifiant 9999"):
+            call_command("diagnostiquer", correction=9999, sans_modele=True)
+
+    def test_mode_libre_refuse(self) -> None:
+        """Sans barème Urie, il n'y a aucun code de question à rattacher."""
+        from django.core.management.base import CommandError
+
+        correction = self._correction(bareme_id="")
+        with self.assertRaisesMessage(CommandError, "mode libre"):
+            self._lancer(correction)
+
+    def test_test_archive_refuse(self) -> None:
+        from django.core.management.base import CommandError
+
+        correction = self._correction(bareme_id="hakili_3e_v1")
+        with self.assertRaisesMessage(CommandError, "référentiel Urie"):
+            self._lancer(correction)
+
+    def test_correction_sans_resultat_refusee(self) -> None:
+        from django.core.management.base import CommandError
+
+        correction = self._correction()
+        with self.assertRaisesMessage(CommandError, "pas de résultat"):
+            self._lancer(correction)
+
+    def test_correction_arretee_avant_la_notation(self) -> None:
+        """Transcrite mais pas notée : il n'y a pas de réponses à reprendre."""
+        from django.core.management.base import CommandError
+
+        correction = self._correction(
+            resultat={"copy_id": "copie-01", "ingestion": {}, "grade": None}
+        )
+        with self.assertRaisesMessage(CommandError, "jusqu'à la notation"):
+            self._lancer(correction)
+
+    def test_relecture_enseignant_inachevee_signalee(self) -> None:
+        """Elle n'empêche pas de diagnostiquer, mais elle doit être dite : une
+        partie des réponses est prise telle que l'IA les a notées."""
+        correction = self._correction(resultat={
+            "copy_id": "copie-01",
+            "ingestion": {},
+            "rubric": {
+                "subject": "mathematics", "total_points": 1.0,
+                "items": [{"id": "D1", "label": "…", "max_score": 1.0}],
+            },
+            "grade": {
+                "copy_id": "copie-01", "total_score": 0.0, "total_possible": 1.0,
+                "validation_complete": False,
+                "questions": [{
+                    "rubric_item_id": "D1", "score": 0.0, "confidence": 0.9,
+                    "comment": "", "observed_answer": "4800", "requires_review": False,
+                }],
+            },
+        })
+        compte_rendu = self._lancer(correction)
+        self.assertIn("1 question(s), dont 1 non réussie(s)", compte_rendu)
+        self.assertIn("validation enseignant", compte_rendu)

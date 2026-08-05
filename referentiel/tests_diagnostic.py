@@ -19,6 +19,8 @@ from decimal import Decimal
 from django.test import TestCase
 
 from referentiel.diagnostic import (
+    MARQUEUR_ABSENCE,
+    MARQUEUR_ILLISIBLE,
     ProductionEleve,
     ReponseEleve,
     catalogue_competences,
@@ -27,6 +29,7 @@ from referentiel.diagnostic import (
     diagnostiquer_sans_ancrage,
     lettre_cochee,
     preparer,
+    reponses_depuis_correction,
     valider,
 )
 from referentiel.models import (
@@ -39,9 +42,14 @@ from referentiel.models import (
 )
 from src.models.domain import (
     ClaudeResponse,
+    CopyGrade,
     ProblemeDetecte,
+    QuestionGrade,
+    Rubric,
+    RubricItem,
     SortieDiagnosticContraint,
     SourceProbleme,
+    TeacherDecision,
 )
 
 
@@ -522,3 +530,132 @@ class TestSansAncrage(BaseReferentiel):
         production = client.appels[0]["productions"][0]
         self.assertTrue(production["zone_vierge"])
         self.assertEqual(production["production_eleve"], "(aucune réponse)")
+
+
+class ReprisesDepuisCorrection(BaseReferentiel):
+    """Le pont entre la correction déjà faite et le diagnostic contraint.
+
+    C'est le chemin qui a remplacé le module 2 : plutôt que de redécouper la
+    copie en une image par question, on reprend ce que la correction a relevé.
+    Ces tests protègent les deux règles qui rendent la reprise juste — ne pas
+    diagnostiquer une réussite, et suivre l'enseignant plutôt que l'IA.
+    """
+
+    def _bareme(self) -> Rubric:
+        return Rubric(
+            subject="mathematics",
+            total_points=3.0,
+            items=[
+                RubricItem(id="L5", label="Développer (2x-3)²", max_score=1.0),
+                RubricItem(id="L7", label="Factoriser x²-25", max_score=1.0),
+                RubricItem(id="G13", label="Thalès", max_score=1.0),
+            ],
+        )
+
+    def _note(self, **kwargs) -> QuestionGrade:
+        defauts = dict(
+            rubric_item_id="L7", score=0.0, confidence=0.9, comment="",
+            observed_answer="(x-5)^2", requires_review=False,
+        )
+        return QuestionGrade(**{**defauts, **kwargs})
+
+    def _copie(self, notes: list[QuestionGrade]) -> CopyGrade:
+        return CopyGrade(
+            copy_id="copie-01", total_score=0.0, total_possible=3.0, questions=notes
+        )
+
+    def test_le_code_du_bareme_est_le_code_de_la_question(self) -> None:
+        """La correspondance est directe — c'est tout l'argument du retrait du module 2."""
+        reponses = reponses_depuis_correction(
+            self._copie([self._note(rubric_item_id="L7", observed_answer="(x-5)^2")]),
+            self._bareme(),
+        )
+        self.assertEqual(reponses[0].code_question, "L7")
+        self.assertEqual(reponses[0].contenu, "(x-5)^2")
+
+    def test_une_question_reussie_nest_pas_diagnostiquee(self) -> None:
+        reponses = reponses_depuis_correction(
+            self._copie([self._note(score=1.0, observed_answer="(x-5)(x+5)")]),
+            self._bareme(),
+        )
+        self.assertTrue(reponses[0].correcte)
+        self.assertEqual(preparer("3eme", reponses).charge, [])
+
+    def test_la_decision_de_lenseignant_prime_sur_liA(self) -> None:
+        """L'IA a mis 0, l'enseignant a corrigé à 1 : il n'y a plus de lacune."""
+        reponses = reponses_depuis_correction(
+            self._copie([
+                self._note(
+                    score=0.0,
+                    teacher_decision=TeacherDecision.refused,
+                    teacher_score=1.0,
+                )
+            ]),
+            self._bareme(),
+        )
+        self.assertTrue(reponses[0].correcte)
+
+    def test_lenseignant_peut_aussi_infirmer_une_reussite(self) -> None:
+        reponses = reponses_depuis_correction(
+            self._copie([
+                self._note(
+                    score=1.0,
+                    teacher_decision=TeacherDecision.refused,
+                    teacher_score=0.0,
+                )
+            ]),
+            self._bareme(),
+        )
+        self.assertFalse(reponses[0].correcte)
+
+    def test_absence_de_reponse_reconnue(self) -> None:
+        """La correction écrit « — » quand rien n'est écrit (grading_prompt.md)."""
+        reponses = reponses_depuis_correction(
+            self._copie([self._note(observed_answer=MARQUEUR_ABSENCE)]),
+            self._bareme(),
+        )
+        self.assertTrue(reponses[0].vide)
+        self.assertFalse(reponses[0].illisible)
+
+    def test_illisible_nest_pas_une_absence(self) -> None:
+        """Une lecture ratée est un trou, pas un signal — les deux ne se confondent pas."""
+        reponses = reponses_depuis_correction(
+            self._copie([self._note(observed_answer=MARQUEUR_ILLISIBLE)]),
+            self._bareme(),
+        )
+        self.assertTrue(reponses[0].illisible)
+        self.assertFalse(reponses[0].vide)
+
+    def test_une_reponse_illisible_est_ecartee_et_nommee(self) -> None:
+        """Elle ne part pas au modèle, et son absence de problème ne passe pas
+        pour une réussite."""
+        lot = preparer(
+            "3eme",
+            [ReponseEleve(code_question="L7", contenu="[ILLISIBLE]", illisible=True)],
+        )
+        self.assertEqual(lot.charge, [])
+        self.assertIn("L7", lot.ecartees)
+        self.assertIn("relire", lot.ecartees["L7"])
+
+    def test_question_hors_bareme_est_diagnostiquee_par_prudence(self) -> None:
+        """Sans maximum connu, on ne peut pas affirmer une réussite."""
+        reponses = reponses_depuis_correction(
+            self._copie([self._note(rubric_item_id="INCONNUE", score=1.0)]),
+            self._bareme(),
+        )
+        self.assertIsNone(reponses[0].correcte)
+
+    def test_un_qcm_repris_ne_coute_aucun_appel(self) -> None:
+        """Le court-circuit QCM vaut aussi par ce chemin — c'est ce qui rend le
+        branchement gratuit sur un quart des questions."""
+        reponses = reponses_depuis_correction(
+            self._copie([self._note(rubric_item_id="L5", observed_answer="a")]),
+            self._bareme(),
+        )
+        client = ClientFactice([])
+        resultat = diagnostiquer(
+            niveau_test="3eme", reponses=reponses, client=client, copy_id="copie-01"
+        )
+        self.assertEqual(client.appels, [])
+        self.assertEqual(len(resultat.problemes), 1)
+        self.assertEqual(resultat.problemes[0].code_competence, "L.IDR")
