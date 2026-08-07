@@ -586,12 +586,19 @@ def supprimer(request, jeton: str):
     est un lien souple vers `Copie` (D-CEO-40, pas de clé étrangère) : une copie
     déjà exploitée par le suivi structuré devient une référence orpheline plutôt
     que de bloquer la suppression ou d'entraîner une cascade sur le suivi.
+
+    Appelée à la fois depuis la liste des corrections et depuis le profil élève
+    (`suivi_web`) : `suivant` porte l'endroit où revenir, validé pour rester sur
+    le site (pas de redirection ouverte) plutôt que de toujours renvoyer vers la
+    liste, ce qui éjecterait un enseignant hors du profil qu'il consultait.
     """
     correction = _correction_autorisee(request, jeton)
     if request.method != "POST":
         return redirect("correction_web:suivre", jeton=jeton)
 
     import shutil
+
+    from django.utils.http import url_has_allowed_host_and_scheme
 
     from src.core.config import settings
     from suivi.models import Copie
@@ -602,6 +609,12 @@ def supprimer(request, jeton: str):
     shutil.rmtree(Path(settings.runs_dir) / copy_id, ignore_errors=True)
 
     messages.success(request, "Copie supprimée.")
+
+    suivant = request.POST.get("suivant")
+    if suivant and url_has_allowed_host_and_scheme(
+        suivant, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return redirect(suivant)
     return redirect("correction_web:liste")
 
 

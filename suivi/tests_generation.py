@@ -136,3 +136,71 @@ class TestGenererSujetVerification(BaseGeneration):
         self.assertIsNotNone(resultat)
         self.assertEqual(resultat.type_evaluation, "T3")
         self.assertEqual(len(resultat.exercises), 2)
+
+
+class TestGenererSujetConfirmation(BaseGeneration):
+    def test_rien_a_confirmer_rend_none_sans_appeler_le_client(self) -> None:
+        from suivi.generation import generer_sujet_confirmation
+
+        with patch("suivi.generation._client") as client:
+            resultat = generer_sujet_confirmation(self.session)
+
+        client.assert_not_called()
+        self.assertIsNone(resultat)
+
+    def test_client_indisponible_rend_none(self) -> None:
+        from suivi.generation import generer_sujet_confirmation
+
+        Probleme.objects.create(
+            session=self.session, competence=self.idr, type_erreur=self.cpt,
+            etat=EtatProbleme.HYPOTHESE, cout_estime=Decimal("0.5"),
+        )
+
+        with patch("suivi.generation._client", return_value=None):
+            resultat = generer_sujet_confirmation(self.session)
+
+        self.assertIsNone(resultat)
+
+    def test_sujet_valide_est_retourne(self) -> None:
+        from src.models.domain import ConfirmationSubject, Exercise
+        from suivi.generation import generer_sujet_confirmation
+
+        Probleme.objects.create(
+            session=self.session, competence=self.idr, type_erreur=self.cpt,
+            etat=EtatProbleme.HYPOTHESE, cout_estime=Decimal("0.5"),
+        )
+
+        sujet = ConfirmationSubject(
+            copy_id=f"confirmation-{self.session.pk}",
+            exercises=[
+                Exercise(number=1, topic="Identites remarquables × Erreur conceptuelle",
+                         question="Developpe (x+5)^2", hint=None),
+                Exercise(number=2, topic="Identites remarquables × Erreur conceptuelle",
+                         question="Developpe (3a-4b)^2", hint=None),
+            ],
+        )
+        client_factice = type("ClientFactice", (), {
+            "generate_confirmation_subject": lambda self, request: type(
+                "Reponse", (), {"success": True, "data": sujet, "error": None}
+            )(),
+        })()
+
+        with patch("suivi.generation._client", return_value=client_factice):
+            resultat = generer_sujet_confirmation(self.session)
+
+        self.assertIsNotNone(resultat)
+        self.assertEqual(len(resultat.exercises), 2)
+
+    def test_seuls_les_problemes_en_hypothese_sont_cibles(self) -> None:
+        from suivi.generation import generer_sujet_confirmation
+
+        Probleme.objects.create(
+            session=self.session, competence=self.idr, type_erreur=self.cpt,
+            etat=EtatProbleme.CONFIRME, cout_estime=Decimal("0.5"),
+        )
+
+        with patch("suivi.generation._client") as client:
+            resultat = generer_sujet_confirmation(self.session)
+
+        client.assert_not_called()
+        self.assertIsNone(resultat)

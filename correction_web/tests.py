@@ -407,6 +407,29 @@ class TestSuppression(BaseCorrection):
         )
         self.assertTrue(Correction.objects.filter(copy_id=correction.copy_id).exists())
 
+    def test_suivant_renvoie_vers_le_profil_eleve(self) -> None:
+        """Depuis le profil élève, la suppression ramène sur ce profil — pas sur
+        la liste des corrections, qui n'a rien à voir avec ce parcours."""
+        correction = self.correction_en_validation(identifiant="HAK-2026-0001")
+        self.connecter()
+        cible = reverse("suivi_web:eleve_detail", args=[jeton_eleve("HAK-2026-0001")])
+        reponse = self.client.post(
+            reverse("correction_web:supprimer", args=[jeton_eleve(correction.copy_id)]),
+            {"suivant": cible},
+        )
+        self.assertRedirects(reponse, cible, fetch_redirect_response=False)
+
+    def test_suivant_externe_ignore(self) -> None:
+        """Une valeur `suivant` qui ne pointe pas vers ce site est ignorée —
+        sans ça, `supprimer` deviendrait une redirection ouverte."""
+        correction = self.correction_en_validation()
+        self.connecter()
+        reponse = self.client.post(
+            reverse("correction_web:supprimer", args=[jeton_eleve(correction.copy_id)]),
+            {"suivant": "https://exemple-hostile.test/"},
+        )
+        self.assertRedirects(reponse, reverse("correction_web:liste"))
+
 
 class TestDepot(BaseCorrection):
     def test_eleve_hors_perimetre_refuse_avant_tout_appel_ia(self) -> None:

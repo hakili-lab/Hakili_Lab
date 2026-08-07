@@ -161,6 +161,16 @@
     {% else %}
       <p class="aide">Aucun document enregistré pour cette copie.</p>
     {% endif %}
+
+    <div class="entete-etape">
+      <span></span>
+      <form method="post" action="{% url 'correction_web:supprimer' entree.jeton %}"
+            onsubmit="return confirm('Supprimer définitivement cette copie du {{ entree.copie.date_soumission }} ?');">
+        {% csrf_token %}
+        <input type="hidden" name="suivant" value="{{ request.path }}">
+        <button type="submit" class="bouton grave petit">Supprimer cette copie</button>
+      </form>
+    </div>
   </div>
 {% empty %}
   {% if lecture_ok %}

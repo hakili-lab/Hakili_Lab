@@ -129,6 +129,28 @@ class TestProfilEleve(BaseSuivi):
         self.assertNotIn("70000001", contenu)  # contact_parents
         self.assertNotIn("HAK-2026-0001", contenu)        # identifiant_hakili
 
+    def test_le_profil_permet_de_supprimer_une_copie(self) -> None:
+        """Le profil élève est le seul endroit d'où un enseignant reprend une
+        copie précise après coup — il doit pouvoir la supprimer sans passer par
+        la liste des corrections en cours, qui ne la montre plus une fois close."""
+        from correction_web.models import Correction
+
+        copie = _copie("copie-suppr", "HAK-2026-0001")
+        Correction.objects.create(copy_id=copie.copy_id, identifiant_hakili="HAK-2026-0001")
+
+        self.connecter("ADMIN", "Hakili", "9999")
+        reponse = self.client.get(
+            reverse("suivi_web:eleve_detail", args=[jeton_eleve("HAK-2026-0001")])
+        )
+        self.assertContains(
+            reponse,
+            reverse("correction_web:supprimer", args=[jeton_eleve(copie.copy_id)]),
+        )
+        self.assertContains(
+            reponse,
+            reverse("suivi_web:eleve_detail", args=[jeton_eleve("HAK-2026-0001")]),
+        )
+
 
 class TestEcranParcours(BaseSuivi):
     """Le plan de remédiation et le bouton d'inscription."""
@@ -776,3 +798,28 @@ class TestGenererSujet(BaseSuivi):
         reponse = self.client.get(self._url("T3"))
         self.assertEqual(reponse.status_code, 302)
         self.assertIn("/connexion/", reponse["Location"])
+
+    def test_t1_genere_un_pdf_via_generer_sujet_confirmation(self) -> None:
+        """T1 passe par `generer_sujet_confirmation`, pas
+        `generer_sujet_verification` (celle-ci lève `ValueError` pour T1)."""
+        from src.models.domain import ConfirmationSubject, Exercise
+
+        sujet = ConfirmationSubject(
+            copy_id=f"confirmation-{self.session.pk}",
+            exercises=[
+                Exercise(number=1, topic="Developpement et reduction × Erreur conceptuelle",
+                         question="Developpe (x+5)^2", hint=None),
+            ],
+        )
+        self.connecter("DIANE", "Abasse", "1234")
+        with patch("suivi.generation.generer_sujet_confirmation", return_value=sujet):
+            reponse = self.client.get(self._url("T1"))
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(reponse["Content-Type"], "application/pdf")
+        self.assertTrue(reponse.content.startswith(b"%PDF"))
+
+    def test_t1_rien_a_confirmer_redirige_avec_message(self) -> None:
+        self.connecter("DIANE", "Abasse", "1234")
+        with patch("suivi.generation.generer_sujet_confirmation", return_value=None):
+            reponse = self.client.get(self._url("T1"), follow=True)
+        self.assertContains(reponse, "Rien à générer")

@@ -431,20 +431,23 @@ def fiche_remediation(request, jeton: str):
 
 @connexion_requise
 def generer_sujet(request, jeton: str, type_evaluation: str):
-    """Génère à la volée le sujet T3 (vérification après remédiation) ou
-    T4/T5 (contrôle de rétention), ciblé sur les problèmes réellement
-    concernés — voir `suivi/generation.py`.
+    """Génère à la volée le sujet T1 (confirmation des hypothèses), T3
+    (vérification après remédiation) ou T4/T5 (contrôle de rétention), ciblé
+    sur les problèmes réellement concernés — voir `suivi/generation.py`.
 
     Même choix que `fiche_remediation` : jamais stocké comme `Document`, régénéré
     à chaque demande — les problèmes ciblés peuvent avoir changé d'état entre
-    deux visites, un PDF figé irait vite périmé.
+    deux visites, un PDF figé irait vite périmé. Pour T1, un premier sujet
+    peut déjà exister comme `Document` (généré en sous-produit du T0, voir
+    `correction_web/taches.py::_generer_sujet_confirmation`) : cette vue sert
+    à en produire un autre, sans y toucher.
     """
     import uuid
 
     from src.core.config import settings
     from src.pipeline.pdf_remediation_html import generate_remediation_pdf
-    from suivi.generation import generer_sujet_verification
-    from suivi.models import Session
+    from suivi.generation import generer_sujet_confirmation, generer_sujet_verification
+    from suivi.models import Session, TypeEvaluation
 
     identifiant = identifiant_depuis_jeton(jeton)
     if identifiant is None:
@@ -454,7 +457,10 @@ def generer_sujet(request, jeton: str, type_evaluation: str):
     eleve = _eleve_autorise(request, session.identifiant_hakili)
 
     try:
-        sujet = generer_sujet_verification(session, type_evaluation)
+        if type_evaluation == TypeEvaluation.T1:
+            sujet = generer_sujet_confirmation(session)
+        else:
+            sujet = generer_sujet_verification(session, type_evaluation)
     except ValueError:
         raise Http404("Type d'évaluation invalide")
 
