@@ -14,7 +14,7 @@
     <div class="defilement">
       <table>
         <thead>
-          <tr><th>Élève</th><th>Lancée le</th><th>État</th><th class="nombre">Avancement</th><th class="action"></th></tr>
+          <tr><th>Élève</th><th>Lancée le</th><th>État</th><th class="nombre">Avancement</th><th class="action"></th><th class="action"></th></tr>
         </thead>
         <tbody>
           {% for ligne in corrections %}
@@ -34,6 +34,13 @@
               </td>
               <td class="nombre">{{ ligne.correction.progression }} %</td>
               <td class="action"><a href="{% url 'correction_web:suivre' ligne.jeton %}">Ouvrir</a></td>
+              <td class="action">
+                <form method="post" action="{% url 'correction_web:supprimer' ligne.jeton %}"
+                      onsubmit="return confirm('Supprimer définitivement la copie de {{ ligne.correction.eleve_nom }} {{ ligne.correction.eleve_prenom }} ?');">
+                  {% csrf_token %}
+                  <button type="submit" class="grave petit">Supprimer</button>
+                </form>
+              </td>
             </tr>
           {% endfor %}
         </tbody>

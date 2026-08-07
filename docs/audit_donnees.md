@@ -125,7 +125,7 @@ Les étapes sont **ordonnées par dépendance**, pas par difficulté. Chaque ét
 1. Créer `.env` depuis `.env.example` avec `ANTHROPIC_API_KEY`, `DATABASE_URL` et les trois identifiants Sheets.
 2. `python manage.py verifier_installation` — dit ce qui manque, avec la conséquence de chaque manque.
 3. Imprimer un sujet depuis `/sujets/`, le faire remplir à la main, le scanner à 150 DPI.
-4. `python manage.py verifier_installation --copie copie.pdf --test urie_3eme --eleve HAK-...`
+4. `python manage.py verifier_installation --copie copie.pdf --test socle_3eme --eleve HAK-...`
 
 **Critère de réussite :** une note finale et un rapport PDF sortent. Tant que ce n'est pas le cas, tout le reste est théorique.
 
@@ -136,7 +136,7 @@ Ne pas viser les 209 corrigés. **Un seul test = 30 corrigés** (40 questions mo
 
 1. Ouvrir `Lot_a_completer_2026-07-30.xlsx`, feuille `01_Corriges`, filtrer sur un niveau.
 2. Remplir « Réponse attendue » — la démarche est facultative pour la partie A.
-3. `python scripts/integrer_corriges.py --lot ...` puis `python scripts/generer_baremes_urie.py`
+3. `python scripts/integrer_corriges.py --lot ...` puis `python scripts/generer_baremes_socle.py`
 
 **Critère :** ce niveau passe de 25 % à 100 % de couverture. Les modules 3 et 4 deviennent possibles pour lui.
 

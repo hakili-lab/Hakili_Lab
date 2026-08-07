@@ -241,7 +241,7 @@ class CommandeDepuisCorrection(TestCase):
 
         defauts = dict(
             copy_id="copie-01", identifiant_hakili="HK-0042",
-            bareme_id="urie_5eme", resultat=None,
+            bareme_id="socle_5eme", resultat=None,
         )
         return Correction.objects.create(**{**defauts, **kwargs})
 
@@ -264,7 +264,7 @@ class CommandeDepuisCorrection(TestCase):
             call_command("diagnostiquer", correction=9999, sans_modele=True)
 
     def test_mode_libre_refuse(self) -> None:
-        """Sans barème Urie, il n'y a aucun code de question à rattacher."""
+        """Sans barème v2, il n'y a aucun code de question à rattacher."""
         from django.core.management.base import CommandError
 
         correction = self._correction(bareme_id="")
@@ -275,7 +275,7 @@ class CommandeDepuisCorrection(TestCase):
         from django.core.management.base import CommandError
 
         correction = self._correction(bareme_id="hakili_3e_v1")
-        with self.assertRaisesMessage(CommandError, "référentiel Urie"):
+        with self.assertRaisesMessage(CommandError, "référentiel v2"):
             self._lancer(correction)
 
     def test_correction_sans_resultat_refusee(self) -> None:

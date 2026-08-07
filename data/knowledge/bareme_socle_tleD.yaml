@@ -1,11 +1,11 @@
-# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
-# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# Généré par scripts/generer_baremes_socle.py — ne pas éditer à la main.
+# Source : Referentiel_Socle_v0.xlsx. Relancer le script après toute
 # mise à jour du classeur. Exception : les champs reponse_attendue et
 # solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
 # les sauvegarder avant de régénérer.
 
 meta:
-  test_id: urie_tleD
+  test_id: socle_tleD
   titre: Test diagnostique d'entrée en Terminale D
   niveau_test: tleD
   classe: Tle
@@ -13,9 +13,9 @@ meta:
   total_possible: 20
   somme_baremes_reelle: 19.99999
   bareme_classeur_total: 60.0
-  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
-  genere_par: scripts/generer_baremes_urie.py
-  note_corriges: 11 QCM avec bonne réponse ; 29 questions sans corrigé (absent du classeur — arbitrage
+  source: Referentiel_Socle_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_socle.py
+  note_corriges: 11 QCM avec bonne réponse ; 0 questions sans corrigé (absent du classeur — arbitrage
     B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
 questions:
 - code: D1
@@ -57,8 +57,8 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Delegations de 2 filles et 2 garcons parmi 7 et 5
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 210 delegations
+  solution: C(7,2) x C(5,2) = 21 x 10 = 210.
 - code: F1
   partie: A
   format: court
@@ -68,7 +68,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Ensemble de definition de (2x + 1)/(x^2 - 4)
-  reponse_attendue: ''
+  reponse_attendue: R prive de -2 et 2
   solution: ''
 - code: F2
   partie: A
@@ -79,7 +79,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Deriver le polynome 3x^4 - 2x^2 + 5x - 7
-  reponse_attendue: ''
+  reponse_attendue: 12x^3 - 4x + 5
   solution: ''
 - code: F3
   partie: A
@@ -122,7 +122,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Calculer g(-x) et donner la parite de g
-  reponse_attendue: ''
+  reponse_attendue: g(-x) = -g(x) ; g est impaire
   solution: ''
 - code: F5
   partie: A
@@ -194,7 +194,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Signe de h sur ]-4 ; -2] connaissant quatre points
-  reponse_attendue: ''
+  reponse_attendue: h(x) > 0 sur ]-4 ; -2]
   solution: ''
 - code: F8
   partie: A
@@ -205,7 +205,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Equation de l'asymptote oblique de 2x - 1 + 4/(x+3)
-  reponse_attendue: ''
+  reponse_attendue: y = 2x - 1
   solution: ''
 - code: F9
   partie: A
@@ -246,7 +246,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Equation de la tangente a x^2 - 3x en 2
-  reponse_attendue: ''
+  reponse_attendue: y = x - 4
   solution: ''
 - code: F11
   partie: A
@@ -257,7 +257,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Intervalles de croissance connaissant g'(x) = 3x^2 - 12
-  reponse_attendue: ''
+  reponse_attendue: ']-infini;-2] et [2;+infini['
   solution: ''
 - code: F12
   partie: A
@@ -268,7 +268,7 @@ questions:
   competence_secondaire: F.TAN
   domaine: Fonctions et applications
   objet: Determiner f'(1) a partir de deux points de la tangente
-  reponse_attendue: ''
+  reponse_attendue: f'(1) = 2
   solution: ''
 - code: F13
   partie: B
@@ -279,8 +279,9 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Limites en 1 et en +infini d'une fraction rationnelle
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: limite en 1 = -1 ; limite en +infini = +infini
+  solution: x^2-3x+2=(x-1)(x-2) donc h(x)=x-2 pour x different de 1 ; lim(x->1) x-2 = -1 ; lim(x->+infini)
+    x-2 = +infini.
 - code: F14
   partie: B
   format: redige
@@ -290,8 +291,8 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Deriver (2x - 1)/(x^2 + 1) et reduire
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: f'(x) = (-2x^2+2x+2)/(x^2+1)^2
+  solution: f'(x)=[2(x^2+1)-(2x-1)(2x)]/(x^2+1)^2 = [2x^2+2-4x^2+2x]/(x^2+1)^2.
 - code: F15
   partie: B
   format: redige
@@ -301,8 +302,9 @@ questions:
   competence_secondaire: F.TAN
   domaine: Fonctions et applications
   objet: Tangentes a une cubique paralleles a la droite y=9x+2
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 'x = 2 : tangente y = 9x - 15 ; x = -2 : tangente y = 9x + 17'
+  solution: 'f''(x)=3x^2-3=9 -> x^2=4 -> x=2 ou x=-2 ; f(2)=8-6+1=3 ; f(-2)=-8+6+1=-1 ; tangente en x0
+    : y=9(x-x0)+f(x0).'
 - code: F16
   partie: B
   format: redige
@@ -312,8 +314,10 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Dresser le tableau de variation d'une cubique sur [-2;4]
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: f croit sur [-2;0] de -16 a 4, decroit sur [0;2] de 4 a 0, croit sur [2;4] de 0 a
+    20
+  solution: f'(x)=3x^2-6x=3x(x-2), nul en 0 et 2, signe positif-negatif-positif ; f(-2)=-16, f(0)=4, f(2)=0,
+    f(4)=20.
 - code: G1
   partie: A
   format: qcm
@@ -353,7 +357,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Grande diagonale AG d'un cube d'arete 6 cm
-  reponse_attendue: ''
+  reponse_attendue: 6 racine(3) cm
   solution: ''
 - code: G3
   partie: A
@@ -364,7 +368,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Produit scalaire AB.AC avec A(1;2), B(5;0), C(3;6)
-  reponse_attendue: ''
+  reponse_attendue: '0'
   solution: ''
 - code: G4
   partie: B
@@ -375,8 +379,8 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Calculer AC puis AG dans un pave droit
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: AC = 10 cm ; AG = 5 racine(5) cm
+  solution: AC=racine(8^2+6^2)=racine(100)=10 ; AG=racine(AC^2+AE^2)=racine(100+25)=racine(125)=5racine(5).
 - code: L1
   partie: A
   format: court
@@ -386,7 +390,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Factoriser un trinome connaissant une racine
-  reponse_attendue: ''
+  reponse_attendue: (x - 3)(2x + 1)
   solution: ''
 - code: L2
   partie: A
@@ -429,7 +433,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Simplifier (x^2 - 9)/(x^2 - 2x - 3)
-  reponse_attendue: ''
+  reponse_attendue: (x + 3)/(x + 1)
   solution: ''
 - code: L4
   partie: A
@@ -440,7 +444,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Determiner a sachant que -1 est racine de Q
-  reponse_attendue: ''
+  reponse_attendue: a = -2
   solution: ''
 - code: L5
   partie: A
@@ -482,8 +486,8 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Factoriser un polynome de degre 3 puis resoudre P(x)=0
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: P(x) = (x-1)(x-3)(x+2) ; solutions x=1, x=3, x=-2
+  solution: 1 racine de P -> P(x)=(x-1)(x^2-x-6) par division euclidienne ; x^2-x-6=(x-3)(x+2).
 - code: L7
   partie: B
   format: redige
@@ -493,8 +497,9 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Resoudre (2x - 1)/(x + 3) <= 1 avec tableau de signe
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: S = ]-3 ; 4]
+  solution: '(2x-1)/(x+3)-1 = (2x-1-(x+3))/(x+3) = (x-4)/(x+3) <= 0 ; tableau de signe : numerateur nul
+    en 4, denominateur nul en -3 (exclu).'
 - code: N1
   partie: A
   format: court
@@ -504,7 +509,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Ecrire un quotient de puissances sous forme d'entier
-  reponse_attendue: ''
+  reponse_attendue: '36'
   solution: ''
 - code: N2
   partie: A
@@ -577,7 +582,7 @@ questions:
   competence_secondaire: null
   domaine: Suites et raisonnement
   objet: Ecrire l'egalite a demontrer au rang n + 1
-  reponse_attendue: ''
+  reponse_attendue: 1+2+...+n+(n+1) = (n+1)(n+2)/2
   solution: ''
 - code: S3
   partie: A
@@ -588,7 +593,7 @@ questions:
   competence_secondaire: null
   domaine: Suites et raisonnement
   objet: Calculer v0 d'une suite geometrique, raison 2, v3 = 24
-  reponse_attendue: ''
+  reponse_attendue: v0 = 3
   solution: ''
 - code: S4
   partie: A
@@ -599,7 +604,7 @@ questions:
   competence_secondaire: null
   domaine: Suites et raisonnement
   objet: Completer la majoration de w(n+1) sachant w(n) <= 2
-  reponse_attendue: ''
+  reponse_attendue: w(n+1) <= 2
   solution: ''
 - code: S5
   partie: B
@@ -610,8 +615,8 @@ questions:
   competence_secondaire: null
   domaine: Suites et raisonnement
   objet: Depot du douzieme mois et total sur douze mois
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: douzieme mois = 26 500 F ; total sur douze mois = 219 000 F
+  solution: suite arithmetique u(n)=10000+(n-1)x1500 ; u(12)=10000+11x1500=26500 ; somme=12x(10000+26500)/2=219000.
 - code: T1
   partie: A
   format: court
@@ -621,7 +626,7 @@ questions:
   competence_secondaire: null
   domaine: Trigonometrie
   objet: Resoudre 2cos x - 1 = 0 dans [0 ; 2pi[
-  reponse_attendue: ''
+  reponse_attendue: x = pi/3 ou x = 5pi/3
   solution: ''
 - code: T2
   partie: A
@@ -662,7 +667,7 @@ questions:
   competence_secondaire: null
   domaine: Trigonometrie
   objet: Resoudre sin x >= racine(2)/2 sur [0 ; 2pi[
-  reponse_attendue: ''
+  reponse_attendue: x appartient a [pi/4 ; 3pi/4]
   solution: ''
 - code: T4
   partie: B
@@ -673,5 +678,6 @@ questions:
   competence_secondaire: null
   domaine: Trigonometrie
   objet: Valeur exacte de cos(pi/12) par formule d'addition
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: cos(pi/12) = (racine(6)+racine(2))/4
+  solution: cos(pi/3-pi/4)=cos(pi/3)cos(pi/4)+sin(pi/3)sin(pi/4) = (1/2)(racine(2)/2)+(racine(3)/2)(racine(2)/2)
+    = racine(2)/4+racine(6)/4.

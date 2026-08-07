@@ -83,6 +83,46 @@ def _build_context(
         })
 
     is_enrichment = getattr(remediation_subject, "is_enrichment", False)
+    # Une ConfirmationSubject n'a pas d'attribut `is_enrichment` — seule une
+    # RemediationSubject enrichissement en porte un à True. Le duck-typing sur
+    # le nom de classe distingue le troisième cas sans dépendance circulaire
+    # vers src.models.domain (importé par le pipeline, pas l'inverse ici).
+    is_confirmation = type(remediation_subject).__name__ == "ConfirmationSubject"
+    is_verification = type(remediation_subject).__name__ == "VerificationSubject"
+
+    _TITRES_VERIFICATION = {
+        "T3": (
+            "Sujet de vérification (T3)",
+            "Vérifie si la remédiation a fait disparaître les difficultés confirmées",
+        ),
+        "T4": (
+            "Contrôle de rétention (T4 — 45 jours)",
+            "Vérifie si les acquis résolus tiennent encore 45 jours plus tard",
+        ),
+        "T5": (
+            "Contrôle de rétention (T5 — 3 mois)",
+            "Vérifie si les acquis résolus tiennent encore 3 mois plus tard",
+        ),
+    }
+
+    if is_confirmation:
+        doc_kind = "confirmation"
+        doc_title = "Sujet de confirmation des lacunes (T1)"
+        doc_subtitle = "Vérifie si les difficultés repérées à la première évaluation sont réelles"
+    elif is_verification:
+        doc_kind = "verification"
+        doc_title, doc_subtitle = _TITRES_VERIFICATION.get(
+            getattr(remediation_subject, "type_evaluation", ""),
+            ("Sujet de vérification", "Vérifie si les problèmes ciblés sont résolus"),
+        )
+    elif is_enrichment:
+        doc_kind = "enrichment"
+        doc_title = "Sujet d'enrichissement — Niveau 2nde"
+        doc_subtitle = "Approfondissement pour élève à score parfait"
+    else:
+        doc_kind = "remediation"
+        doc_title = "Sujet de remédiation"
+        doc_subtitle = "Exercices ciblés sur les lacunes identifiées"
 
     return {
         "STUDENT_NAME":   student_name or copy_id,
@@ -90,9 +130,9 @@ def _build_context(
         "DATE":           _today_fr(),
         "series":         series,
         "total":          len(exercises),
-        "is_enrichment":  is_enrichment,
-        "DOC_TITLE":      "Sujet d'enrichissement — Niveau 2nde" if is_enrichment else "Sujet de remédiation",
-        "DOC_SUBTITLE":   "Approfondissement pour élève à score parfait" if is_enrichment else "Exercices ciblés sur les lacunes identifiées",
+        "doc_kind":       doc_kind,
+        "DOC_TITLE":      doc_title,
+        "DOC_SUBTITLE":   doc_subtitle,
     }
 
 
@@ -104,7 +144,10 @@ def generate_remediation_pdf(
     student_name: str,
     remediation_subject: Any,
 ) -> None:
-    """Génère la feuille de remédiation PDF via xhtml2pdf."""
+    """Génère la feuille de remédiation (ou de confirmation T1, de vérification
+    T3/rétention T4-T5, ou d'enrichissement) en PDF via xhtml2pdf — le contenu de
+    `remediation_subject` (`RemediationSubject`, `ConfirmationSubject` ou
+    `VerificationSubject`) détermine laquelle."""
     try:
         from xhtml2pdf import pisa
     except ImportError:

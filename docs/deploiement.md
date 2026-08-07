@@ -22,7 +22,7 @@ manquant est nommé avec sa conséquence.
 Pour un essai de correction réel, sur une vraie copie :
 
 ```bash
-python manage.py verifier_installation --copie copie.pdf --test urie_3eme --eleve HAK-...
+python manage.py verifier_installation --copie copie.pdf --test socle_3eme --eleve HAK-...
 ```
 
 C'est **le seul contrôle qui prouve que la chaîne tient de bout en bout** —
@@ -151,4 +151,4 @@ l'extérieur. Trois conséquences :
   À réexaminer.
 - Les obligations auprès de la **CIL du Burkina Faso** et le **consentement parental**
   restent à traiter — ils conditionnent toute perspective commerciale
-  institutionnelle (`urie_v2_roadmap.md`, point ouvert #4).
+  institutionnelle (`v2_roadmap.md`, point ouvert #4).

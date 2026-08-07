@@ -105,7 +105,7 @@ class BaseCorrection(TestCase):
             identifiant_hakili=identifiant,
             eleve_nom="KABRE",
             eleve_prenom="Charles",
-            bareme_id="urie_3eme",
+            bareme_id="socle_3eme",
             etat=EtatCorrection.VALIDATION,
             progression=60,
             resultat=serialiser(resultat),
@@ -157,6 +157,87 @@ class TestRelectureTranscription(BaseCorrection):
         relu = deserialiser(correction.resultat)
         self.assertEqual(relu.transcription.pages[0].content, "N1) 147 corrigé à la main")
         lancer.assert_called_once()
+
+    def _correction_en_relecture_avec_scan(self, tmp_dir) -> Correction:
+        """Une correction en relecture dont la page 1 a une image réellement sur
+        disque, comme au sortir de l'ingestion (`src/pipeline/ingestion.py`)."""
+        from pathlib import Path
+
+        image = Path(tmp_dir) / "page_01.jpg"
+        image.write_bytes(b"\xff\xd8\xff\xe0donnees-jpeg-factices")
+
+        resultat = _resultat_apres_correction()
+        resultat.ingestion.pages = [image]
+        return Correction.objects.create(
+            copy_id=resultat.copy_id,
+            identifiant_hakili="HAK-2026-0001",
+            eleve_nom="KABRE",
+            etat=EtatCorrection.RELECTURE,
+            resultat=serialiser(resultat),
+        )
+
+    def test_relecture_affiche_la_copie_scannee_a_cote_de_la_transcription(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            correction = self._correction_en_relecture_avec_scan(tmp_dir)
+            self.connecter()
+            jeton = jeton_eleve(correction.copy_id)
+
+            reponse = self.client.get(reverse("correction_web:suivre", args=[jeton]))
+
+            self.assertContains(
+                reponse,
+                reverse("correction_web:page_image", args=[jeton, 1]),
+            )
+
+    def test_page_sans_image_sur_disque_reste_relisible(self) -> None:
+        """`runs/` peut avoir disparu (pas de volume persistant, voir
+        `correction_web/serialisation.py`) : la relecture doit rester utilisable
+        sans image plutôt que de casser l'écran."""
+        resultat = _resultat_apres_correction()  # ingestion.pages pointe vers un fichier inexistant
+        correction = Correction.objects.create(
+            copy_id=resultat.copy_id,
+            identifiant_hakili="HAK-2026-0001",
+            eleve_nom="KABRE",
+            etat=EtatCorrection.RELECTURE,
+            resultat=serialiser(resultat),
+        )
+        self.connecter()
+        jeton = jeton_eleve(correction.copy_id)
+
+        reponse = self.client.get(reverse("correction_web:suivre", args=[jeton]))
+
+        self.assertEqual(reponse.status_code, 200)
+        self.assertNotContains(reponse, 'class="relecture-image"')
+
+    def test_page_image_sert_le_fichier_a_une_personne_autorisee(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            correction = self._correction_en_relecture_avec_scan(tmp_dir)
+            self.connecter()
+
+            reponse = self.client.get(
+                reverse("correction_web:page_image", args=[jeton_eleve(correction.copy_id), 1])
+            )
+
+            self.assertEqual(reponse.status_code, 200)
+            self.assertEqual(reponse["Content-Type"], "image/jpeg")
+            self.assertEqual(reponse.content, b"\xff\xd8\xff\xe0donnees-jpeg-factices")
+
+    def test_page_image_inexistante_donne_404(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            correction = self._correction_en_relecture_avec_scan(tmp_dir)
+            self.connecter()
+
+            reponse = self.client.get(
+                reverse("correction_web:page_image", args=[jeton_eleve(correction.copy_id), 7])
+            )
+
+            self.assertEqual(reponse.status_code, 404)
 
 
 class TestValidationDesNotes(BaseCorrection):
@@ -275,6 +356,58 @@ class TestCloisonnement(BaseCorrection):
         self.assertEqual(reponse.status_code, 404)
 
 
+class TestSuppression(BaseCorrection):
+    def test_supprime_la_correction_et_la_copie_persistee(self) -> None:
+        from suivi.models import Copie, Document
+
+        correction = self.correction_en_validation(identifiant="HAK-2026-0001")
+        Copie.objects.create(
+            copy_id=correction.copy_id,
+            identifiant_hakili="HAK-2026-0001",
+            classe="3e",
+            annee_scolaire="2025-2026",
+        )
+        Document.objects.create(copie_id=correction.copy_id, type="scan", fichier=b"x")
+
+        self.connecter()
+        reponse = self.client.post(
+            reverse("correction_web:supprimer", args=[jeton_eleve(correction.copy_id)]),
+            follow=True,
+        )
+
+        self.assertEqual(reponse.status_code, 200)
+        self.assertFalse(Correction.objects.filter(copy_id=correction.copy_id).exists())
+        self.assertFalse(Copie.objects.filter(copy_id=correction.copy_id).exists())
+        self.assertFalse(Document.objects.filter(copie_id=correction.copy_id).exists())
+
+    def test_supprimable_par_toute_personne_du_perimetre(self) -> None:
+        """Même règle de périmètre que le reste du flux — un enseignant peut
+        supprimer la copie déposée par un collègue absent."""
+        correction = self.correction_en_validation(identifiant="HAK-2026-0001")
+        self.connecter("SANOU", "Feryel", "5678")
+        self.client.post(
+            reverse("correction_web:supprimer", args=[jeton_eleve(correction.copy_id)])
+        )
+        self.assertFalse(Correction.objects.filter(copy_id=correction.copy_id).exists())
+
+    def test_hors_perimetre_refuse(self) -> None:
+        correction = self.correction_en_validation(identifiant="HAK-9999-9999")
+        self.connecter()
+        reponse = self.client.post(
+            reverse("correction_web:supprimer", args=[jeton_eleve(correction.copy_id)])
+        )
+        self.assertEqual(reponse.status_code, 403)
+        self.assertTrue(Correction.objects.filter(copy_id=correction.copy_id).exists())
+
+    def test_get_ne_supprime_rien(self) -> None:
+        correction = self.correction_en_validation()
+        self.connecter()
+        self.client.get(
+            reverse("correction_web:supprimer", args=[jeton_eleve(correction.copy_id)])
+        )
+        self.assertTrue(Correction.objects.filter(copy_id=correction.copy_id).exists())
+
+
 class TestDepot(BaseCorrection):
     def test_eleve_hors_perimetre_refuse_avant_tout_appel_ia(self) -> None:
         """D-CEO-20 : une copie attribuée au hasard produirait un diagnostic faux au
@@ -289,7 +422,7 @@ class TestDepot(BaseCorrection):
         self.connecter()
         with patch("correction_web.taches.lancer_transcription") as lancer:
             self.client.post(
-                reverse("correction_web:nouvelle"), {"eleve": "HAK-2026-0001", "test": "urie_3eme"}
+                reverse("correction_web:nouvelle"), {"eleve": "HAK-2026-0001", "test": "socle_3eme"}
             )
         lancer.assert_not_called()
 
@@ -302,7 +435,7 @@ class TestDepot(BaseCorrection):
                 reverse("correction_web:nouvelle"),
                 {
                     "eleve": "HAK-2026-0001",
-                    "test": "urie_3eme",
+                    "test": "socle_3eme",
                     "copie": SimpleUploadedFile("copie.docx", b"pas une image"),
                 },
             )
@@ -324,7 +457,7 @@ class TestSujetsImprimables(BaseCorrection):
     def test_sujet_servi_en_pdf(self) -> None:
         self.connecter()
         reponse = self.client.get(
-            reverse("correction_web:sujet", args=["urie_3eme"])
+            reverse("correction_web:sujet", args=["socle_3eme"])
         )
         self.assertEqual(reponse.status_code, 200)
         self.assertEqual(reponse["Content-Type"], "application/pdf")
@@ -332,7 +465,7 @@ class TestSujetsImprimables(BaseCorrection):
 
     def test_telechargement_sur_demande(self) -> None:
         self.connecter()
-        url = reverse("correction_web:sujet", args=["urie_3eme"])
+        url = reverse("correction_web:sujet", args=["socle_3eme"])
         self.assertIn("inline", self.client.get(url)["Content-Disposition"])
         self.assertIn(
             "attachment", self.client.get(url + "?telecharger=1")["Content-Disposition"]
@@ -340,7 +473,7 @@ class TestSujetsImprimables(BaseCorrection):
 
     def test_sujet_reserve_aux_personnes_connectees(self) -> None:
         """Un sujet d'évaluation diffusé à l'avance perd sa valeur diagnostique."""
-        reponse = self.client.get(reverse("correction_web:sujet", args=["urie_3eme"]))
+        reponse = self.client.get(reverse("correction_web:sujet", args=["socle_3eme"]))
         self.assertEqual(reponse.status_code, 302)
         self.assertIn("/connexion/", reponse["Location"])
 
@@ -447,7 +580,7 @@ class TestDepotEnLot(BaseCorrection):
         with patch("correction_web.taches.lancer_phase_a_complete") as lancer:
             reponse = self.client.post(
                 reverse("correction_web:lot"),
-                {"test": "urie_3eme", "copies": fichiers},
+                {"test": "socle_3eme", "copies": fichiers},
                 follow=True,
             )
         return reponse, lancer
@@ -529,3 +662,78 @@ class TestCorrectionAbandonnee(BaseCorrection):
         self.assertFalse(signaler_si_abandonnee(correction))
         correction.refresh_from_db()
         self.assertEqual(correction.etat, EtatCorrection.TRANSCRIPTION)
+
+
+class TestNouvellePreselectionEleve(BaseCorrection):
+    """`?eleve=<jeton>` verrouille l'élève depuis le profil (dashboard élève) :
+    plus besoin de le reresélectionner dans le combobox — voir eleve_detail.html
+    et session_detail.html."""
+
+    def test_jeton_valide_preselectionne_l_eleve(self) -> None:
+        self.connecter()
+        reponse = self.client.get(
+            reverse("correction_web:nouvelle"),
+            {"eleve": jeton_eleve("HAK-2026-0001")},
+        )
+        self.assertEqual(
+            reponse.context["eleve_preselectionne"]["identifiant_hakili"],
+            "HAK-2026-0001",
+        )
+        self.assertContains(reponse, "KABRE")
+
+    def test_type_evaluation_preselectionne(self) -> None:
+        self.connecter()
+        reponse = self.client.get(
+            reverse("correction_web:nouvelle"),
+            {"eleve": jeton_eleve("HAK-2026-0001"), "type_evaluation": "T3"},
+        )
+        self.assertEqual(reponse.context["type_evaluation_preselectionnee"], "T3")
+
+    def test_type_evaluation_inconnu_retombe_sur_t0(self) -> None:
+        self.connecter()
+        reponse = self.client.get(
+            reverse("correction_web:nouvelle"), {"type_evaluation": "T9"}
+        )
+        self.assertEqual(reponse.context["type_evaluation_preselectionnee"], "T0")
+
+    def test_jeton_invalide_retombe_sur_le_combobox(self) -> None:
+        """Un jeton forgé ou périmé n'est pas une erreur bloquante — juste un
+        confort en moins, cf. `views.nouvelle`."""
+        self.connecter()
+        reponse = self.client.get(
+            reverse("correction_web:nouvelle"), {"eleve": "nimportequoi"}
+        )
+        self.assertIsNone(reponse.context["eleve_preselectionne"])
+
+    def test_sans_parametre_le_combobox_reste_actif(self) -> None:
+        self.connecter()
+        reponse = self.client.get(reverse("correction_web:nouvelle"))
+        self.assertIsNone(reponse.context["eleve_preselectionne"])
+
+    def test_formulaire_pre_rempli_reste_postable(self) -> None:
+        """Le champ caché porte l'identifiant comme avant : `_creer_correction`
+        n'a besoin d'aucun changement pour un dépôt venu du profil élève."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        self.connecter()
+        with patch("correction_web.taches.lancer_transcription"):
+            self.client.get(
+                reverse("correction_web:nouvelle"),
+                {"eleve": jeton_eleve("HAK-2026-0001")},
+            )
+            self.client.post(
+                reverse("correction_web:nouvelle"),
+                {
+                    "eleve": "HAK-2026-0001",
+                    "type_evaluation": "T1",
+                    "test": "libre",
+                    "sujet": SimpleUploadedFile("sujet.pdf", b"%PDF-1.4 x"),
+                    "copie": SimpleUploadedFile("copie.pdf", b"%PDF-1.4 x"),
+                },
+            )
+        self.assertEqual(
+            Correction.objects.filter(
+                identifiant_hakili="HAK-2026-0001", type_evaluation="T1"
+            ).count(),
+            1,
+        )

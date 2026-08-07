@@ -105,7 +105,6 @@ Le système applique un **barème binaire strict 0/1** et intègre un **RAG** su
 | Transcription | Gemini 2.5 Flash | Claude Sonnet 4.6 | `VISION_PROVIDER` |
 | Correction (proposition) | DeepSeek V3 | Claude Sonnet 4.6 | `GRADING_PROVIDER` |
 | Diagnostic | Claude Opus 4.7 | — | `DIAGNOSTIC_PROVIDER` |
-| Remédiation | Mistral Small | Claude Sonnet 4.6 | `REMEDIATION_PROVIDER` |
 | Extraction barème/énoncé | Claude Sonnet 4.6 | — | toujours Claude |
 
 ---
@@ -273,9 +272,8 @@ DEEPSEEK_API_KEY=sk-...
 GRADING_PROVIDER=deepseek       # "deepseek" | "claude"
 DIAGNOSTIC_PROVIDER=claude      # "claude" | "deepseek" | "mistral"
 
-# ── Mistral — remédiation français académique ─────────────────────────────────
+# ── Mistral — diagnostic français académique ──────────────────────────────────
 MISTRAL_API_KEY=...
-REMEDIATION_PROVIDER=mistral    # "mistral" | "deepseek" | "claude"
 
 # ── Seuils pipeline ───────────────────────────────────────────────────────────
 CONFIDENCE_REVIEW_THRESHOLD=0.75
@@ -363,8 +361,7 @@ hakili_ai_correction/
 ├── prompts/
 │   ├── transcription_prompt.md       # Instructions transcription multimodale
 │   ├── grading_prompt.md             # Instructions correction selon barème
-│   ├── diagnostic_prompt.md          # Instructions diagnostic + slot {{CURRICULUM_CONTEXT}}
-│   └── remediation_subject_prompt.md # Instructions génération exercices
+│   └── diagnostic_prompt.md          # Instructions diagnostic + slot {{CURRICULUM_CONTEXT}}
 │
 ├── data/
 │   ├── Documents/

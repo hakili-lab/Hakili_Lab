@@ -257,6 +257,175 @@ class TestEcranParcours(BaseSuivi):
         self.assertEqual(reponse.status_code, 404)
 
 
+class TestFicheRemediation(BaseSuivi):
+    """Téléchargement de la fiche de remédiation (module 7) — générée à la
+    demande à partir du plan, jamais stockée."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        from decimal import Decimal
+
+        from referentiel.models import Competence, TypeErreur
+        from suivi.models import EtatProbleme, Probleme, Session
+
+        cpt = TypeErreur.objects.create(
+            code="CPT", libelle="Erreur conceptuelle", definition="…",
+            signature="…", coefficient=Decimal("0.35"), remediable=True,
+        )
+        competence = Competence.objects.create(
+            code="L.DEV1", domaine="Calcul litteral et algebre",
+            libelle="Developpement et reduction", niveau_intro="5eme",
+            volume_horaire=Decimal("4.5"),
+        )
+        self.session = Session.objects.create(identifiant_hakili="HAK-2026-0001")
+        Probleme.objects.create(
+            session=self.session, competence=competence, type_erreur=cpt,
+            cout_estime=Decimal("2"),
+        ).changer_etat(EtatProbleme.CONFIRME)
+        self.jeton = jeton_eleve(str(self.session.pk))
+
+    def _url(self) -> str:
+        return reverse("suivi_web:fiche_remediation", args=[self.jeton])
+
+    def test_telechargement_rend_un_pdf(self) -> None:
+        self.connecter("DIANE", "Abasse", "1234")
+        reponse = self.client.get(self._url() + "?telecharger=1")
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(reponse["Content-Type"], "application/pdf")
+        self.assertTrue(reponse.content.startswith(b"%PDF"))
+
+    def test_exige_une_connexion(self) -> None:
+        reponse = self.client.get(self._url())
+        self.assertEqual(reponse.status_code, 302)
+        self.assertIn("/connexion/", reponse["Location"])
+
+    def test_sans_probleme_confirme_redirige_avec_message(self) -> None:
+        from suivi.models import Session
+
+        session_vide = Session.objects.create(identifiant_hakili="HAK-2026-0001")
+        jeton_vide = jeton_eleve(str(session_vide.pk))
+
+        self.connecter("DIANE", "Abasse", "1234")
+        reponse = self.client.get(
+            reverse("suivi_web:fiche_remediation", args=[jeton_vide]), follow=True
+        )
+        self.assertContains(reponse, "Aucun problème confirmé")
+
+
+class TestConfirmationT1(BaseSuivi):
+    """La saisie du résultat T1 — module 5 : confirmer ou écarter une
+    hypothèse, jamais y aller directement depuis le diagnostic."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        from decimal import Decimal
+
+        from referentiel.models import Competence, TypeErreur
+        from suivi.models import EtatProbleme, Probleme, Session
+
+        self.cpt = TypeErreur.objects.create(
+            code="CPT", libelle="Erreur conceptuelle", definition="…",
+            signature="…", coefficient=Decimal("0.35"), remediable=True,
+        )
+        self.att = TypeErreur.objects.create(
+            code="ATT", libelle="Inattention", definition="…",
+            signature="…", coefficient=Decimal("0"), remediable=False,
+        )
+        self.competence = Competence.objects.create(
+            code="L.DEV1", domaine="Calcul litteral et algebre",
+            libelle="Developpement et reduction", niveau_intro="5eme",
+            volume_horaire=Decimal("4.5"),
+        )
+        self.competence2 = Competence.objects.create(
+            code="L.IDR", domaine="Calcul litteral et algebre",
+            libelle="Identites remarquables", niveau_intro="4eme",
+            volume_horaire=Decimal("2"),
+        )
+
+        self.session = Session.objects.create(identifiant_hakili="HAK-2026-0001")
+        self.hyp_confirmable = Probleme.objects.create(
+            session=self.session, competence=self.competence, type_erreur=self.cpt,
+            cout_estime=Decimal("2"), justification="3(x+1) traité comme 3x+1",
+        )
+        self.hyp_att = Probleme.objects.create(
+            session=self.session, competence=self.competence2, type_erreur=self.att,
+            cout_estime=Decimal("0"),
+        )
+        self.jeton = jeton_eleve(str(self.session.pk))
+
+    def _url(self) -> str:
+        return reverse("suivi_web:confirmer_hypotheses", args=[self.jeton])
+
+    def test_confirmation_change_l_etat_et_trace_une_evaluation_t1(self) -> None:
+        from suivi.models import EtatProbleme, Evaluation, TypeEvaluation
+
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url(), {f"decision_{self.hyp_confirmable.pk}": "confirme"})
+
+        self.hyp_confirmable.refresh_from_db()
+        self.assertEqual(self.hyp_confirmable.etat, EtatProbleme.CONFIRME)
+
+        transition = self.hyp_confirmable.transitions.order_by("-pk").first()
+        self.assertIsNotNone(transition.evaluation)
+        self.assertEqual(transition.evaluation.type, TypeEvaluation.T1)
+        self.assertEqual(
+            Evaluation.objects.filter(session=self.session, type=TypeEvaluation.T1).count(), 1
+        )
+
+    def test_ecartement_change_l_etat(self) -> None:
+        from suivi.models import EtatProbleme
+
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url(), {f"decision_{self.hyp_confirmable.pk}": "ecarte"})
+
+        self.hyp_confirmable.refresh_from_db()
+        self.assertEqual(self.hyp_confirmable.etat, EtatProbleme.ECARTE)
+
+    def test_att_ne_peut_pas_etre_confirmee(self) -> None:
+        """Contrainte du modèle (`Probleme.clean`) : la vue doit l'encaisser
+        sans planter, pas la contourner."""
+        from suivi.models import EtatProbleme
+
+        self.connecter("DIANE", "Abasse", "1234")
+        reponse = self.client.post(
+            self._url(), {f"decision_{self.hyp_att.pk}": "confirme"}, follow=True
+        )
+
+        self.hyp_att.refresh_from_db()
+        self.assertEqual(self.hyp_att.etat, EtatProbleme.HYPOTHESE)
+        self.assertContains(reponse, "ne peut être")
+
+    def test_decision_vide_ne_change_rien(self) -> None:
+        from suivi.models import EtatProbleme
+
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url(), {})
+
+        self.hyp_confirmable.refresh_from_db()
+        self.assertEqual(self.hyp_confirmable.etat, EtatProbleme.HYPOTHESE)
+
+    def test_refuse_en_get(self) -> None:
+        from suivi.models import EtatProbleme
+
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.get(self._url())
+
+        self.hyp_confirmable.refresh_from_db()
+        self.assertEqual(self.hyp_confirmable.etat, EtatProbleme.HYPOTHESE)
+
+    def test_exige_une_connexion(self) -> None:
+        reponse = self.client.post(self._url())
+        self.assertEqual(reponse.status_code, 302)
+        self.assertIn("/connexion/", reponse["Location"])
+
+    def test_formulaire_visible_sur_le_parcours(self) -> None:
+        self.connecter("DIANE", "Abasse", "1234")
+        reponse = self.client.get(reverse("suivi_web:session_detail", args=[self.jeton]))
+        self.assertContains(reponse, "Confirmée")
+        self.assertContains(reponse, "Écartée")
+        self.assertContains(reponse, "ne peut être qu'écartée")
+
+
 class TestVuePersonnel(BaseSuivi):
     """L'admin doit voir qui a accès — et surtout qui ne l'a pas."""
 
@@ -358,3 +527,252 @@ class TestAccesDocuments(BaseSuivi):
         self.doc.save(update_fields=["fichier"])
         self.connecter("DIANE", "Abasse", "1234")
         self.assertEqual(self.client.get(self._url())["Content-Type"], "image/jpeg")
+
+
+class TestTrancherEvaluation(BaseSuivi):
+    """Généralisation de l'écran T1 (`confirmer_hypotheses`) à T3/T4/T5 — voir
+    `_trancher` / `_REGLES_VERDICT` dans `suivi_web/views.py`."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        from decimal import Decimal
+
+        from referentiel.models import Competence, TypeErreur
+        from suivi.models import Session
+
+        self.cpt = TypeErreur.objects.create(
+            code="CPT", libelle="Erreur conceptuelle", definition="…",
+            signature="…", coefficient=Decimal("0.35"), remediable=True,
+        )
+        self.competence = Competence.objects.create(
+            code="L.DEV1", domaine="Calcul litteral et algebre",
+            libelle="Developpement et reduction", niveau_intro="5eme",
+            volume_horaire=Decimal("4.5"),
+        )
+        self.session = Session.objects.create(identifiant_hakili="HAK-2026-0001")
+        self.jeton = jeton_eleve(str(self.session.pk))
+
+    def _probleme(self, etat: str):
+        from decimal import Decimal
+
+        from suivi.models import Probleme
+
+        return Probleme.objects.create(
+            session=self.session, competence=self.competence, type_erreur=self.cpt,
+            cout_estime=Decimal("2"), etat=etat,
+        )
+
+    def _url(self, type_evaluation: str) -> str:
+        return reverse("suivi_web:trancher_evaluation", args=[self.jeton, type_evaluation])
+
+    def test_t3_resolu_change_l_etat_et_trace_une_evaluation_t3(self) -> None:
+        from suivi.models import EtatProbleme, Evaluation, TypeEvaluation
+
+        probleme = self._probleme(EtatProbleme.EN_REMEDIATION)
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url("T3"), {f"decision_{probleme.pk}": "resolu"})
+
+        probleme.refresh_from_db()
+        self.assertEqual(probleme.etat, EtatProbleme.RESOLU)
+        self.assertEqual(
+            Evaluation.objects.filter(session=self.session, type=TypeEvaluation.T3).count(), 1
+        )
+
+    def test_t3_non_resolu_change_l_etat(self) -> None:
+        from suivi.models import EtatProbleme
+
+        probleme = self._probleme(EtatProbleme.EN_REMEDIATION)
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url("T3"), {f"decision_{probleme.pk}": "non_resolu"})
+
+        probleme.refresh_from_db()
+        self.assertEqual(probleme.etat, EtatProbleme.NON_RESOLU)
+
+    def test_t4_ne_peut_pas_clore(self) -> None:
+        """`clos` n'est pas une option permise à T4 — réservée au dernier
+        contrôle (T5, `_REGLES_VERDICT`). Une décision hors options est
+        ignorée, pas appliquée en silence."""
+        from suivi.models import EtatProbleme
+
+        probleme = self._probleme(EtatProbleme.RESOLU)
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url("T4"), {f"decision_{probleme.pk}": "clos"})
+
+        probleme.refresh_from_db()
+        self.assertEqual(probleme.etat, EtatProbleme.RESOLU)
+
+    def test_t4_regresse_change_l_etat(self) -> None:
+        from suivi.models import EtatProbleme
+
+        probleme = self._probleme(EtatProbleme.RESOLU)
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url("T4"), {f"decision_{probleme.pk}": "regresse"})
+
+        probleme.refresh_from_db()
+        self.assertEqual(probleme.etat, EtatProbleme.REGRESSE)
+
+    def test_t5_peut_clore(self) -> None:
+        from suivi.models import EtatProbleme
+
+        probleme = self._probleme(EtatProbleme.RESOLU)
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url("T5"), {f"decision_{probleme.pk}": "clos"})
+
+        probleme.refresh_from_db()
+        self.assertEqual(probleme.etat, EtatProbleme.CLOS)
+
+    def test_type_invalide_donne_404(self) -> None:
+        self.connecter("DIANE", "Abasse", "1234")
+        reponse = self.client.post(self._url("T9"), {})
+        self.assertEqual(reponse.status_code, 404)
+
+    def test_exige_une_connexion(self) -> None:
+        reponse = self.client.post(self._url("T3"), {})
+        self.assertEqual(reponse.status_code, 302)
+        self.assertIn("/connexion/", reponse["Location"])
+
+
+class TestRelancer(BaseSuivi):
+    """Relancer un problème `non_resolu` ou `regresse` en remédiation — une
+    décision du tuteur, jamais un effet automatique d'un contrôle."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        from decimal import Decimal
+
+        from referentiel.models import Competence, TypeErreur
+        from suivi.models import Session
+
+        self.cpt = TypeErreur.objects.create(
+            code="CPT", libelle="Erreur conceptuelle", definition="…",
+            signature="…", coefficient=Decimal("0.35"), remediable=True,
+        )
+        self.competence = Competence.objects.create(
+            code="L.DEV1", domaine="Calcul litteral et algebre",
+            libelle="Developpement et reduction", niveau_intro="5eme",
+            volume_horaire=Decimal("4.5"),
+        )
+        self.session = Session.objects.create(identifiant_hakili="HAK-2026-0001")
+        self.jeton = jeton_eleve(str(self.session.pk))
+
+    def _probleme(self, etat: str):
+        from decimal import Decimal
+
+        from suivi.models import Probleme
+
+        return Probleme.objects.create(
+            session=self.session, competence=self.competence, type_erreur=self.cpt,
+            cout_estime=Decimal("2"), etat=etat,
+        )
+
+    def _url(self, probleme_id: int) -> str:
+        return reverse("suivi_web:relancer", args=[self.jeton, probleme_id])
+
+    def test_non_resolu_relance_en_remediation(self) -> None:
+        from suivi.models import EtatProbleme
+
+        probleme = self._probleme(EtatProbleme.NON_RESOLU)
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url(probleme.pk))
+
+        probleme.refresh_from_db()
+        self.assertEqual(probleme.etat, EtatProbleme.EN_REMEDIATION)
+
+    def test_regresse_relance_en_remediation(self) -> None:
+        from suivi.models import EtatProbleme
+
+        probleme = self._probleme(EtatProbleme.REGRESSE)
+        self.connecter("DIANE", "Abasse", "1234")
+        self.client.post(self._url(probleme.pk))
+
+        probleme.refresh_from_db()
+        self.assertEqual(probleme.etat, EtatProbleme.EN_REMEDIATION)
+
+    def test_transition_non_permise_refusee_proprement(self) -> None:
+        """Un problème déjà résolu ne peut pas être « relancé » : ce n'est pas
+        une transition permise (`TRANSITIONS_PERMISES`). La vue doit
+        l'encaisser sans planter."""
+        from suivi.models import EtatProbleme
+
+        probleme = self._probleme(EtatProbleme.RESOLU)
+        self.connecter("DIANE", "Abasse", "1234")
+        reponse = self.client.post(self._url(probleme.pk), follow=True)
+
+        probleme.refresh_from_db()
+        self.assertEqual(probleme.etat, EtatProbleme.RESOLU)
+        self.assertContains(reponse, "non permise")
+
+    def test_exige_une_connexion(self) -> None:
+        from suivi.models import EtatProbleme
+
+        probleme = self._probleme(EtatProbleme.NON_RESOLU)
+        reponse = self.client.post(self._url(probleme.pk))
+        self.assertEqual(reponse.status_code, 302)
+        self.assertIn("/connexion/", reponse["Location"])
+
+
+class TestGenererSujet(BaseSuivi):
+    """Génération à la demande du sujet T3 (vérification) ou T4/T5 (rétention)
+    — jamais stockée, comme la fiche de remédiation (`TestFicheRemediation`)."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        from decimal import Decimal
+
+        from referentiel.models import Competence, TypeErreur
+        from suivi.models import EtatProbleme, Probleme, Session
+
+        cpt = TypeErreur.objects.create(
+            code="CPT", libelle="Erreur conceptuelle", definition="…",
+            signature="…", coefficient=Decimal("0.35"), remediable=True,
+        )
+        competence = Competence.objects.create(
+            code="L.DEV1", domaine="Calcul litteral et algebre",
+            libelle="Developpement et reduction", niveau_intro="5eme",
+            volume_horaire=Decimal("4.5"),
+        )
+        self.session = Session.objects.create(identifiant_hakili="HAK-2026-0001")
+        Probleme.objects.create(
+            session=self.session, competence=competence, type_erreur=cpt,
+            cout_estime=Decimal("2"), etat=EtatProbleme.EN_REMEDIATION,
+        )
+        self.jeton = jeton_eleve(str(self.session.pk))
+
+    def _url(self, type_evaluation: str) -> str:
+        return reverse("suivi_web:generer_sujet", args=[self.jeton, type_evaluation])
+
+    def test_sujet_genere_rend_un_pdf(self) -> None:
+        from src.models.domain import Exercise, VerificationSubject
+
+        sujet = VerificationSubject(
+            copy_id="verif-x", type_evaluation="T3",
+            exercises=[
+                Exercise(
+                    number=1,
+                    topic="Developpement et reduction × Erreur conceptuelle",
+                    question="Developpe 3(x+1)", hint=None,
+                ),
+            ],
+        )
+        self.connecter("DIANE", "Abasse", "1234")
+        with patch("suivi.generation.generer_sujet_verification", return_value=sujet):
+            reponse = self.client.get(self._url("T3"))
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(reponse["Content-Type"], "application/pdf")
+        self.assertTrue(reponse.content.startswith(b"%PDF"))
+
+    def test_rien_a_generer_redirige_avec_message(self) -> None:
+        self.connecter("DIANE", "Abasse", "1234")
+        with patch("suivi.generation.generer_sujet_verification", return_value=None):
+            reponse = self.client.get(self._url("T3"), follow=True)
+        self.assertContains(reponse, "Rien à générer")
+
+    def test_type_invalide_donne_404(self) -> None:
+        self.connecter("DIANE", "Abasse", "1234")
+        reponse = self.client.get(self._url("T9"))
+        self.assertEqual(reponse.status_code, 404)
+
+    def test_exige_une_connexion(self) -> None:
+        reponse = self.client.get(self._url("T3"))
+        self.assertEqual(reponse.status_code, 302)
+        self.assertIn("/connexion/", reponse["Location"])

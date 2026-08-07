@@ -67,7 +67,16 @@ def _dossier_depot(copy_id: str) -> Path:
 
 @connexion_requise
 def nouvelle(request):
-    """Choix de l'élève et du test, dépôt de la copie."""
+    """Choix de l'élève et du test, dépôt de la copie.
+
+    Accessible depuis le profil élève (`suivi_web`) avec `?eleve=<jeton>` : le
+    jeton signé (`jeton_eleve`, comme partout ailleurs — D-CEO-25, jamais
+    `identifiant_hakili` en clair dans une URL) verrouille l'élève pour éviter
+    de le reresélectionner. `?type_evaluation=` présélectionne l'étape du
+    suivi de la même façon. Un jeton absent, invalide ou hors périmètre
+    retombe silencieusement sur le combobox normal — ce n'est pas une erreur
+    bloquante, seulement un confort en moins.
+    """
     from src.knowledge.test_registry import get_registry
     from src.services.user_service import get_accessible_eleves
 
@@ -88,6 +97,20 @@ def nouvelle(request):
         if correction is not None:
             return redirect("correction_web:suivre", jeton=jeton_eleve(correction.copy_id))
 
+    from suivi.models import TypeEvaluation
+
+    eleve_preselectionne = None
+    jeton_eleve_param = request.GET.get("eleve", "")
+    if jeton_eleve_param:
+        identifiant = identifiant_depuis_jeton(jeton_eleve_param)
+        eleve_preselectionne = next(
+            (e for e in eleves if e.get("identifiant_hakili") == identifiant), None
+        )
+
+    type_evaluation_preselectionnee = request.GET.get("type_evaluation", "T0")
+    if type_evaluation_preselectionnee not in TypeEvaluation.values:
+        type_evaluation_preselectionnee = "T0"
+
     return render(
         request,
         "correction_web/nouvelle.html",
@@ -96,6 +119,9 @@ def nouvelle(request):
             "eleves": sorted(
                 eleves, key=lambda e: (e.get("nom", "").upper(), e.get("prenom", ""))
             ),
+            "types_evaluation": TypeEvaluation.choices,
+            "type_evaluation_preselectionnee": type_evaluation_preselectionnee,
+            "eleve_preselectionne": eleve_preselectionne,
             "tests": [
                 {"id": tid, "label": t.label, "questions": t.total_questions}
                 for tid, t in tests.items()
@@ -175,6 +201,11 @@ def _creer_correction(request, eleves: list[dict], tests: dict) -> Correction | 
     from comptes.backends import cle_personne
     from comptes.session import personne_courante
     from src.models.domain import Rubric
+    from suivi.models import TypeEvaluation
+
+    type_evaluation = request.POST.get("type_evaluation", TypeEvaluation.T0)
+    if type_evaluation not in TypeEvaluation.values:
+        type_evaluation = TypeEvaluation.T0
 
     correction = Correction.objects.create(
         copy_id=copy_id,
@@ -182,6 +213,7 @@ def _creer_correction(request, eleves: list[dict], tests: dict) -> Correction | 
         eleve_nom=eleve.get("nom", ""),
         eleve_prenom=eleve.get("prenom", ""),
         bareme_id=bareme_id,
+        type_evaluation=type_evaluation,
         instructions_expert=request.POST.get("instructions", "").strip(),
         lancee_par=cle_personne(personne_courante(request) or {}),
     )
@@ -213,7 +245,7 @@ def suivre(request, jeton: str):
     }
 
     if correction.etat == EtatCorrection.RELECTURE and resultat:
-        contexte["pages"] = resultat.transcription.pages
+        contexte["pages"] = _lignes_relecture(resultat)
         return render(request, "correction_web/relecture.html", contexte)
 
     if correction.etat == EtatCorrection.VALIDATION and resultat:
@@ -226,6 +258,25 @@ def suivre(request, jeton: str):
 
     # En cours ou en échec : la page de progression se rafraîchit toute seule.
     return render(request, "correction_web/progression.html", contexte)
+
+
+def _lignes_relecture(resultat) -> list[dict]:
+    """Une page de transcription, associée à l'image scannée correspondante.
+
+    L'ordre des images d'ingestion et celui des pages transcrites sont le même
+    (chaque `page_number` vient de `enumerate()` sur les images d'ingestion,
+    voir `src/api/*_client.py`) — `page_number - 1` retrouve donc directement
+    l'image. `a_image` est vérifié ici plutôt que laissé au template : sans
+    volume persistant, `runs/` peut avoir disparu entre la transcription et la
+    relecture (voir `correction_web/serialisation.py`), et l'écran doit rester
+    utilisable sans image plutôt que d'afficher une image cassée.
+    """
+    images = resultat.ingestion.pages if resultat.ingestion else []
+    lignes = []
+    for page in resultat.transcription.pages:
+        chemin = images[page.page_number - 1] if 0 < page.page_number <= len(images) else None
+        lignes.append({"page": page, "a_image": bool(chemin and chemin.exists())})
+    return lignes
 
 
 def _lignes_validation(resultat) -> list[dict]:
@@ -290,6 +341,32 @@ def valider_transcription(request, jeton: str):
     correction.save(update_fields=["resultat", "maj_le"])
     taches.lancer_correction(correction)
     return redirect("correction_web:suivre", jeton=jeton)
+
+
+@connexion_requise
+def page_image(request, jeton: str, page_number: int):
+    """Sert l'image scannée d'une page, pour la relecture côte à côte.
+
+    Lue sur disque (`runs/…/pages/`), pas en base : ce sont les images
+    intermédiaires de l'ingestion, distinctes du document « scan » archivé en
+    base par `src/pipeline/pipeline.py`. `_correction_autorisee` applique la
+    même règle de périmètre que le reste du flux.
+    """
+    correction = _correction_autorisee(request, jeton)
+    if not correction.resultat:
+        raise Http404("Copie sans résultat")
+
+    resultat = deserialiser(correction.resultat)
+    images = resultat.ingestion.pages if resultat.ingestion else []
+    if not (0 < page_number <= len(images)):
+        raise Http404("Page inconnue")
+
+    chemin = images[page_number - 1]
+    if not chemin.exists():
+        raise Http404("Image indisponible")
+
+    type_contenu = "image/png" if chemin.suffix.lower() == ".png" else "image/jpeg"
+    return HttpResponse(chemin.read_bytes(), content_type=type_contenu)
 
 
 @connexion_requise
@@ -492,6 +569,40 @@ def _traiter_lot(request, fichiers, eleves, test) -> tuple[int, list[str]]:
         lancees += 1
 
     return lancees, ecartees
+
+
+@connexion_requise
+def a_propos(request):
+    """Explique le cycle T0→T5 à un public non technique (parents, tuteurs)."""
+    return render(request, "correction_web/a_propos.html", {"rubrique": "a_propos"})
+
+
+@connexion_requise
+def supprimer(request, jeton: str):
+    """Supprime une copie : la Correction, et ce qui a déjà été persisté (suivi).
+
+    Passe par `_correction_autorisee` : même règle de périmètre que le reste du
+    flux (`can_access_eleve`), pas une autorisation à part. `Evaluation.copy_id`
+    est un lien souple vers `Copie` (D-CEO-40, pas de clé étrangère) : une copie
+    déjà exploitée par le suivi structuré devient une référence orpheline plutôt
+    que de bloquer la suppression ou d'entraîner une cascade sur le suivi.
+    """
+    correction = _correction_autorisee(request, jeton)
+    if request.method != "POST":
+        return redirect("correction_web:suivre", jeton=jeton)
+
+    import shutil
+
+    from src.core.config import settings
+    from suivi.models import Copie
+
+    copy_id = correction.copy_id
+    correction.delete()
+    Copie.objects.filter(copy_id=copy_id).delete()
+    shutil.rmtree(Path(settings.runs_dir) / copy_id, ignore_errors=True)
+
+    messages.success(request, "Copie supprimée.")
+    return redirect("correction_web:liste")
 
 
 @connexion_requise

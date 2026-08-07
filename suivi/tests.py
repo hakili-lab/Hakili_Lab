@@ -2,7 +2,7 @@
 Tests du socle de données (module 1).
 
 Le test central est `test_parcours_complet_t0_a_t5` : c'est le critère de fin du
-module 1 tel qu'écrit dans guide-urie.md — « un élève fictif peut être suivi de T0
+module 1 tel qu'écrit dans guide-v2.md — « un élève fictif peut être suivi de T0
 à T5 avec toutes ses transitions enregistrées ».
 
 Les autres vérifient que les invariants sont tenus **par la base et le modèle**,

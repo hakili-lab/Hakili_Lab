@@ -3,7 +3,7 @@
 
 Décrit le cycle **tel qu'il est décidé et modélisé**. Fait foi sur ce point.
 
-> **Rapport à `protocole-urie.md`.** Le protocole d'origine reste la référence sur
+> **Rapport à `protocole-v2.md`.** Le protocole d'origine reste la référence sur
 > le vocabulaire, la taxonomie des erreurs et le calcul des coûts. Il décrit en
 > revanche un cycle à six évaluations en séquence fixe, qui a été révisé (D-CEO-33).
 > Sur le **déroulé**, c'est le présent document qui est à jour ; les écarts sont
@@ -309,7 +309,7 @@ refuse le palier C sans motif.
 
 ---
 
-## 7. Écarts assumés par rapport à `protocole-urie.md`
+## 7. Écarts assumés par rapport à `protocole-v2.md`
 
 **T2 (contrôle de mi-parcours) est retiré.** Le protocole le plaçait entre la
 remédiation et le test de sortie, tout en le rendant déjà facultatif en palier A.

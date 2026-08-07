@@ -30,10 +30,8 @@ class Settings(BaseSettings):
     # Providers par étape du pipeline (indépendants des clés API)
     # grading_provider    : "deepseek" | "claude"
     # diagnostic_provider : "deepseek" | "mistral" | "claude"
-    # remediation_provider: "mistral"  | "deepseek" | "claude"
     grading_provider: str = "deepseek"
     diagnostic_provider: str = "claude"
-    remediation_provider: str = "mistral"
 
     # DeepSeek (correction V3 + diagnostic R1)
     deepseek_api_key: str = ""

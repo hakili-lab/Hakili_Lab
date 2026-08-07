@@ -2,7 +2,7 @@
 Contrôle avant mise en service, et essai de correction de bout en bout.
 
     python manage.py verifier_installation
-    python manage.py verifier_installation --copie chemin/vers/copie.pdf --test urie_3eme
+    python manage.py verifier_installation --copie chemin/vers/copie.pdf --test socle_3eme
 
 Sans argument, la commande ne fait que vérifier la configuration — aucune API
 n'est appelée, rien n'est écrit. Avec `--copie`, elle exécute une correction
@@ -149,7 +149,7 @@ class Command(BaseCommand):
         optionnelles = [
             ("Gemini (transcription)", config.google_api_key),
             ("DeepSeek (correction)", config.deepseek_api_key),
-            ("Mistral (remédiation)", config.mistral_api_key),
+            ("Mistral (diagnostic)", config.mistral_api_key),
         ]
         for libelle, cle in optionnelles:
             if cle:

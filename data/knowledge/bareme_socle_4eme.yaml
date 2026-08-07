@@ -1,11 +1,11 @@
-# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
-# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# Généré par scripts/generer_baremes_socle.py — ne pas éditer à la main.
+# Source : Referentiel_Socle_v0.xlsx. Relancer le script après toute
 # mise à jour du classeur. Exception : les champs reponse_attendue et
 # solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
 # les sauvegarder avant de régénérer.
 
 meta:
-  test_id: urie_4eme
+  test_id: socle_4eme
   titre: Test diagnostique d'entrée en 4ème
   niveau_test: 4eme
   classe: 4e
@@ -13,9 +13,9 @@ meta:
   total_possible: 20
   somme_baremes_reelle: 19.99999
   bareme_classeur_total: 60.0
-  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
-  genere_par: scripts/generer_baremes_urie.py
-  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+  source: Referentiel_Socle_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_socle.py
+  note_corriges: 10 QCM avec bonne réponse ; 1 questions sans corrigé (absent du classeur — arbitrage
     B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
 questions:
 - code: D1
@@ -57,8 +57,8 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Calculer un pourcentage d'augmentation de prix
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 15 %
+  solution: augmentation=20700-18000=2700 ; pourcentage=2700/18000x100=15%.
 - code: G1
   partie: A
   format: court
@@ -68,7 +68,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Donner la mesure de l'angle oppose par le sommet
-  reponse_attendue: ''
+  reponse_attendue: 67 degres
   solution: ''
 - code: G2
   partie: A
@@ -109,7 +109,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Donner OA, B etant le symetrique de A par rapport a O
-  reponse_attendue: ''
+  reponse_attendue: 3,5 cm
   solution: ''
 - code: G4
   partie: A
@@ -120,7 +120,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Donner la mesure du second angle correspondant pour un parallelisme
-  reponse_attendue: ''
+  reponse_attendue: 73 degres
   solution: ''
 - code: G5
   partie: A
@@ -161,7 +161,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Donner IP quand I est le point de concours des mediatrices
-  reponse_attendue: ''
+  reponse_attendue: 4 cm
   solution: ''
 - code: G7
   partie: B
@@ -183,8 +183,8 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Calculer le volume d'une pyramide reguliere a base carree
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 54 m3
+  solution: aire base=6x6=36 m2 ; volume=(36x4,5)/3=162/3=54 m3.
 - code: G9
   partie: B
   format: redige
@@ -194,8 +194,9 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Calculer un angle alterne-interne et nommer la propriete
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 58 degres -- angles alternes-internes
+  solution: 'M et N de part et d''autre de (Delta) sur les deux paralleles : les angles alternes-internes
+    formes sont egaux.'
 - code: L1
   partie: A
   format: court
@@ -205,7 +206,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Ecrire l'egalite obtenue en ajoutant 8 aux deux membres
-  reponse_attendue: ''
+  reponse_attendue: x = 13
   solution: ''
 - code: L2
   partie: A
@@ -216,7 +217,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Resoudre dans D l'equation 3x - 7 = 14
-  reponse_attendue: ''
+  reponse_attendue: x = 7
   solution: ''
 - code: L3
   partie: A
@@ -258,7 +259,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Traduire une phrase par une equation d'inconnue x
-  reponse_attendue: ''
+  reponse_attendue: 2x - 9 = 17
   solution: ''
 - code: L5
   partie: B
@@ -269,8 +270,8 @@ questions:
   competence_secondaire: L.EQD
   domaine: Calcul litteral et algebre
   objet: Mettre en equation un achat puis resoudre dans D
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 4x + 1250 = 19250 ; x = 4 500 F
+  solution: 4x=19250-1250=18000 ; x=18000/4=4500. Le poulet coute 4500 FCFA.
 - code: M1
   partie: A
   format: qcm
@@ -310,7 +311,7 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Calculer une vitesse moyenne en km/h
-  reponse_attendue: ''
+  reponse_attendue: 40 km/h
   solution: ''
 - code: M3
   partie: A
@@ -321,7 +322,7 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Calculer une longueur sur un plan a l'echelle 1/500
-  reponse_attendue: ''
+  reponse_attendue: 9 cm
   solution: ''
 - code: M4
   partie: A
@@ -362,7 +363,7 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Calculer l'echelle d'un plan a partir de deux longueurs
-  reponse_attendue: ''
+  reponse_attendue: 1/200
   solution: ''
 - code: M6
   partie: B
@@ -373,8 +374,8 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Calculer un debit puis un volume sur une duree donnee
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: debit 80 L/min ; 6 000 L en 1h15min
+  solution: debit=3600/45=80 L/min ; 1h15min=75min ; volume=80x75=6000 L.
 - code: N1
   partie: A
   format: court
@@ -384,7 +385,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Identifier les nombres divisibles par 9 dans une liste
-  reponse_attendue: ''
+  reponse_attendue: 2 745 et 4 050
   solution: ''
 - code: N2
   partie: A
@@ -425,7 +426,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Additionner deux fractions et donner le resultat irreductible
-  reponse_attendue: ''
+  reponse_attendue: 19/12
   solution: ''
 - code: N4
   partie: A
@@ -436,7 +437,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer une expression avec trois valeurs absolues
-  reponse_attendue: ''
+  reponse_attendue: '11'
   solution: ''
 - code: N5
   partie: A
@@ -447,7 +448,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Ecrire la liste de tous les diviseurs de 45
-  reponse_attendue: ''
+  reponse_attendue: 1, 3, 5, 9, 15, 45
   solution: ''
 - code: N6
   partie: A
@@ -488,7 +489,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer le PGCD de 84 et 126
-  reponse_attendue: ''
+  reponse_attendue: '42'
   solution: ''
 - code: N8
   partie: A
@@ -499,7 +500,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer un nouveau solde apres un depot sur un compte debiteur
-  reponse_attendue: ''
+  reponse_attendue: 6 600 F
   solution: ''
 - code: N9
   partie: A
@@ -510,7 +511,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer un produit de trois facteurs dont deux negatifs
-  reponse_attendue: ''
+  reponse_attendue: '30'
   solution: ''
 - code: N10
   partie: A
@@ -551,7 +552,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Multiplier deux fractions et donner le resultat irreductible
-  reponse_attendue: ''
+  reponse_attendue: 2/3
   solution: ''
 - code: N12
   partie: A
@@ -562,7 +563,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Decomposer 180 en produit de facteurs premiers
-  reponse_attendue: ''
+  reponse_attendue: 2 au carre x 3 au carre x 5
   solution: ''
 - code: N13
   partie: A
@@ -603,7 +604,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Factoriser l'expression 9x + 15
-  reponse_attendue: ''
+  reponse_attendue: 3(3x + 5)
   solution: ''
 - code: N15
   partie: B
@@ -614,8 +615,8 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer la fraction de recolte restante apres deux ventes
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 4/15 de la recolte
+  solution: 2/5+1/3=6/15+5/15=11/15 vendue ; reste=1-11/15=4/15.
 - code: N16
   partie: B
   format: redige
@@ -625,8 +626,8 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Reduire un quotient de puissances de 4 et calculer (-2)^5
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: A = 4 au carre (=16) ; B = -32
+  solution: 4^6x4^3/4^7=4^(9-7)=4^2 ; (-2)^5=-32.
 - code: N17
   partie: B
   format: redige
@@ -636,8 +637,8 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Determiner la masse maximale d'un sac et le nombre de sacs
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 66 kg par sac ; 5 sacs au total
+  solution: PGCD(132,198)=66 ; 132/66=2 sacs de mil ; 198/66=3 sacs de sorgho ; total=5 sacs.
 - code: N18
   partie: B
   format: redige
@@ -647,5 +648,5 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Developper l'expression 5 x (x + 7)
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 5x + 35
+  solution: 5x(x+7)=5x+35.

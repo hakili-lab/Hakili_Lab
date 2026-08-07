@@ -1,11 +1,11 @@
-# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
-# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# Généré par scripts/generer_baremes_socle.py — ne pas éditer à la main.
+# Source : Referentiel_Socle_v0.xlsx. Relancer le script après toute
 # mise à jour du classeur. Exception : les champs reponse_attendue et
 # solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
 # les sauvegarder avant de régénérer.
 
 meta:
-  test_id: urie_1ereD
+  test_id: socle_1ereD
   titre: Test diagnostique d'entrée en 1ère D
   niveau_test: 1ereD
   classe: 1ere
@@ -13,9 +13,9 @@ meta:
   total_possible: 20
   somme_baremes_reelle: 19.99999
   bareme_classeur_total: 60.0
-  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
-  genere_par: scripts/generer_baremes_urie.py
-  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+  source: Referentiel_Socle_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_socle.py
+  note_corriges: 10 QCM avec bonne réponse ; 0 questions sans corrigé (absent du classeur — arbitrage
     B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
 questions:
 - code: D1
@@ -57,8 +57,8 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Calculer la moyenne et l'etendue de la serie
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: moyenne = 6 ; etendue = 5
+  solution: somme=4+7+5+4+9+6+4+8+5+8=60 ; moyenne=60/10=6 ; etendue=max-min=9-4=5.
 - code: F1
   partie: A
   format: qcm
@@ -98,7 +98,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Ensemble de definition de f(x) = (2x+1)/(x-3)
-  reponse_attendue: ''
+  reponse_attendue: R prive de 3
   solution: ''
 - code: F3
   partie: A
@@ -109,7 +109,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Image de 1 par f, courbe passant par C(1;4)
-  reponse_attendue: ''
+  reponse_attendue: '4'
   solution: ''
 - code: F4
   partie: A
@@ -120,7 +120,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Parite de g(x) = x^4 - 3x^2 + 1
-  reponse_attendue: ''
+  reponse_attendue: Paire
   solution: ''
 - code: F5
   partie: A
@@ -131,7 +131,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Convertir 135 degres en radians
-  reponse_attendue: ''
+  reponse_attendue: 3 pi / 4
   solution: ''
 - code: F6
   partie: A
@@ -172,7 +172,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: 'u(-3) : axe (Oy) de symetrie, M(3;-5) sur la courbe'
-  reponse_attendue: ''
+  reponse_attendue: '-5'
   solution: ''
 - code: F8
   partie: A
@@ -183,7 +183,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Resoudre f(x) < 0 par lecture graphique
-  reponse_attendue: ''
+  reponse_attendue: x appartient a ]-1 ; 4[
   solution: ''
 - code: F9
   partie: A
@@ -224,7 +224,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Sens de variation de h(x) = -x^2 sur [0;+inf[
-  reponse_attendue: ''
+  reponse_attendue: Strictement decroissante sur [0;+infini[
   solution: ''
 - code: F11
   partie: B
@@ -235,8 +235,8 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Ensemble de definition de g(x) = (x+2)/V(5-x)
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: Dg = ]-infini ; 5[
+  solution: il faut 5-x > 0 (racine carree strictement positive au denominateur) -> x<5.
 - code: F12
   partie: B
   format: redige
@@ -246,8 +246,9 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Dresser le tableau de variations de h sur [-5;4]
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: h croit de -2 (x=-5) a 3 (x=-1) ; decroit de 3 (x=-1) a -4 (x=2) ; croit de -4 (x=2)
+    a 2 (x=4)
+  solution: tableau de variations construit directement a partir des 4 points donnes par l'enonce.
 - code: F13
   partie: B
   format: redige
@@ -257,8 +258,8 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Calculer sin x sachant cos x = 3/5 sur [0;pi/2]
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: sin x = 4/5
+  solution: 'sin^2(x)=1-cos^2(x)=1-9/25=16/25 ; x dans [0;pi/2] donc sin x positif : sin x=4/5.'
 - code: G1
   partie: A
   format: court
@@ -268,7 +269,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Produit scalaire de u(3;-2) et v(4;5)
-  reponse_attendue: ''
+  reponse_attendue: '2'
   solution: ''
 - code: G2
   partie: A
@@ -279,7 +280,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Equation de la droite par A(2;-1), coefficient directeur 3
-  reponse_attendue: ''
+  reponse_attendue: y = 3x - 7
   solution: ''
 - code: G3
   partie: A
@@ -290,7 +291,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Reel k tel que v(-6;9) = k u(2;-3)
-  reponse_attendue: ''
+  reponse_attendue: k = -3
   solution: ''
 - code: G4
   partie: A
@@ -331,7 +332,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Reel m rendant u(m;3) et v(2;-4) orthogonaux
-  reponse_attendue: ''
+  reponse_attendue: m = 6
   solution: ''
 - code: G6
   partie: A
@@ -372,7 +373,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Rayon du cercle de centre I(1;-2) passant par A(4;2)
-  reponse_attendue: ''
+  reponse_attendue: '5'
   solution: ''
 - code: G8
   partie: A
@@ -383,7 +384,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Image de M(4;0) par homothetie de centre I(1;2), rapport 3
-  reponse_attendue: ''
+  reponse_attendue: M'(10 ; -4)
   solution: ''
 - code: G9
   partie: A
@@ -394,7 +395,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Position relative de (AD) et (BF) dans le cube
-  reponse_attendue: ''
+  reponse_attendue: Non coplanaires (droites gauches)
   solution: ''
 - code: G10
   partie: B
@@ -405,8 +406,9 @@ questions:
   competence_secondaire: G.COL
   domaine: Activites geometriques
   objet: Exprimer IJ en fonction de AB et AC
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: vecteur IJ = (1/3)vecteur AC - (1/2)vecteur AB
+  solution: I milieu [AB] -> vecteur AI=(1/2)vecteur AB ; J tel que vecteur AJ=(1/3)vecteur AC ; vecteur
+    IJ=vecteur AJ-vecteur AI=(1/3)AC-(1/2)AB.
 - code: G11
   partie: B
   format: redige
@@ -416,8 +418,9 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Calculer AB.AC puis preciser la nature du triangle ABC
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: AB.AC = 0 ; triangle ABC rectangle en A
+  solution: vecteur AB=(4;2), vecteur AC=(-1;2) ; AB.AC=4x(-1)+2x2=-4+4=0 -> vecteurs orthogonaux -> rectangle
+    en A.
 - code: L1
   partie: A
   format: court
@@ -427,7 +430,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Resoudre x^2 - 5x + 6 = 0 dans R
-  reponse_attendue: ''
+  reponse_attendue: x = 2 ou x = 3
   solution: ''
 - code: L2
   partie: A
@@ -438,7 +441,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Factoriser le trinome x^2 - 7x + 12
-  reponse_attendue: ''
+  reponse_attendue: (x - 3)(x - 4)
   solution: ''
 - code: L3
   partie: A
@@ -449,7 +452,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Resoudre le systeme 2x+y=7 et x-y=2
-  reponse_attendue: ''
+  reponse_attendue: x = 3 ; y = 1
   solution: ''
 - code: L4
   partie: A
@@ -521,7 +524,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Trinome factorise de racines -2 et 5, coefficient 2
-  reponse_attendue: ''
+  reponse_attendue: 2(x + 2)(x - 5)
   solution: ''
 - code: L7
   partie: A
@@ -532,7 +535,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Resoudre le systeme 2x-1 >= 3 et 5-x > 0
-  reponse_attendue: ''
+  reponse_attendue: x appartient a [2 ; 5[
   solution: ''
 - code: L8
   partie: B
@@ -543,8 +546,8 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Resoudre x^2+3x-154=0 et donner la largeur du champ
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: x=11 (retenu, positif) ; x=-14 rejete ; largeur = 11 m
+  solution: delta=3^2+4x154=9+616=625=25^2 ; x=(-3+25)/2=11 ou x=(-3-25)/2=-14 (rejete).
 - code: L9
   partie: B
   format: redige
@@ -554,8 +557,9 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Tableau de signe de f(x) = -x^2+4x+5
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: f(x) < 0 sur ]-infini;-1[ et ]5;+infini[ ; f(x) > 0 sur ]-1;5[ ; nul en -1 et 5
+  solution: 'racines de -x^2+4x+5=0 (soit x^2-4x-5=0) : x=-1 et x=5 ; coefficient de x^2 negatif (a=-1)
+    donc f positif entre les racines, negatif a l''exterieur.'
 - code: L10
   partie: B
   format: redige
@@ -565,8 +569,8 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Resoudre (2x-6)/(x+1) >= 0
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: S = ]-infini;-1[ union [3;+infini[
+  solution: numerateur 2x-6 nul en x=3 ; denominateur x+1 nul en x=-1 (exclu) ; tableau de signes du quotient.
 - code: N1
   partie: A
   format: qcm
@@ -606,7 +610,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Ecrire V50 - 3V2 sous la forme aV2
-  reponse_attendue: ''
+  reponse_attendue: a = 2
   solution: ''
 - code: N3
   partie: A
@@ -647,5 +651,6 @@ questions:
   competence_secondaire: N.RAC
   domaine: Activites numeriques
   objet: Ecrire A = |3-V10| + |V10-4| sans valeur absolue
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: A = 1
+  solution: 3-racine(10)<0 donc |3-racine(10)|=racine(10)-3 ; racine(10)-4<0 donc |racine(10)-4|=4-racine(10)
+    ; A=(racine(10)-3)+(4-racine(10))=1.

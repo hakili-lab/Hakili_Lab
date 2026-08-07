@@ -53,7 +53,6 @@ class AnswerLoader:
         corrige_files = list(_KB_DIR.glob("corrige_test_*.yaml"))
         if not corrige_files:
             logger.warning("Aucun fichier corrige_test_*.yaml trouvé dans %s", _KB_DIR)
-            return
         for path in corrige_files:
             try:
                 raw = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -71,6 +70,42 @@ class AnswerLoader:
                 )
             except Exception as exc:
                 logger.error("Erreur lecture corrigé %s : %s", path.name, exc)
+
+        # Barèmes v2 (data/knowledge/bareme_socle_*.yaml, générés par
+        # scripts/generer_baremes_socle.py) — structure plate `questions` avec
+        # `code`/`reponse_attendue`/`solution`, corrigé complet pour les QCM
+        # (depuis le classeur) et partiel pour le reste (arbitrage B, saisi à
+        # la main dans corriges_socle.yaml puis fusionné à la génération).
+        for path in _KB_DIR.glob("bareme_socle_*.yaml"):
+            try:
+                raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+                if not isinstance(raw, dict) or "questions" not in raw:
+                    continue
+                test_id = raw.get("meta", {}).get("test_id", path.stem)
+                all_answers = []
+                for q in raw.get("questions", []):
+                    reponse = (q.get("reponse_attendue") or "").strip()
+                    if not reponse:
+                        continue  # pas encore de corrigé (arbitrage B) — rien à injecter
+                    if q.get("format") == "qcm" and q.get("options"):
+                        option = next(
+                            (o for o in q["options"] if str(o.get("lettre")) == reponse),
+                            None,
+                        )
+                        if option and option.get("texte"):
+                            reponse = f"{reponse}) {option['texte']}"
+                    all_answers.append(OfficialAnswer({
+                        "id": q.get("code", ""),
+                        "reponse": reponse,
+                        "solution": q.get("solution", ""),
+                    }))
+                self._answers[test_id] = all_answers
+                logger.info(
+                    "Corrigé v2 chargé : %s (%d réponses officielles)",
+                    test_id, len(all_answers),
+                )
+            except Exception as exc:
+                logger.error("Erreur lecture barème v2 %s : %s", path.name, exc)
 
     def get_official_answers(self, test_id: str) -> str:
         """

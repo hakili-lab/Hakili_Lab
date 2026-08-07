@@ -4,7 +4,7 @@ Enregistre une copie taguée à la main dans le corpus de référence (module 3)
 Le corpus est l'**étalon du module 4** : des copies dont les problèmes ont été
 relevés par un humain, contre lesquelles se mesure le diagnostic automatique.
 Sans lui, on ne saurait pas si le module 4 fonctionne — seulement qu'il produit
-quelque chose. C'est la raison pour laquelle `guide-urie.md` interdit d'automatiser
+quelque chose. C'est la raison pour laquelle `guide-v2.md` interdit d'automatiser
 une tâche avant de l'avoir faite à la main une fois.
 
 Pourquoi un fichier et une commande, plutôt qu'un écran
@@ -178,7 +178,7 @@ class Command(BaseCommand):
         """Contrôle tout avant d'écrire quoi que ce soit.
 
         Le référentiel fait foi : un code de compétence ou de type d'erreur
-        absent est **un bug, pas une variante** (protocole-urie.md). Une faute de
+        absent est **un bug, pas une variante** (protocole-v2.md). Une faute de
         frappe qui passerait ici salirait l'étalon lui-même — et le module 4
         serait ensuite mesuré contre une référence fausse.
         """

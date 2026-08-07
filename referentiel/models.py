@@ -1,12 +1,12 @@
 """
 Le référentiel et la banque de questions — importés du classeur, jamais saisis.
 
-Source unique : `Referentiel_Urie_v0.xlsx`, chargé par
+Source unique : `Referentiel_Socle_v0.xlsx`, chargé par
 `python manage.py importer_referentiel`. Toute correction se fait dans le
 classeur puis par réimport, jamais directement en base : sinon la base et le
 classeur divergent et plus personne ne sait lequel fait foi.
 
-Règle de codage à ne jamais transgresser (guide-urie.md) : les codes locaux des
+Règle de codage à ne jamais transgresser (guide-v2.md) : les codes locaux des
 matrices de test (`N-a`, `G-c`…) sont **locaux à un test** — `N-a` désigne 7
 compétences différentes selon le niveau, vérifié au module 0. Ils ne sont donc
 jamais une clé : `Question.code_local` les conserve pour la traçabilité, mais
@@ -51,7 +51,7 @@ class NiveauTest(models.TextChoices):
 class FormatQuestion(models.TextChoices):
     """Quatre formats, pas trois.
 
-    `guide-urie.md` (module 2) n'en décrit que trois — le format `construction`
+    `guide-v2.md` (module 2) n'en décrit que trois — le format `construction`
     (7 questions, toutes en partie B) a été trouvé au module 0. Il attend un tracé
     géométrique et non du texte : son diagnostic automatique n'est vraisemblablement
     pas atteignable, il relèvera de la saisie humaine.
@@ -70,7 +70,7 @@ class Partie(models.TextChoices):
 
 class TypeErreur(models.Model):
     """Les 7 types d'erreur. Liste FERMÉE — n'en jamais ajouter un huitième
-    sans décision explicite (protocole-urie.md §3).
+    sans décision explicite (protocole-v2.md §3).
 
     `ATT` (inattention) existe pour être **écarté** : son coefficient est 0 et il
     ne donne jamais lieu à remédiation. Conséquence à connaître pour le module 6 :
@@ -342,7 +342,7 @@ class OptionQcm(models.Model):
 
     C'est ce qui rend le diagnostic d'un QCM entièrement mécanique : une lettre
     cochée donne directement un problème. **Aucun appel de modèle de langage ne
-    doit avoir lieu pour interpréter un QCM** (guide-urie.md, module 4).
+    doit avoir lieu pour interpréter un QCM** (guide-v2.md, module 4).
     """
 
     question = models.ForeignKey(

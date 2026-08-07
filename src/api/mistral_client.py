@@ -28,7 +28,6 @@ from src.models.domain import (
     CopyGrade,
     DiagnosticResult,
     PageTranscription,
-    RemediationSubject,
     TranscriptionResult,
 )
 
@@ -393,7 +392,6 @@ class MistralRemediationClient:
         except ImportError as e:
             raise ImportError(f"Package mistralai non disponible : {e}") from e
         self._client = Mistral(api_key=settings.mistral_api_key)
-        self._remediation_prompt = _load_prompt("remediation_subject_prompt.md")
         self._diagnostic_prompt = _load_prompt("diagnostic_prompt.md")
         logger.info("MistralRemediationClient initialisé (modèle=%s)", settings.mistral_model)
 
@@ -426,48 +424,5 @@ class MistralRemediationClient:
             return _parse_json_response(raw, DiagnosticResult)
         except Exception as e:
             logger.error("Mistral diagnose erreur : %s", e)
-            return ClaudeResponse(success=False, data=None, confidence=0.0,
-                                  raw_response="", error=str(e))
-
-    @_retry
-    def generate_remediation_subject(self, diagnostic: DiagnosticResult) -> ClaudeResponse:
-        """
-        Génère 5 exercices progressifs par difficulté identifiée.
-
-        Mistral Small 3.1 — français académique natif, terminologie CEDEAO/UEMOA.
-        """
-        logger.info("[%s] Mistral remédiation — modèle : %s | difficultés : %d",
-                    diagnostic.copy_id, settings.mistral_model,
-                    len(diagnostic.weaknesses) or len(diagnostic.root_causes))
-        if not diagnostic.weaknesses and not diagnostic.root_causes:
-            return ClaudeResponse(
-                success=False, data=None, confidence=0.0,
-                raw_response="",
-                error="Aucune difficulté identifiée — pas de sujet de remédiation à générer.",
-            )
-
-        n_series = len(diagnostic.weaknesses) or len(diagnostic.root_causes)
-        user_content = (
-            f"{self._remediation_prompt}"
-            f"\n\n---\n\nDIAGNOSTIC ({n_series} difficulté(s) à couvrir):\n"
-            f"{diagnostic.model_dump_json(indent=2)}"
-        )
-
-        try:
-            response = self._client.chat.complete(
-                model=settings.mistral_model,
-                messages=[{"role": "user", "content": user_content}],
-                response_format={"type": "json_object"},
-                max_tokens=8192,
-                temperature=0.4,   # Légère créativité pour varier les exercices
-            )
-            raw = response.choices[0].message.content or ""
-            logger.info(
-                "Mistral remédiation OK — tokens: %d in / %d out",
-                response.usage.prompt_tokens, response.usage.completion_tokens,
-            )
-            return _parse_json_response(raw, RemediationSubject)
-        except Exception as e:
-            logger.error("Mistral generate_remediation_subject erreur : %s", e)
             return ClaudeResponse(success=False, data=None, confidence=0.0,
                                   raw_response="", error=str(e))

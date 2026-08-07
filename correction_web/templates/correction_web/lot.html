@@ -1,18 +1,8 @@
 {% extends "base.html" %}
 {% block titre %}Corriger une classe — Hakili Lab{% endblock %}
-{% block classe_main %} etroit{% endblock %}
 
 {% block page_titre %}Corriger une classe{% endblock %}
 {% block contenu %}
-<p class="sous-titre">Déposez toutes les copies d'un coup ; vous validerez les notes ensuite, copie par copie.</p>
-
-<div class="message info">
-  <strong>Nommez chaque fichier avec le nom et le prénom de l'élève</strong>
-  (par exemple <code>KABRE_Charles.pdf</code>). C'est ce qui permet d'attribuer
-  chaque copie au bon élève. Une copie dont l'élève ne peut pas être identifié
-  sans ambiguïté est écartée et signalée — jamais attribuée au hasard.
-</div>
-
 <div class="carte">
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}

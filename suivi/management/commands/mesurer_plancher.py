@@ -7,7 +7,7 @@ Mesure « plancher » du module 4 contre une copie du corpus de référence.
 Pourquoi cette commande existe
 ------------------------------
 Le diagnostic contraint travaille **par question** : énoncé, compétence, prérequis
-et signatures d'erreur, tous tirés des 280 questions Urie. Les 5 copies du corpus
+et signatures d'erreur, tous tirés des 280 questions v2. Les 5 copies du corpus
 sont de l'**ancien format** et n'en portent aucune — le mode normal ne peut pas
 tourner dessus. Tant qu'aucune copie du nouveau format n'existe, le module 4 n'a
 rien contre quoi se mesurer.

@@ -2,7 +2,7 @@
 
 Le jeu factice de `src/integrations/sheets_factices.py` remplit les écrans qui
 listent des élèves. Il ne suffit pas pour `/parcours/<jeton>/`, l'écran le plus
-riche du chantier Urie v2 : celui-ci a besoin d'une `Session`, de `Problème`s et
+riche du chantier v2 : celui-ci a besoin d'une `Session`, de `Problème`s et
 de leurs `Transition`s. Cette commande les crée.
 
 Trois précautions, chacune pour une raison précise

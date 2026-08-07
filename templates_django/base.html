@@ -91,11 +91,34 @@
 
   --largeur:  1120px;
   --largeur-etroite: 620px;   /* formulaires : une colonne de lecture */
+
+  /* ── Mouvement ────────────────────────────────────────────────────────────
+     Trois rythmes (réagir vite, transitionner, s'installer posément) et une
+     courbe « à ressort » pour ce qui doit se remarquer une fois (une carte
+     qui apparaît, une pastille qui vient d'être posée) plutôt qu'un simple
+     `ease`. Centralisé pour qu'un écran n'invente pas sa propre durée. */
+  --dur-rapide: .15s;
+  --dur:        .3s;
+  --dur-lente:  .5s;
+  --ressort: cubic-bezier(.22, 1.4, .36, 1);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
+
+/* Transition native entre deux pages Django (rendu serveur, pas de SPA) :
+   le navigateur fait un fondu-enchaîné de l'ancienne vue vers la nouvelle au
+   lieu du blanc-écran habituel d'une navigation classique. Aucune ligne de
+   JS, aucun changement de template — dégrade sans effet sur les navigateurs
+   qui ne la connaissent pas encore. */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur);
+}
 
 body {
   margin: 0;
@@ -130,23 +153,41 @@ a:hover { color: var(--bleu-sombre); }
   display: flex;
   flex-direction: column;
   gap: var(--e4);
-  background: var(--marine);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--marine) 0%, #001636 100%);
   color: #fff;
   padding: var(--e5) var(--e4);
+  box-shadow: 1px 0 0 rgba(0,0,0,.08), 6px 0 28px rgba(0,10,30,.10);
+  z-index: 5;
 }
 
 .sidebar .marque {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 700;
   font-size: var(--t-h2);
   letter-spacing: .3px;
   line-height: 1.2;
 }
+.sidebar .marque .marque-texte { flex: 1; min-width: 0; }
 .sidebar .marque span {
   display: block;
   margin-top: var(--e1);
   color: rgba(255, 255, 255, .78);
   font-size: var(--t-petit);
   font-weight: 400;
+}
+.sidebar .marque .marque-logo {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-petit);
+  object-fit: cover;
+  background: #fff;
 }
 
 .sidebar nav {
@@ -179,31 +220,61 @@ a:hover { color: var(--bleu-sombre); }
   background: rgba(255, 255, 255, .14);
   color: #fff;
 }
+.sidebar nav a.actif {
+  box-shadow: inset 3px 0 0 var(--bleu);
+}
 /* Icon/label polishing */
+.sidebar nav a { transition: background-color .15s ease, box-shadow .15s ease; }
 .sidebar nav a .label { display: inline-block; transition: opacity .16s ease, transform .16s ease; }
 .sidebar nav a .icone { transition: transform .16s ease, color .12s ease; }
-.sidebar nav a:hover .icone { transform: translateX(6px); }
+.sidebar nav a:hover .icone { transform: translateX(3px); }
 .sidebar nav a.actif .icone { transform: none; }
 .sidebar nav a .icone svg { stroke-width: 1.6; }
 .sidebar .label { color: rgba(255,255,255,.92); }
 .sidebar.collapsed .label { display: none; }
 
 /* Toggle / collapsed sidebar (desktop) and drawer (mobile) */
-.sidebar { transition: width .22s ease; }
-.sidebar.collapsed { width: 72px; }
-.sidebar.collapsed .marque { text-align: center; }
-.sidebar.collapsed .marque span { display: none; }
+.sidebar { transition: width .22s ease, flex-basis .22s ease, left .28s cubic-bezier(.4,0,.2,1); }
+.sidebar.collapsed { flex-basis: 72px; width: 72px; }
+.sidebar.collapsed .marque { flex-direction: column; gap: 8px; }
+.sidebar.collapsed .marque .marque-texte { display: none; }
 .sidebar.collapsed nav a { justify-content: center; gap: 0; padding-left: 12px; padding-right: 12px; }
 .sidebar.collapsed nav a .icone { margin-right: 0; }
+.sidebar.collapsed nav a.actif { box-shadow: none; background: rgba(255,255,255,.14); }
 .sidebar.collapsed .compte { display: none; }
+.sidebar.collapsed .menu-title,
+.sidebar.collapsed .admin-title { display: none; }
+.sidebar.collapsed .admin-group { padding-top: 0; }
+
+/* Bouton chevron desktop, intégré à l'en-tête de la sidebar */
+.sidebar-collapse-btn {
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: var(--r-petit);
+  color: rgba(255,255,255,.85);
+  cursor: pointer;
+  padding: 0;
+}
+.sidebar-collapse-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
+.sidebar-collapse-btn svg { width: 14px; height: 14px; stroke: currentColor; transition: transform .2s ease; }
+.sidebar.collapsed .sidebar-collapse-btn svg { transform: rotate(180deg); }
+@media (min-width: 921px) { .sidebar-collapse-btn { display: inline-flex; } }
 
 /* Mobile drawer behaviour */
 .drawer-overlay { display: none; }
 @media (max-width: 920px) {
   .sidebar { position: fixed; left: -100%; top: 0; height: 100vh; z-index: 30; box-shadow: 0 8px 24px rgba(0,0,0,.25); width: 320px; }
   .sidebar.open { left: 0; }
-  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.32); z-index: 20; display: none; }
-  .drawer-overlay.open { display: block; }
+  .drawer-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.32); z-index: 20;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .drawer-overlay.open { opacity: 1; pointer-events: auto; }
   .topbar .sidebar-toggle { display: inline-flex; }
 }
 
@@ -281,6 +352,7 @@ a:hover { color: var(--bleu-sombre); }
 .topbar {
   border-bottom: 1px solid var(--bord);
   background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 30, 74, .04);
   padding: var(--e3) var(--e4);
   display: flex;
   justify-content: space-between;
@@ -309,11 +381,67 @@ a:hover { color: var(--bleu-sombre); }
 /* ── Cadre de page ───────────────────────────────────────────────────────── */
 
 .content {
+  /* `.page` est un conteneur flex en colonne : sans `width: 100%`, la marge
+     `auto` désactive l'étirement par défaut de flexbox et réduit `.content`
+     à la taille de son contenu au lieu de remplir la largeur disponible —
+     tout l'écran se retrouvait coincé dans une colonne étroite et centrée. */
+  width: 100%;
   max-width: var(--largeur);
   margin: 0 auto;
   padding: var(--e5) var(--e4) var(--e7);
+  animation: contenu-apparait var(--dur-lente) ease;
 }
 .content.etroit { max-width: var(--largeur-etroite); }
+
+@keyframes contenu-apparait {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Entrée en scène ─────────────────────────────────────────────────────── */
+/* Les blocs qui composent un écran (cartes, lignes de tableau, indicateurs)
+   apparaissent en cascade au lieu de surgir d'un bloc — c'est ce qui donne
+   l'impression d'un écran qui « se construit » plutôt que d'un écran qui
+   « s'affiche ». Le délai est plafonné : au-delà de la dixième ligne, tout
+   arrive en même temps, sinon la trentième ligne d'un tableau attendrait
+   une seconde entière avant d'apparaître. */
+@keyframes entree-cascade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.content > .carte,
+.content > .stats,
+.content > .actions,
+.content > .messages,
+.lignes > .ligne,
+.carte.tableau tbody tr {
+  animation: entree-cascade var(--dur-lente) var(--ressort) backwards;
+}
+
+.content > *:nth-child(1)  { animation-delay: 0ms;  }
+.content > *:nth-child(2)  { animation-delay: 40ms; }
+.content > *:nth-child(3)  { animation-delay: 80ms; }
+.content > *:nth-child(4)  { animation-delay: 120ms; }
+.content > *:nth-child(5)  { animation-delay: 160ms; }
+.content > *:nth-child(n+6){ animation-delay: 200ms; }
+
+.lignes > .ligne:nth-child(1) { animation-delay: 0ms; }
+.lignes > .ligne:nth-child(2) { animation-delay: 30ms; }
+.lignes > .ligne:nth-child(3) { animation-delay: 60ms; }
+.lignes > .ligne:nth-child(4) { animation-delay: 90ms; }
+.lignes > .ligne:nth-child(5) { animation-delay: 120ms; }
+.lignes > .ligne:nth-child(n+6) { animation-delay: 150ms; }
+
+.carte.tableau tbody tr:nth-child(1) { animation-delay: 0ms; }
+.carte.tableau tbody tr:nth-child(2) { animation-delay: 25ms; }
+.carte.tableau tbody tr:nth-child(3) { animation-delay: 50ms; }
+.carte.tableau tbody tr:nth-child(4) { animation-delay: 75ms; }
+.carte.tableau tbody tr:nth-child(5) { animation-delay: 100ms; }
+.carte.tableau tbody tr:nth-child(6) { animation-delay: 125ms; }
+.carte.tableau tbody tr:nth-child(7) { animation-delay: 150ms; }
+.carte.tableau tbody tr:nth-child(8) { animation-delay: 175ms; }
+.carte.tableau tbody tr:nth-child(n+9) { animation-delay: 200ms; }
 
 h1 {
   font-size: var(--t-h1);
@@ -344,6 +472,7 @@ h2 + .sous-titre { margin-bottom: var(--e3); }
   color: var(--texte-doux);
   margin-top: var(--e1);
 }
+.aide.alerte { color: var(--rouge); }
 
 /* ── Cartes ──────────────────────────────────────────────────────────────── */
 
@@ -354,9 +483,20 @@ h2 + .sous-titre { margin-bottom: var(--e3); }
   padding: var(--e4) var(--e5);
   margin-bottom: var(--e4);
   box-shadow: var(--ombre);
+  transition: box-shadow var(--dur) ease, border-color var(--dur) ease;
 }
 .carte > :first-child { margin-top: 0; }
 .carte > :last-child { margin-bottom: 0; }
+
+/* Élévation discrète au survol — signale qu'une carte est consultable, sans
+   la faire flotter (pas de `transform`, qui donnerait le mal de mer sur un
+   écran qui en aligne dix). Pas sur `.plate`, qui n'est qu'un contenant, ni
+   sur `.tableau`, où le survol de ligne (`tbody tr:hover`) porte déjà le
+   signal. */
+.carte:not(.plate):not(.tableau):hover {
+  box-shadow: var(--ombre-haute);
+  border-color: var(--bord-fort);
+}
 
 /* Une carte qui appelle une décision : liseré d'accent sur le bord d'attaque. */
 .carte.appel      { border-left: 3px solid var(--bleu); }
@@ -466,6 +606,39 @@ input::placeholder, textarea::placeholder { color: var(--texte-faible); }
 .champs { display: flex; gap: var(--e4); flex-wrap: wrap; }
 .champs > .champ { flex: 1 1 220px; margin-bottom: 0; }
 
+/* Sélecteur recherché : un `<select>` natif devient injouable au-delà d'une
+   cinquantaine d'options (pas de recherche au clavier sur desktop). On garde
+   la valeur choisie dans un champ caché — le serveur ne voit rien d'autre
+   qu'un `select` classique — et on affiche la liste filtrée en dessous du
+   champ de recherche. */
+.selecteur-recherche { position: relative; }
+.selecteur-recherche .options {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--r-petit);
+  box-shadow: var(--ombre-haute);
+}
+.selecteur-recherche .options li {
+  padding: 8px 10px;
+  border-radius: var(--r-petit);
+  font-size: var(--t-corps);
+  cursor: pointer;
+}
+.selecteur-recherche .options li:hover,
+.selecteur-recherche .options li.actif { background: var(--bleu-pale); }
+.selecteur-recherche .options li.vide { color: var(--texte-doux); cursor: default; }
+.selecteur-recherche .options li.vide:hover { background: none; }
+
 /* Barre d'actions en pied de formulaire. `.haut` quand elle ouvre un écran au
    lieu de le fermer — le retrait du haut viendrait alors doubler celui du
    chapeau. */
@@ -489,24 +662,31 @@ button, .bouton {
   text-decoration: none;
   display: inline-block;
   text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 30, 74, .12);
+  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .1s ease;
 }
 button:hover, .bouton:hover {
   background: var(--bleu-sombre);
   border-color: var(--bleu-sombre);
   color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 30, 74, .18);
+  transform: translateY(-1px);
 }
-button:active, .bouton:active { transform: translateY(1px); }
-button[disabled], .bouton[disabled] { opacity: .5; cursor: not-allowed; }
+button:active, .bouton:active { transform: translateY(0); box-shadow: 0 1px 2px rgba(0, 30, 74, .12); }
+button[disabled], .bouton[disabled] { opacity: .5; cursor: not-allowed; box-shadow: none; transform: none; }
 
 button.discret, .bouton.discret {
   background: var(--surface);
   color: var(--texte);
   border-color: var(--bord-fort);
+  box-shadow: none;
 }
 button.discret:hover, .bouton.discret:hover {
   background: var(--surface-creuse);
   color: var(--texte);
   border-color: var(--texte-faible);
+  box-shadow: none;
+  transform: none;
 }
 
 /* Action lourde de conséquences — dérogation au palier C, par exemple. Elle
@@ -515,8 +695,9 @@ button.grave, .bouton.grave {
   background: var(--surface);
   color: var(--rouge);
   border-color: var(--rouge);
+  box-shadow: none;
 }
-button.grave:hover, .bouton.grave:hover { background: var(--rouge-pale); color: var(--rouge); }
+button.grave:hover, .bouton.grave:hover { background: var(--rouge-pale); color: var(--rouge); box-shadow: none; transform: none; }
 
 button.petit, .bouton.petit { padding: 5px 11px; font-size: var(--t-petit); }
 
@@ -529,8 +710,18 @@ button.petit, .bouton.petit { padding: 5px 11px; font-size: var(--t-petit); }
   font-size: var(--t-corps);
   margin-bottom: var(--e2);
   border-left: 3px solid;
+  animation: message-glisse var(--dur) var(--ressort) backwards;
 }
 .message:last-child { margin-bottom: 0; }
+.message:nth-child(n+2) { animation-delay: 60ms; }
+
+/* Un message vient d'une action que la personne vient de faire (formulaire
+   soumis, décision enregistrée) : il doit se voir arriver, contrairement au
+   reste de l'écran qui, lui, se contente d'apparaître (`entree-cascade`). */
+@keyframes message-glisse {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
 .message.success { background: var(--vert-pale);   border-color: var(--vert); }
 .message.error   { background: var(--rouge-pale);  border-color: var(--rouge); }
 .message.warning { background: var(--orange-pale); border-color: var(--orange); }
@@ -564,6 +755,7 @@ th {
   white-space: nowrap;
 }
 tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: background-color .12s ease; }
 tbody tr:hover { background: var(--surface-creuse); }
 td.nombre, th.nombre { text-align: right; font-variant-numeric: tabular-nums; }
 td.action, th.action { text-align: right; white-space: nowrap; }
@@ -613,6 +805,39 @@ textarea.transcription {
   margin-top: var(--e2);
 }
 
+/* La copie scannée d'une page à côté de sa transcription (écran de relecture) —
+   deux colonnes de largeur égale pour comparer sans faire défiler. Empilé en
+   une colonne sous 920px, image d'abord : sur téléphone il n'y a pas la place
+   de les mettre côte à côte.
+   `align-items: stretch` fait que la ligne de la grille prend la hauteur du
+   plus grand des deux blocs (en pratique l'image, dont la hauteur dépend de
+   son ratio) et que la transcription s'étire pour l'égaler — l'image garde
+   son ratio intrinsèque (les éléments remplacés ne sont pas déformés par
+   `stretch`), seule la zone de texte grandit. Manuscrit et transcription
+   démarrent alignés en haut et se terminent à peu près à la même hauteur. */
+.relecture-grille {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--e4);
+  margin-top: var(--e2);
+  align-items: stretch;
+}
+.relecture-grille.sans-image { grid-template-columns: 1fr; }
+.relecture-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--bord);
+  border-radius: var(--r-petit);
+}
+.relecture-grille textarea.transcription {
+  margin-top: 0;
+  height: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
 /* Un tableau large défile dans son cadre — jamais la page. */
 .defilement { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
@@ -626,6 +851,15 @@ textarea.transcription {
   font-weight: 600;
   white-space: nowrap;
   border: 1px solid transparent;
+  animation: pastille-pose var(--dur) var(--ressort) backwards;
+}
+
+/* Une pastille qualifie un état — elle se pose plutôt qu'elle n'apparaît :
+   léger effet ressort, pas de glissement, pour ne pas la confondre avec un
+   message qui, lui, réclame l'attention. */
+@keyframes pastille-pose {
+  from { opacity: 0; transform: scale(.85); }
+  to   { opacity: 1; transform: none; }
 }
 
 /* Tendance d'un élève (src/core/tendance.py) — pleine, elle doit s'attraper du
@@ -663,6 +897,34 @@ textarea.transcription {
 .palier.B { color: var(--orange); }
 .palier.C { color: var(--rouge); }
 
+/* ── Courbe de progression (src/core/courbe.py) ─────────────────────────────
+   Une seule série (la note /20 d'un élève, copie après copie) : pas de
+   légende — le titre de la carte porte déjà ce qui est tracé. */
+.graphique { position: relative; }
+.graphique svg { display: block; width: 100%; height: auto; }
+.graphique .repere      { stroke: var(--bord); stroke-width: 1; }
+.graphique .repere-texte{ fill: var(--texte-faible); font-size: var(--t-micro); }
+.graphique .trace       { fill: none; stroke: var(--bleu); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.graphique .point       { fill: var(--bleu); stroke: var(--surface); stroke-width: 2; }
+.graphique .cible       { fill: transparent; cursor: pointer; }
+.graphique .date-texte  { fill: var(--texte-faible); font-size: var(--t-micro); text-anchor: middle; }
+.graphique .valeur-fin  { fill: var(--texte); font-size: var(--t-petit); font-weight: 600; }
+
+.graphique-infobulle {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  background: var(--marine);
+  color: #fff;
+  padding: 4px var(--e2);
+  border-radius: var(--r-petit);
+  font-size: var(--t-petit);
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  box-shadow: var(--ombre-haute);
+}
+.graphique-infobulle strong { font-variant-numeric: tabular-nums; }
+
 /* ── Listes d'éléments ───────────────────────────────────────────────────── */
 /* Les « lignes » d'un parcours : hypothèses, lacunes écartées, séances. Le
    motif était recopié en inline sur trois écrans avec trois rembourrages. */
@@ -679,6 +941,13 @@ textarea.transcription {
 }
 .lignes > .ligne:last-child { border-bottom: none; }
 .lignes > .ligne.pale { color: var(--texte-doux); }
+
+/* Une ligne par document (copie) : le nom à gauche, les deux actions groupées
+   à droite — remplace le mur de boutons plats d'avant, illisible dès trois
+   documents. */
+.lignes.documents { margin-top: var(--e4); }
+.lignes.documents > .ligne { align-items: center; }
+.actions-document { display: flex; gap: var(--e2); }
 
 /* En-tête d'une étape de plan : rang, intitulé à gauche ; type et coût à droite. */
 .entete-etape {
@@ -746,10 +1015,26 @@ textarea.transcription {
 }
 .jauge > span {
   display: block;
+  position: relative;
   height: 100%;
   background: var(--bleu);
   border-radius: var(--r-rond);
-  transition: width .4s ease;
+  transition: width var(--dur-lente) ease;
+  overflow: hidden;
+}
+/* Un reflet qui balaie la partie remplie : ce qui distingue « en cours » de
+   « arrêté », dans un tableau où plusieurs jauges sont figées à la même
+   valeur d'une correction à l'autre. */
+.jauge > span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  animation: jauge-reflet 1.8s ease-in-out infinite;
+}
+@keyframes jauge-reflet {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
 }
 .vide { color: var(--texte-doux); }
 .casquette form { display: flex; align-items: center; gap: var(--e1); }
@@ -794,6 +1079,8 @@ textarea.transcription {
   .stats { gap: var(--e4) var(--e5); }
   th, td { padding: 9px var(--e2); }
 
+  .relecture-grille { grid-template-columns: 1fr; }
+
   /* Une action seule tient toute la largeur : c'est plus sûr au pouce. */
   .actions > button:only-child, .actions > .bouton:only-child { width: 100%; }
 }
@@ -803,6 +1090,32 @@ textarea.transcription {
   body { background: #fff; }
   .carte { box-shadow: none; break-inside: avoid; }
 }
+
+/* ── Défilement ──────────────────────────────────────────────────────────── */
+/* Une barre de défilement fine plutôt que celle, épaisse, du système : un
+   détail qui se voit sur les longs tableaux et le tiroir mobile. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bord-fort); border-radius: var(--r-rond); }
+::-webkit-scrollbar-thumb:hover { background: var(--texte-faible); }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); }
+.sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.4); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Les pseudo-éléments de transition de page vivent hors de l'arbre normal
+     (« top layer ») : `*` ne les couvre pas, il faut les viser. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
 </style>
 {% block tete %}{% endblock %}
 </head>
@@ -810,13 +1123,21 @@ textarea.transcription {
 
 <div class="app-shell">
   <aside class="sidebar">
-    <div class="marque">HAKILI LAB<span>Évaluation IA · Maths 6e à la Tle</span></div>
+    <div class="marque">
+      <img src="{% static 'hakili_logo.png' %}" alt="" class="marque-logo">
+      <span class="marque-texte">HAKILI LAB<span>Évaluation IA · Maths 6e à la Tle</span></span>
+      {% if personne %}
+        <button class="sidebar-collapse-btn" id="sidebar-collapse" type="button" aria-label="Réduire la navigation" aria-pressed="false" title="Réduire / afficher la navigation">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M15 6l-6 6 6 6"></path></svg>
+        </button>
+      {% endif %}
+    </div>
 
     {% if personne %}
       <div class="menu-title">MENU</div>
       <nav>
-        <a href="{% url 'correction_web:liste' %}" data-label="À propos" class="{% if rubrique == 'a_propos' %}actif{% endif %}">
-          <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="2"></circle><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg></span>
+        <a href="{% url 'correction_web:a_propos' %}" data-label="À propos" class="{% if rubrique == 'a_propos' %}actif{% endif %}">
+          <span class="icone" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 16v-5"></path><circle cx="12" cy="8" r=".5" fill="currentColor"></circle></svg></span>
           <span class="label">À propos</span>
         </a>
 
@@ -861,28 +1182,28 @@ textarea.transcription {
         </div>
       {% endif %}
 
-      <div class="compte">
-        <span>{{ personne.prenom }} {{ personne.nom }}</span>
-        {% if not acces_libre %}
+      {% if not acces_libre %}
+        <div class="compte">
+          <span>{{ personne.prenom }} {{ personne.nom }}</span>
           <form method="post" action="{% url 'comptes:deconnexion' %}">
             {% csrf_token %}
             <button type="submit" class="discret petit">Quitter</button>
           </form>
-        {% endif %}
-      </div>
+        </div>
+      {% endif %}
     {% endif %}
   </aside>
 
   <div class="page">
-    {# Development access banner removed from UI; setting remains for dev use. #}
-
     {% if personne %}
       <div class="topbar">
-        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Basculer la navigation" aria-pressed="false" title="Afficher / réduire la navigation">
+        <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Ouvrir la navigation" aria-pressed="false" title="Ouvrir la navigation">
           <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
         </button>
         <h1 class="page-titre">{% block page_titre %}{% endblock %}</h1>
-        <div class="compte">{{ personne.prenom }} {{ personne.nom }}</div>
+        {% if not acces_libre %}
+          <div class="compte">{{ personne.prenom }} {{ personne.nom }}</div>
+        {% endif %}
       </div>
     {% endif %}
 
@@ -903,47 +1224,51 @@ textarea.transcription {
 <div class="drawer-overlay" id="drawer-overlay" tabindex="-1"></div>
 
 <script>
-// Sidebar toggle behaviour: desktop collapse vs mobile drawer
+// Navigation : bouton chevron desktop (collapse) et hamburger mobile (tiroir), deux contrôles distincts.
 (function(){
-  var toggle = document.getElementById('sidebar-toggle');
   var sidebar = document.querySelector('.sidebar');
+  var collapseBtn = document.getElementById('sidebar-collapse');
+  var drawerBtn = document.getElementById('sidebar-toggle');
   var overlay = document.getElementById('drawer-overlay');
-  if(!toggle || !sidebar) return;
+  if(!sidebar) return;
 
   function isMobile(){ return window.matchMedia('(max-width: 920px)').matches; }
-
-  function setPressed(v){ toggle.setAttribute('aria-pressed', v ? 'true' : 'false'); }
 
   // restore collapsed state from localStorage (desktop only)
   try {
     var saved = localStorage.getItem('hakili_sidebar_collapsed');
     if(saved === '1' && !isMobile()){
       sidebar.classList.add('collapsed');
-      setPressed(true);
+      if(collapseBtn) collapseBtn.setAttribute('aria-pressed', 'true');
     }
   } catch(e) { /* ignore storage errors */ }
 
-  toggle.addEventListener('click', function(){
-    if(isMobile()){
+  if(collapseBtn){
+    collapseBtn.addEventListener('click', function(){
+      var collapsed = sidebar.classList.toggle('collapsed');
+      collapseBtn.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+      try { localStorage.setItem('hakili_sidebar_collapsed', collapsed ? '1' : '0'); } catch(e){}
+    });
+  }
+
+  if(drawerBtn && overlay){
+    var closeDrawer = function(){
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      drawerBtn.setAttribute('aria-pressed', 'false');
+    };
+    drawerBtn.addEventListener('click', function(){
       var open = sidebar.classList.toggle('open');
       overlay.classList.toggle('open', open);
-      setPressed(open);
-      // trap focus could be added later
-    } else {
-      var collapsed = sidebar.classList.toggle('collapsed');
-      setPressed(collapsed);
-      try { localStorage.setItem('hakili_sidebar_collapsed', collapsed ? '1' : '0'); } catch(e){}
-    }
-  });
+      drawerBtn.setAttribute('aria-pressed', open ? 'true' : 'false');
+    });
+    overlay.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeDrawer(); });
 
-  overlay.addEventListener('click', function(){ sidebar.classList.remove('open'); overlay.classList.remove('open'); setPressed(false); });
-
-  // Close drawer on ESC
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ sidebar.classList.remove('open'); overlay.classList.remove('open'); setPressed(false); } });
-
-  // Keep aria state in sync on resize
-  var ro = new ResizeObserver(function(){ if(!isMobile()){ sidebar.classList.remove('open'); overlay.classList.remove('open'); setPressed(sidebar.classList.contains('collapsed')); } });
-  ro.observe(document.body);
+    // En repassant en desktop, le tiroir mobile n'a plus de sens.
+    var ro = new ResizeObserver(function(){ if(!isMobile()) closeDrawer(); });
+    ro.observe(document.body);
+  }
 })();
 </script>
 

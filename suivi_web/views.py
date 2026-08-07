@@ -10,19 +10,21 @@ dupliquer ici recréerait le risque.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from src.core.courbe import construire_courbe
 from src.core.tendance import calculer_tendance
 from src.integrations.google_sheets import GoogleSheetsError
 from src.services.identite_service import filtrer_par_recherche
 from src.services.user_service import get_accessible_eleves
 
 from comptes.session import admin_requis, connexion_requise, utilisateur_courant
-from suivi.models import Copie, EtatSession
+from suivi.models import Copie, EtatSession, Evaluation
 from suivi_web.jetons import identifiant_depuis_jeton, jeton_eleve
 
 logger = logging.getLogger(__name__)
@@ -138,8 +140,12 @@ def accueil(request):
     )
 
 
-_DOC_ORDRE = ["scan", "rapport", "remediation"]
-_DOC_LIBELLES = {"scan": "Scan", "rapport": "Rapport", "remediation": "Remédiation"}
+_DOC_ORDRE = ["scan", "rapport", "sujet_confirmation"]
+_DOC_LIBELLES = {
+    "scan": "Copie de l'élève",
+    "rapport": "Rapport d'analyse",
+    "sujet_confirmation": "Sujet de confirmation (T1)",
+}
 
 
 def _type_reel(donnees: bytes) -> tuple[str, str]:
@@ -209,17 +215,41 @@ def eleve_detail(request, jeton: str):
             .order_by("-date_soumission")
             .prefetch_related("documents")
         )
+        # « Rapport » seul ne dit pas de quelle passation du cycle T0→T5 il
+        # s'agit. `Evaluation.copy_id` porte ce lien (module 9) ; une copie sans
+        # évaluation associée (saisie hors cycle) garde le libellé générique.
+        evaluations_par_copie = {
+            e.copy_id: e
+            for e in Evaluation.objects.filter(
+                copy_id__in=[c.copy_id for c in copies]
+            ).order_by("numero")
+        }
         for copie in copies:
+            # Le "remediation" généré par l'ancien pipeline n'a plus cours (le plan
+            # de remédiation v2 se télécharge depuis le parcours, pas depuis la
+            # copie) : on ne l'affiche plus, même s'il reste en base sur d'anciennes
+            # copies.
             documents = sorted(
-                copie.documents.all(),
+                (d for d in copie.documents.all() if d.type != "remediation"),
                 key=lambda d: _DOC_ORDRE.index(d.type) if d.type in _DOC_ORDRE else 9,
             )
+            evaluation = evaluations_par_copie.get(copie.copy_id)
+            libelle_rapport = _DOC_LIBELLES["rapport"]
+            if evaluation:
+                libelle_rapport += f" {evaluation.type}"
+                if evaluation.numero > 1:
+                    libelle_rapport += f" ({evaluation.numero})"
             entrees.append(
                 {
                     "copie": copie,
                     "jeton": jeton_eleve(copie.copy_id),
                     "documents": [
-                        {"type": doc.type, "libelle": _DOC_LIBELLES.get(doc.type, doc.type)}
+                        {
+                            "type": doc.type,
+                            "libelle": libelle_rapport
+                            if doc.type == "rapport"
+                            else _DOC_LIBELLES.get(doc.type, doc.type),
+                        }
                         for doc in documents
                     ],
                 }
@@ -235,6 +265,7 @@ def eleve_detail(request, jeton: str):
     tendance = calculer_tendance(copies)
     classe_css, libelle = _STYLE_TENDANCE.get(tendance, ("insuffisant", tendance))
     notes = [c.notes_finales for c in copies if c.notes_finales is not None]
+    courbe = construire_courbe(copies)
 
     from suivi.models import Session
 
@@ -256,6 +287,8 @@ def eleve_detail(request, jeton: str):
             "derniere_note": notes[-1] if notes else None,
             "lecture_ok": lecture_ok,
             "parcours": parcours,
+            "courbe": courbe,
+            "jeton_nouvelle_analyse": jeton_eleve(identifiant),
         },
     )
 
@@ -333,11 +366,275 @@ def session_detail(request, jeton: str):
             "ecartes": session.problemes.filter(
                 etat=EtatProbleme.ECARTE
             ).select_related("competence", "type_erreur"),
+            "en_remediation": session.problemes.filter(
+                etat=EtatProbleme.EN_REMEDIATION
+            ).select_related("competence", "type_erreur"),
+            "resolus": session.problemes.filter(
+                etat=EtatProbleme.RESOLU
+            ).select_related("competence", "type_erreur"),
+            "non_resolus": session.problemes.filter(
+                etat=EtatProbleme.NON_RESOLU
+            ).select_related("competence", "type_erreur"),
+            "regresses": session.problemes.filter(
+                etat=EtatProbleme.REGRESSE
+            ).select_related("competence", "type_erreur"),
             "peut_inscrire": session.etat
             in (EtatSession.ATTENTE_INSCRIPTION, EtatSession.HORS_DISPOSITIF),
             "palier_c": session.palier == "C",
         },
     )
+
+
+@connexion_requise
+def fiche_remediation(request, jeton: str):
+    """Télécharge la fiche de remédiation (module 7) : le plan chiffré en PDF.
+
+    Générée à la demande, jamais stockée comme les autres documents (rapport,
+    sujet T1) : le plan bouge tant que des problèmes passent de confirmé à
+    résolu, un PDF figé irait vite périmé — voir `src/pipeline/pdf_plan_html.py`.
+    """
+    import uuid
+
+    from src.core.config import settings
+    from src.pipeline.pdf_plan_html import generate_plan_pdf
+    from suivi.models import Session
+    from suivi.plan import construire
+
+    identifiant = identifiant_depuis_jeton(jeton)
+    if identifiant is None:
+        raise Http404("Lien invalide")
+
+    session = get_object_or_404(Session, pk=identifiant)
+    eleve = _eleve_autorise(request, session.identifiant_hakili)
+
+    plan = construire(session)
+    if not plan["etapes"]:
+        messages.warning(
+            request, "Aucun problème confirmé — il n'y a pas encore de plan à exporter."
+        )
+        return redirect("suivi_web:session_detail", jeton=jeton)
+
+    student_name = f"{eleve.get('nom', '')} {eleve.get('prenom', '')}".strip()
+    pdf_path = (
+        Path(settings.runs_dir) / "fiches_remediation" / f"{uuid.uuid4().hex}.pdf"
+    )
+    generate_plan_pdf(pdf_path, student_name, session, plan)
+    donnees = pdf_path.read_bytes()
+    pdf_path.unlink(missing_ok=True)
+
+    reponse = HttpResponse(donnees, content_type="application/pdf")
+    nom = f"fiche_remediation_{eleve.get('nom', 'eleve')}".replace(" ", "_")
+    disposition = "attachment" if request.GET.get("telecharger") else "inline"
+    reponse["Content-Disposition"] = f'{disposition}; filename="{nom}.pdf"'
+    return reponse
+
+
+@connexion_requise
+def generer_sujet(request, jeton: str, type_evaluation: str):
+    """Génère à la volée le sujet T3 (vérification après remédiation) ou
+    T4/T5 (contrôle de rétention), ciblé sur les problèmes réellement
+    concernés — voir `suivi/generation.py`.
+
+    Même choix que `fiche_remediation` : jamais stocké comme `Document`, régénéré
+    à chaque demande — les problèmes ciblés peuvent avoir changé d'état entre
+    deux visites, un PDF figé irait vite périmé.
+    """
+    import uuid
+
+    from src.core.config import settings
+    from src.pipeline.pdf_remediation_html import generate_remediation_pdf
+    from suivi.generation import generer_sujet_verification
+    from suivi.models import Session
+
+    identifiant = identifiant_depuis_jeton(jeton)
+    if identifiant is None:
+        raise Http404("Lien invalide")
+
+    session = get_object_or_404(Session, pk=identifiant)
+    eleve = _eleve_autorise(request, session.identifiant_hakili)
+
+    try:
+        sujet = generer_sujet_verification(session, type_evaluation)
+    except ValueError:
+        raise Http404("Type d'évaluation invalide")
+
+    if sujet is None:
+        messages.warning(
+            request,
+            f"Rien à générer pour {type_evaluation} — aucun problème dans l'état "
+            "requis, ou génération momentanément indisponible.",
+        )
+        return redirect("suivi_web:session_detail", jeton=jeton)
+
+    student_name = f"{eleve.get('nom', '')} {eleve.get('prenom', '')}".strip()
+    pdf_path = (
+        Path(settings.runs_dir) / "sujets_verification" / f"{uuid.uuid4().hex}.pdf"
+    )
+    generate_remediation_pdf(
+        output_path=pdf_path,
+        copy_id=sujet.copy_id,
+        student_name=student_name,
+        remediation_subject=sujet,
+    )
+    donnees = pdf_path.read_bytes()
+    pdf_path.unlink(missing_ok=True)
+
+    reponse = HttpResponse(donnees, content_type="application/pdf")
+    nom = f"sujet_{type_evaluation}_{eleve.get('nom', 'eleve')}".replace(" ", "_")
+    disposition = "attachment" if request.GET.get("telecharger") else "inline"
+    reponse["Content-Disposition"] = f'{disposition}; filename="{nom}.pdf"'
+    return reponse
+
+
+def _trancher(request, jeton: str, type_evaluation: str, *, etat_source: str, options_verdict: set[str]):
+    """Fait passer chaque problème dans `etat_source` vers la décision saisie
+    en POST (`decision_<pk>`), pour celles qui font partie de `options_verdict`.
+
+    Cœur commun à `confirmer_hypotheses` (T1) et `trancher_evaluation`
+    (T3/T4/T5) : module 5 ne corrige aucune de ces évaluations automatiquement
+    (voir `docs/v2_roadmap.md`) — c'est l'enseignant qui, sujet en main,
+    décide pour chaque problème. Une nouvelle `Evaluation` est créée pour
+    porter ces transitions (rang automatique), sans copie associée : la
+    décision n'est pas issue d'une correction déposée dans l'app.
+
+    En POST seulement, pour la même raison qu'`inscrire` : ça engage
+    l'historique du problème, pas seulement l'affichage.
+    """
+    from django.core.exceptions import ValidationError
+
+    from suivi.models import Evaluation, Session
+
+    identifiant = identifiant_depuis_jeton(jeton)
+    if identifiant is None:
+        raise Http404("Lien invalide")
+
+    session = get_object_or_404(Session, pk=identifiant)
+    _eleve_autorise(request, session.identifiant_hakili)
+
+    if request.method != "POST":
+        return redirect("suivi_web:session_detail", jeton=jeton)
+
+    problemes = list(session.problemes.filter(etat=etat_source))
+    decisions = {
+        p.pk: request.POST.get(f"decision_{p.pk}", "")
+        for p in problemes
+    }
+    a_traiter = {pk: d for pk, d in decisions.items() if d in options_verdict}
+
+    if not a_traiter:
+        messages.warning(request, "Aucune décision saisie — rien n'a été enregistré.")
+        return redirect("suivi_web:session_detail", jeton=jeton)
+
+    evaluation = Evaluation.objects.create(session=session, type=type_evaluation)
+
+    compte: dict[str, int] = {}
+    erreurs = []
+    for probleme in problemes:
+        decision = a_traiter.get(probleme.pk)
+        if decision is None:
+            continue
+        try:
+            probleme.changer_etat(decision, evaluation=evaluation)
+        except ValidationError as exc:
+            erreurs.append(f"{probleme.competence_id} × {probleme.type_erreur_id} : {'; '.join(exc.messages)}")
+            continue
+        compte[decision] = compte.get(decision, 0) + 1
+
+    if compte:
+        resume = ", ".join(f"{n} {d}" for d, n in compte.items())
+        messages.success(request, f"{type_evaluation} enregistré — {resume}.")
+    for erreur in erreurs:
+        messages.error(request, erreur)
+
+    return redirect("suivi_web:session_detail", jeton=jeton)
+
+
+@connexion_requise
+def confirmer_hypotheses(request, jeton: str):
+    """Saisit le résultat du test de confirmation (T1) : chaque hypothèse
+    devient confirmée ou écartée. Voir `_trancher`."""
+    from suivi.models import EtatProbleme, TypeEvaluation
+
+    return _trancher(
+        request, jeton, TypeEvaluation.T1,
+        etat_source=EtatProbleme.HYPOTHESE,
+        options_verdict={EtatProbleme.CONFIRME, EtatProbleme.ECARTE},
+    )
+
+
+#: Règles de verdict par type d'évaluation — état source visé et décisions
+#: permises, cohérentes avec `Probleme.TRANSITIONS_PERMISES` (suivi/models.py) :
+#: T3 ne peut faire avancer qu'un problème `en_remediation` (vers résolu ou
+#: non résolu) ; T4 et T5 ne peuvent faire avancer qu'un problème `resolu` —
+#: T4 ne connaît pas encore `clos`, réservé au dernier contrôle (T5).
+_REGLES_VERDICT = {
+    "T3": {"etat_source": "en_remediation", "options": {"resolu", "non_resolu"}},
+    "T4": {"etat_source": "resolu", "options": {"regresse"}},
+    "T5": {"etat_source": "resolu", "options": {"regresse", "clos"}},
+}
+
+
+@connexion_requise
+def trancher_evaluation(request, jeton: str, type_evaluation: str):
+    """Saisit le résultat de T3 (vérification après remédiation) ou T4/T5
+    (contrôle de rétention) — généralisation de `confirmer_hypotheses` à ces
+    trois types. Voir `_REGLES_VERDICT` et `_trancher`.
+    """
+    regles = _REGLES_VERDICT.get(type_evaluation)
+    if regles is None:
+        raise Http404("Type d'évaluation invalide")
+
+    return _trancher(
+        request, jeton, type_evaluation,
+        etat_source=regles["etat_source"],
+        options_verdict=regles["options"],
+    )
+
+
+@connexion_requise
+def relancer(request, jeton: str, probleme_id: int):
+    """Relance un problème `non_resolu` ou `regresse` en remédiation — une
+    décision du tuteur, jamais un effet automatique d'un contrôle.
+
+    Aucune évaluation associée : ce n'est pas une passation qui produit cette
+    décision, c'est le tuteur qui la prend hors évaluation — cas déjà prévu
+    par le champ `evaluation_origine` de `Probleme` (« nul pour un problème
+    saisi hors évaluation »).
+
+    En POST seulement, même garde qu'`inscrire`/`_trancher` : ça engage
+    l'historique du problème.
+    """
+    from django.core.exceptions import ValidationError
+
+    from suivi.models import EtatProbleme, Probleme, Session
+
+    identifiant = identifiant_depuis_jeton(jeton)
+    if identifiant is None:
+        raise Http404("Lien invalide")
+
+    session = get_object_or_404(Session, pk=identifiant)
+    _eleve_autorise(request, session.identifiant_hakili)
+
+    if request.method != "POST":
+        return redirect("suivi_web:session_detail", jeton=jeton)
+
+    probleme = get_object_or_404(Probleme, pk=probleme_id, session=session)
+
+    try:
+        probleme.changer_etat(
+            EtatProbleme.EN_REMEDIATION,
+            commentaire=request.POST.get("motif", ""),
+        )
+    except ValidationError as exc:
+        for message_erreur in exc.messages:
+            messages.error(request, message_erreur)
+    else:
+        messages.success(
+            request,
+            f"{probleme.competence_id} × {probleme.type_erreur_id} relancé en remédiation.",
+        )
+
+    return redirect("suivi_web:session_detail", jeton=jeton)
 
 
 @connexion_requise

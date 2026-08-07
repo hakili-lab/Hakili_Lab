@@ -170,12 +170,12 @@ def _charger() -> tuple[list[dict], list[dict]]:
         for c in (yaml.safe_load(Path(f).read_text(encoding="utf-8")) or [])
     ]
 
-    for candidat in (_ROOT.parent / "Referentiel_Urie_v0.xlsx", _ROOT / "Referentiel_Urie_v0.xlsx"):
+    for candidat in (_ROOT.parent / "Referentiel_Socle_v0.xlsx", _ROOT / "Referentiel_Socle_v0.xlsx"):
         if candidat.exists():
             classeur = candidat
             break
     else:
-        raise SystemExit("Referentiel_Urie_v0.xlsx introuvable.")
+        raise SystemExit("Referentiel_Socle_v0.xlsx introuvable.")
 
     wb = openpyxl.load_workbook(classeur, data_only=True, read_only=True)
     competences = [

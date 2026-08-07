@@ -1,5 +1,5 @@
 """
-Diagnostic contraint — module 4 du chantier Urie v2.
+Diagnostic contraint — module 4 du chantier v2.
 
 Ce que ça remplace
 ------------------
@@ -30,7 +30,7 @@ Les QCM ne passent jamais par le modèle
 Une lettre cochée donne le type d'erreur directement par `option_qcm`, et la
 contrainte `option_type_erreur_coherent` garantit en base que toute mauvaise
 option en porte un. Appeler un modèle de langage là-dessus coûterait de l'argent
-pour introduire une incertitude là où il n'y en a aucune (guide-urie.md, module 4).
+pour introduire une incertitude là où il n'y en a aucune (guide-v2.md, module 4).
 
 Ce qui n'est pas diagnostiqué est dit
 -------------------------------------
@@ -81,7 +81,7 @@ class ReponseEleve:
 
     Volontairement détachée du modèle Django `Reponse` : une copie de l'ancien
     format n'a pas de `Reponse` enregistrable du tout (elle n'a aucune des 280
-    questions Urie). Le moteur travaille donc sur une entrée simple, et
+    questions v2). Le moteur travaille donc sur une entrée simple, et
     l'écriture en base est une étape séparée (`suivi/diagnostic.py`).
 
     En production, ces objets viennent de la correction déjà faite —
@@ -541,7 +541,7 @@ def diagnostiquer(
 # ------------------------------
 # Le mode normal ci-dessus travaille **par question** : il reçoit l'énoncé, la
 # compétence évaluée, ses prérequis et ses signatures d'erreur, tous tirés des 280
-# questions Urie. Les 5 copies du corpus de référence sont de l'**ancien format**
+# questions v2. Les 5 copies du corpus de référence sont de l'**ancien format**
 # et n'en portent aucune : le mode normal ne peut pas tourner dessus, donc le
 # module 4 n'a rien contre quoi se mesurer tant qu'aucune copie du nouveau format
 # n'existe.

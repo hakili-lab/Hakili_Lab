@@ -15,7 +15,7 @@ Utilisation dans le pipeline :
 
 Tests archivés
 --------------
-Les 6 tests construits avant le référentiel Urie v2 sont marqués `archive: True`
+Les 6 tests construits avant le référentiel v2 sont marqués `archive: True`
 (arbitrage A du 2026-07-30, voir docs/harmonisation_donnees.md) : leurs sujets ont
 été refaits et ils ne doivent plus être proposés pour une nouvelle correction.
 
@@ -50,13 +50,13 @@ _KB_DIR = _ROOT / "data" / "knowledge"
 
 # ── Catalogue des tests Hakili ────────────────────────────────────────────────
 #
-# `archive: True` = test d'avant le référentiel Urie v2, remplacé par les nouveaux
+# `archive: True` = test d'avant le référentiel v2, remplacé par les nouveaux
 # sujets à cadres ancrés. Chargé mais plus proposé — voir le docstring du module.
 
 _TEST_CATALOG: dict[str, dict] = {
-    # ── Tests Urie v2 — actifs ────────────────────────────────────────────────
-    # Barèmes générés depuis Referentiel_Urie_v0.xlsx par
-    # scripts/generer_baremes_urie.py. `label` et `niveaux` sont laissés vides :
+    # ── Tests v2 — actifs ─────────────────────────────────────────────────────
+    # Barèmes générés depuis Referentiel_Socle_v0.xlsx par
+    # scripts/generer_baremes_socle.py. `label` et `niveaux` sont laissés vides :
     # ils sont lus dans le `meta` du YAML (titre, classe) pour éviter de dupliquer
     # la même information à deux endroits qui divergeraient.
     #
@@ -68,7 +68,7 @@ _TEST_CATALOG: dict[str, dict] = {
     # Pas de corrigé complet : le classeur ne donne la bonne réponse que pour les
     # 71 QCM (sur 280). Voir docs/harmonisation_donnees.md, arbitrage B.
     **{
-        f"urie_{niveau}": {
+        f"socle_{niveau}": {
             "label": "",
             "description": (
                 "40 questions · partie A (30 courtes) + partie B (10 rédigées) · "
@@ -76,7 +76,7 @@ _TEST_CATALOG: dict[str, dict] = {
             ),
             "niveaux": "",
             "docx_filename": "",
-            "bareme_yaml": f"bareme_urie_{niveau}.yaml",
+            "bareme_yaml": f"bareme_socle_{niveau}.yaml",
             "corrige_yaml": "",
             # Le sujet PDF sert à l'IMPRESSION, pas à l'extraction de texte : ses
             # mathématiques sont vectorielles (voir docs/harmonisation_donnees.md
@@ -194,7 +194,7 @@ def _build_rubric_from_yaml(bareme_yaml_path: Path) -> tuple["Rubric", int, dict
 
     Deux formats sont acceptés :
 
-    - **Urie v2** (`bareme_urie_*.yaml`, généré par `scripts/generer_baremes_urie.py`) :
+    - **v2** (`bareme_socle_*.yaml`, généré par `scripts/generer_baremes_socle.py`) :
       liste plate `questions`, clés `code` / `objet` / `bareme`. Structure plate parce
       que les 7 domaines du référentiel (N, L, G, D, F, M, S, T) ne rentrent pas dans
       un découpage numérique/géométrique.
@@ -215,7 +215,7 @@ def _build_rubric_from_yaml(bareme_yaml_path: Path) -> tuple["Rubric", int, dict
     meta = raw.get("meta", {}) or {}
     items: list[RubricItem] = []
 
-    if "questions" in raw:  # format Urie v2
+    if "questions" in raw:  # format v2
         for q in raw.get("questions", []):
             qid = q.get("code", "")
             if qid:
@@ -236,7 +236,7 @@ def _build_rubric_from_yaml(bareme_yaml_path: Path) -> tuple["Rubric", int, dict
                     items.append(RubricItem(id=qid, label=label, max_score=pts))
 
     # Format de chaque question (qcm / court / redige / construction). Seuls les
-    # barèmes Urie v2 le portent — il vient du classeur, et c'est la même valeur
+    # barèmes v2 le portent — il vient du classeur, et c'est la même valeur
     # que porte `referentiel.Question.format` en base.
     meta["formats"] = {
         q["code"]: q["format"]
@@ -305,7 +305,7 @@ class TestRegistry:
             # Chargement du corrigé officiel
             official_answers = get_answer_loader().get_official_answers(test_id)
 
-            # Les tests Urie v2 laissent label/niveaux vides dans le catalogue :
+            # Les tests v2 laissent label/niveaux vides dans le catalogue :
             # la valeur fait autorité dans le `meta` du barème, pas ici.
             label = cfg["label"] or str(bareme_meta.get("titre") or test_id)
             niveaux = cfg["niveaux"] or str(bareme_meta.get("classe") or "")

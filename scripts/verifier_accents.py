@@ -1,5 +1,5 @@
 """
-Audit des accents manquants dans Referentiel_Urie_v0.xlsx.
+Audit des accents manquants dans Referentiel_Socle_v0.xlsx.
 
 Le problème
 -----------
@@ -52,8 +52,8 @@ import openpyxl
 
 _ROOT = Path(__file__).resolve().parent.parent
 _CLASSEUR_CANDIDATS = [
-    _ROOT.parent / "Referentiel_Urie_v0.xlsx",
-    _ROOT / "Referentiel_Urie_v0.xlsx",
+    _ROOT.parent / "Referentiel_Socle_v0.xlsx",
+    _ROOT / "Referentiel_Socle_v0.xlsx",
 ]
 
 # Colonnes destinées à être lues par un humain, par onglet.
@@ -89,7 +89,7 @@ def _trouver_classeur() -> Path:
     for p in _CLASSEUR_CANDIDATS:
         if p.exists():
             return p
-    raise SystemExit("Referentiel_Urie_v0.xlsx introuvable.")
+    raise SystemExit("Referentiel_Socle_v0.xlsx introuvable.")
 
 
 def _collecter(chemin: Path) -> tuple[Counter, dict[str, set[str]]]:
@@ -143,7 +143,7 @@ def analyser(chemin: Path) -> dict:
 def _ecrire_rapport(res: dict, chemin_classeur: Path) -> Path:
     sortie = _ROOT / "docs" / "accents_a_corriger.md"
     lignes = [
-        "# Accents à corriger dans `Referentiel_Urie_v0.xlsx`",
+        "# Accents à corriger dans `Referentiel_Socle_v0.xlsx`",
         "",
         "**Généré par `scripts/verifier_accents.py`** — ne pas éditer à la main, relancer le script.",
         f"**Source :** `{chemin_classeur.name}`",
@@ -192,7 +192,7 @@ def _ecrire_rapport(res: dict, chemin_classeur: Path) -> Path:
         "## Après correction",
         "",
         "1. Relancer `python scripts/verifier_accents.py` — les deux listes doivent se vider.",
-        "2. Régénérer les barèmes : `python scripts/generer_baremes_urie.py`",
+        "2. Régénérer les barèmes : `python scripts/generer_baremes_socle.py`",
         "   (⚠ sauvegarder d'abord les corrigés saisis à la main — la régénération les écrase).",
         "3. Mettre à jour le compte attendu dans `tests/test_accents_referentiel.py`.",
         "",

@@ -1,11 +1,11 @@
-# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
-# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# Généré par scripts/generer_baremes_socle.py — ne pas éditer à la main.
+# Source : Referentiel_Socle_v0.xlsx. Relancer le script après toute
 # mise à jour du classeur. Exception : les champs reponse_attendue et
 # solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
 # les sauvegarder avant de régénérer.
 
 meta:
-  test_id: urie_2ndeC
+  test_id: socle_2ndeC
   titre: Test diagnostique d'entrée en 2nde C
   niveau_test: 2ndeC
   classe: 2nde
@@ -13,9 +13,9 @@ meta:
   total_possible: 20
   somme_baremes_reelle: 19.99999
   bareme_classeur_total: 60.0
-  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
-  genere_par: scripts/generer_baremes_urie.py
-  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+  source: Referentiel_Socle_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_socle.py
+  note_corriges: 10 QCM avec bonne réponse ; 0 questions sans corrigé (absent du classeur — arbitrage
     B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
 questions:
 - code: D1
@@ -27,7 +27,7 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Fréquence en pourcentage des 12 femmes sur 40 membres
-  reponse_attendue: ''
+  reponse_attendue: 30 %
   solution: ''
 - code: D2
   partie: B
@@ -38,8 +38,8 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Effectif total, note moyenne et fréquence de la note 10
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: effectif total = 25 ; moyenne = 9,92 ; frequence(10) = 32 %
+  solution: somme=5x3+8x6+10x8+12x5+15x3=15+48+80+60+45=248 ; 248/25=9,92 ; 8/25x100=32%.
 - code: F1
   partie: A
   format: qcm
@@ -79,7 +79,7 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Équation de la droite passant par A(0 ; 3), coefficient directeur -2
-  reponse_attendue: ''
+  reponse_attendue: y = -2x + 3
   solution: ''
 - code: F3
   partie: B
@@ -90,8 +90,8 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Exprimer f(x), calculer f(12) puis l'antécédent de 3 500
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: f(x) = 500 + 150x ; f(12) = 2 300 F ; masse = 20 kg
+  solution: f(12)=500+150x12=2300 ; 500+150x=3500 -> 150x=3000 -> x=20.
 - code: G1
   partie: A
   format: qcm
@@ -131,7 +131,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Coordonnées du milieu I de [AB], A(-2 ; 3), B(4 ; -1)
-  reponse_attendue: ''
+  reponse_attendue: I(1 ; 1)
   solution: ''
 - code: G3
   partie: A
@@ -142,7 +142,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Réduire la somme des vecteurs AB + BC + CD
-  reponse_attendue: ''
+  reponse_attendue: vecteur AD
   solution: ''
 - code: G4
   partie: A
@@ -213,7 +213,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Calculer AC avec (MN)//(BC), AM=3, AB=9, AN=4
-  reponse_attendue: ''
+  reponse_attendue: 12 cm
   solution: ''
 - code: G7
   partie: A
@@ -224,7 +224,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Déterminer k tel que v=k u, u(3;-2), v(-9;6)
-  reponse_attendue: ''
+  reponse_attendue: k = -3
   solution: ''
 - code: G8
   partie: A
@@ -235,7 +235,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: 'Préciser le sommet de l''angle droit : 8, 15, 17'
-  reponse_attendue: ''
+  reponse_attendue: Angle droit en S
   solution: ''
 - code: G9
   partie: A
@@ -246,7 +246,7 @@ questions:
   competence_secondaire: null
   domaine: Trigonometrie
   objet: 'Distance au mur : échelle de 4 m à 60 degrés'
-  reponse_attendue: ''
+  reponse_attendue: 2 m
   solution: ''
 - code: G10
   partie: A
@@ -257,7 +257,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: 'Coordonnées de F : I(2;-1) milieu de [EF], E(-3;5)'
-  reponse_attendue: ''
+  reponse_attendue: F(7 ; -7)
   solution: ''
 - code: G11
   partie: B
@@ -268,8 +268,8 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Coordonnées de AB et AC, puis alignement de A, B et C
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: vecteur AB(4;2) ; vecteur AC(6;3) ; A, B, C sont alignes
+  solution: 'AC=1,5 x AB (6/4=3/2=1,5 et 3/2=1,5) donc les vecteurs sont colineaires : A, B, C alignes.'
 - code: G12
   partie: B
   format: redige
@@ -279,8 +279,8 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Comparer le trajet par la diagonale AC et le trajet par B
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: diagonale AC = 50 m ; trajet par B = 70 m ; difference = 20 m
+  solution: AC=racine(40^2+30^2)=racine(2500)=50 ; AB+BC=40+30=70 ; 70-50=20.
 - code: G13
   partie: B
   format: redige
@@ -290,8 +290,8 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Calculer BC et AN, (MN)//(BC), AM=4, MB=6
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: BC = 12,5 cm ; AN = 6 cm
+  solution: 'AB=AM+MB=4+6=10 ; Thales : 4/10=AN/15=5/BC -> AN=6 ; BC=12,5.'
 - code: L1
   partie: A
   format: qcm
@@ -331,7 +331,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Factoriser x^2 - 49
-  reponse_attendue: ''
+  reponse_attendue: (x - 7)(x + 7)
   solution: ''
 - code: L3
   partie: A
@@ -372,7 +372,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Résoudre dans R l'inéquation 3x - 5 <= 7
-  reponse_attendue: ''
+  reponse_attendue: x <= 4
   solution: ''
 - code: L5
   partie: A
@@ -413,7 +413,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Factoriser (3x - 1)(x + 4) + (3x - 1)^2
-  reponse_attendue: ''
+  reponse_attendue: (3x - 1)(4x + 3)
   solution: ''
 - code: L7
   partie: A
@@ -424,7 +424,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Résoudre le système x+y=7 ; 2x-y=5
-  reponse_attendue: ''
+  reponse_attendue: x = 4 ; y = 3
   solution: ''
 - code: L8
   partie: A
@@ -435,7 +435,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Résoudre (2x - 6)(x + 5) = 0
-  reponse_attendue: ''
+  reponse_attendue: x = 3 ou x = -5
   solution: ''
 - code: L9
   partie: A
@@ -476,8 +476,8 @@ questions:
   competence_secondaire: L.FAC1
   domaine: Calcul litteral et algebre
   objet: Factoriser R = 4x^2-9-(2x-3)(x+1) puis calculer R(-2)
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: R = (2x-3)(x+2) ; R(-2) = 0
+  solution: 4x^2-9=(2x-3)(2x+3) ; R=(2x-3)(2x+3)-(2x-3)(x+1)=(2x-3)[(2x+3)-(x+1)]=(2x-3)(x+2) ; R(-2)=(-7)(0)=0.
 - code: L11
   partie: B
   format: redige
@@ -487,8 +487,8 @@ questions:
   competence_secondaire: L.EQ1
   domaine: Calcul litteral et algebre
   objet: Mettre en équation et calculer le prix des deux sacs
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 2x + 5000 = 41000 ; mil = 18 000 F, riz = 23 000 F
+  solution: x+(x+5000)=41000 -> 2x=36000 -> x=18000 ; riz=18000+5000=23000.
 - code: L12
   partie: B
   format: redige
@@ -498,8 +498,8 @@ questions:
   competence_secondaire: L.MISE
   domaine: Calcul litteral et algebre
   objet: Prix du kilo de niébé et de sorgho (système)
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: niebe = 800 F/kg ; sorgho = 600 F/kg
+  solution: '3n+2s=3600 ; 5n+2s=5200 ; soustraction : 2n=1600 -> n=800 ; 3x800+2s=3600 -> s=600.'
 - code: N1
   partie: A
   format: court
@@ -509,7 +509,7 @@ questions:
   competence_secondaire: N.PRIO
   domaine: Activites numeriques
   objet: Calculer 3/4 - 2/3 x 5/2, résultat en fraction irréductible
-  reponse_attendue: ''
+  reponse_attendue: -11/12
   solution: ''
 - code: N2
   partie: A
@@ -520,7 +520,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Écrire 45 000 x 10^-7 en notation scientifique
-  reponse_attendue: ''
+  reponse_attendue: 4,5 x 10 puissance -3
   solution: ''
 - code: N3
   partie: A
@@ -531,7 +531,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Écrire √50 sous la forme a√2
-  reponse_attendue: ''
+  reponse_attendue: a = 5
   solution: ''
 - code: N4
   partie: A
@@ -572,7 +572,7 @@ questions:
   competence_secondaire: N.RELOP
   domaine: Activites numeriques
   objet: Calculer -3 + 4 x (-2)^2 - (-6)/3
-  reponse_attendue: ''
+  reponse_attendue: '15'
   solution: ''
 - code: N6
   partie: A
@@ -613,7 +613,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Écrire 6/√3 sous la forme a√3
-  reponse_attendue: ''
+  reponse_attendue: a = 2
   solution: ''
 - code: N8
   partie: A
@@ -624,7 +624,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Masse de 6x10^4 grains pesant chacun 1x10^-5 kg
-  reponse_attendue: ''
+  reponse_attendue: 0,6 kg
   solution: ''
 - code: N9
   partie: B
@@ -635,8 +635,9 @@ questions:
   competence_secondaire: L.IDR
   domaine: Activites numeriques
   objet: Simplifier P = √75 - 2√12 + √27 et calculer Q
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: P = 4 racine(3) ; Q = 19
+  solution: sqrt(75)=5sqrt(3), 2sqrt(12)=4sqrt(3), sqrt(27)=3sqrt(3) -> P=5sqrt(3)-4sqrt(3)+3sqrt(3)=4sqrt(3)
+    ; Q=(2sqrt(5))^2-1=20-1=19.
 - code: N10
   partie: B
   format: redige
@@ -646,5 +647,5 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Encadrer 5-2x pour 2<=x<=3, puis donner l'intervalle
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: -1 <= 5-2x <= 1 ; intervalle [-1;1]
+  solution: x=2 -> 5-2x=1 ; x=3 -> 5-2x=-1 (fonction decroissante en x).

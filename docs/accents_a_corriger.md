@@ -1,7 +1,7 @@
-# Accents à corriger dans `Referentiel_Urie_v0.xlsx`
+# Accents à corriger dans `Referentiel_Socle_v0.xlsx`
 
 **Généré par `scripts/verifier_accents.py`** — ne pas éditer à la main, relancer le script.
-**Source :** `Referentiel_Urie_v0.xlsx`
+**Source :** `Referentiel_Socle_v0.xlsx`
 
 Ces textes servent de libellés de question dans l'interface et apparaissent
 dans les rapports lus par les enseignants et les parents. La correction se fait
@@ -197,6 +197,6 @@ ou « élevé » au carré ? « cote » : côté, côte, coté, ou cote (dimensi
 ## Après correction
 
 1. Relancer `python scripts/verifier_accents.py` — les deux listes doivent se vider.
-2. Régénérer les barèmes : `python scripts/generer_baremes_urie.py`
+2. Régénérer les barèmes : `python scripts/generer_baremes_socle.py`
    (⚠ sauvegarder d'abord les corrigés saisis à la main — la régénération les écrase).
 3. Mettre à jour le compte attendu dans `tests/test_accents_referentiel.py`.

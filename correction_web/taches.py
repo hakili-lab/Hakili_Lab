@@ -263,8 +263,8 @@ def _ancrage_referentiel(niveau_test: str):
 
 
 def _niveau_test(bareme_id: str) -> str:
-    """`urie_3eme` → `3eme`. Vide pour un test hors référentiel."""
-    return bareme_id[len("urie_"):] if bareme_id.startswith("urie_") else ""
+    """`socle_3eme` → `3eme`. Vide pour un test hors référentiel."""
+    return bareme_id[len("socle_"):] if bareme_id.startswith("socle_") else ""
 
 
 def _executer_diagnostic(correction_id: int) -> None:
@@ -282,6 +282,8 @@ def _executer_diagnostic(correction_id: int) -> None:
         correction.echouer(f"Diagnostic interrompu : {exc}")
         return
 
+    _ecrire_hypotheses_module4(correction, resultat)
+
     correction.resultat = serialiser(resultat)
     correction.erreurs = list(resultat.errors or [])
     correction.etat = (
@@ -290,6 +292,157 @@ def _executer_diagnostic(correction_id: int) -> None:
     correction.etape = "Terminée"
     correction.progression = 100
     correction.save()
+
+
+def _client_diagnostic_module4():
+    """Client du diagnostic contraint (module 4) — absent plutôt qu'en échec.
+
+    Une clé d'API absente ne doit pas empêcher la part mécanique (QCM) de
+    tourner, cf. `manage.py diagnostiquer`.
+    """
+    try:
+        from src.api.claude_client import ClaudeClient
+
+        return ClaudeClient()
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("[module 4] Aucun client de diagnostic (%s) — QCM seuls.", exc)
+        return None
+
+
+def _ecrire_hypotheses_module4(correction: Correction, resultat) -> None:
+    """Point d'injection module 4 : écrit les lacunes de cette copie comme
+    hypothèses dans le cycle de suivi (`Evaluation`/`Probleme`).
+
+    Best-effort, comme les autres points d'injection du pipeline (voir
+    `src/pipeline/pipeline.py`) : un diagnostic contraint en échec ne doit
+    jamais faire échouer une correction déjà terminée. Limité aux tests du
+    référentiel v2 (`bareme_id` préfixé `socle_`) — un test hors référentiel
+    n'a pas de codes de question à rattacher, comme pour `manage.py
+    diagnostiquer --correction`.
+    """
+    if not correction.bareme_id.startswith("socle_"):
+        return
+    if resultat.grade is None or resultat.rubric is None:
+        return
+
+    from referentiel.diagnostic import diagnostiquer, reponses_depuis_correction
+    from suivi.diagnostic import enregistrer, preparer_evaluation
+
+    niveau = _niveau_test(correction.bareme_id)
+    try:
+        reponses = reponses_depuis_correction(resultat.grade, resultat.rubric)
+        diagnostic = diagnostiquer(
+            niveau_test=niveau,
+            reponses=reponses,
+            client=_client_diagnostic_module4(),
+            copy_id=correction.copy_id,
+        )
+        evaluation = preparer_evaluation(
+            identifiant_hakili=correction.identifiant_hakili,
+            type_evaluation=correction.type_evaluation,
+            copy_id=correction.copy_id,
+        )
+        ecriture = enregistrer(evaluation, diagnostic)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "[%s] Module 4 : hypothèses non écrites (%s)", correction.copy_id, exc
+        )
+        return
+
+    logger.info(
+        "[%s] Module 4 — %d hypothèse(s) écrite(s) sur la session %s (%.1f h estimées).",
+        correction.copy_id, len(ecriture.crees), evaluation.session_id, ecriture.cout_total,
+    )
+
+    from suivi.models import TypeEvaluation
+
+    if correction.type_evaluation == TypeEvaluation.T0 and ecriture.crees:
+        _generer_sujet_confirmation(correction, evaluation)
+
+
+def _generer_sujet_confirmation(correction: Correction, evaluation) -> None:
+    """Point d'injection module 5 : génère le sujet T1 à partir des hypothèses
+    encore ouvertes de la session, et l'attache à la copie T0 qui les a
+    révélées.
+
+    Best-effort, même logique que `_ecrire_hypotheses_module4` : un sujet T1
+    manqué ne doit jamais faire échouer une correction déjà terminée. Ne
+    tourne qu'à la suite d'un T0 (voir l'appelant) — un T1 ne doit pas
+    engendrer son propre sujet de confirmation.
+    """
+    from suivi.models import EtatProbleme
+
+    hypotheses = list(
+        evaluation.session.problemes.filter(etat=EtatProbleme.HYPOTHESE)
+        .select_related("competence", "type_erreur")
+    )
+    if not hypotheses:
+        return
+
+    try:
+        from src.core.config import settings
+        from src.models.domain import ConfirmationHypothesis, ConfirmationRequest
+        from src.pipeline.depot import depot
+        from src.pipeline.orchestrator import validate_confirmation
+        from src.pipeline.pdf_remediation_html import generate_remediation_pdf
+
+        client = _client_diagnostic_module4()
+        if client is None:
+            logger.warning(
+                "[%s] Module 5 : aucun client disponible, sujet T1 non généré.",
+                correction.copy_id,
+            )
+            return
+
+        request = ConfirmationRequest(
+            copy_id=correction.copy_id,
+            hypotheses=[
+                ConfirmationHypothesis(
+                    competence_label=p.competence.libelle,
+                    type_erreur_label=p.type_erreur.libelle,
+                    justification=p.justification,
+                    is_att=p.type_erreur_id == "ATT",
+                )
+                for p in hypotheses
+            ],
+        )
+        reponse = client.generate_confirmation_subject(request)
+        if not reponse.success or reponse.data is None:
+            logger.warning(
+                "[%s] Module 5 : génération T1 échouée (%s)",
+                correction.copy_id, reponse.error,
+            )
+            return
+
+        validation = validate_confirmation(reponse.data, request)
+        if not validation.valid:
+            logger.warning(
+                "[%s] Module 5 : sujet T1 invalide, non attaché (%s)",
+                correction.copy_id,
+                [i.message for i in validation.issues if i.severity == "error"],
+            )
+            return
+
+        pdf_path = Path(settings.runs_dir) / correction.copy_id / "sujet_confirmation.pdf"
+        generate_remediation_pdf(
+            output_path=pdf_path,
+            copy_id=correction.copy_id,
+            student_name=f"{correction.eleve_nom} {correction.eleve_prenom}".strip(),
+            remediation_subject=validation.data,
+        )
+        depot().ajouter_document(
+            copy_id=correction.copy_id,
+            type_document="sujet_confirmation",
+            contenu=pdf_path.read_bytes(),
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("[%s] Module 5 : sujet T1 non généré (%s)", correction.copy_id, exc)
+        return
+
+    logger.info(
+        "[%s] Module 5 — sujet T1 généré et attaché (%d hypothèse(s)).",
+        correction.copy_id, len(hypotheses),
+    )
 
 
 # ── Corrections abandonnées ──────────────────────────────────────────────────

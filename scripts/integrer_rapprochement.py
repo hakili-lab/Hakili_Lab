@@ -38,7 +38,7 @@ def _texte(valeur) -> str:
 
 
 def _codes_valides() -> set[str]:
-    for candidat in (_ROOT.parent / "Referentiel_Urie_v0.xlsx", _ROOT / "Referentiel_Urie_v0.xlsx"):
+    for candidat in (_ROOT.parent / "Referentiel_Socle_v0.xlsx", _ROOT / "Referentiel_Socle_v0.xlsx"):
         if candidat.exists():
             wb = openpyxl.load_workbook(candidat, data_only=True, read_only=True)
             codes = {
@@ -48,7 +48,7 @@ def _codes_valides() -> set[str]:
             }
             wb.close()
             return codes
-    raise SystemExit("Referentiel_Urie_v0.xlsx introuvable.")
+    raise SystemExit("Referentiel_Socle_v0.xlsx introuvable.")
 
 
 def _lire_lot(chemin: Path, codes: set[str]) -> tuple[dict[str, str], list[str]]:

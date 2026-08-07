@@ -1,11 +1,11 @@
-# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
-# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# Généré par scripts/generer_baremes_socle.py — ne pas éditer à la main.
+# Source : Referentiel_Socle_v0.xlsx. Relancer le script après toute
 # mise à jour du classeur. Exception : les champs reponse_attendue et
 # solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
 # les sauvegarder avant de régénérer.
 
 meta:
-  test_id: urie_5eme
+  test_id: socle_5eme
   titre: Test diagnostique d'entrée en 5ème
   niveau_test: 5eme
   classe: 5e
@@ -13,9 +13,9 @@ meta:
   total_possible: 20
   somme_baremes_reelle: 19.99999
   bareme_classeur_total: 60.0
-  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
-  genere_par: scripts/generer_baremes_urie.py
-  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+  source: Referentiel_Socle_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_socle.py
+  note_corriges: 10 QCM avec bonne réponse ; 2 questions sans corrigé (absent du classeur — arbitrage
     B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
 questions:
 - code: D1
@@ -27,7 +27,7 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Prix de 8 kg si 5 kg coutent 3000 F
-  reponse_attendue: ''
+  reponse_attendue: 4 800 F
   solution: ''
 - code: D2
   partie: A
@@ -38,7 +38,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: 'Coordonnees du point S : 4 carreaux a droite, 3 au-dessus'
-  reponse_attendue: ''
+  reponse_attendue: S(4 ; 3)
   solution: ''
 - code: D3
   partie: A
@@ -79,8 +79,8 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: 'Completer un tableau de proportionnalite : 4 savons valent 1 000 F'
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: '7 savons : 1 750 FCFA ; 12 savons : 3 000 FCFA'
+  solution: Prix unitaire = 1000/4 = 250 FCFA par savon ; 7x250=1750 ; 12x250=3000.
 - code: D5
   partie: B
   format: construction
@@ -90,7 +90,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Tracer un repere et placer A(2;3), B(5;3), C(5;7)
-  reponse_attendue: ''
+  reponse_attendue: A(2 ; 3) ; B(5 ; 3) ; C(5 ; 7)
   solution: ''
 - code: G1
   partie: A
@@ -131,7 +131,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Nature du triangle ABC de cotes 5 cm, 5 cm, 8 cm
-  reponse_attendue: ''
+  reponse_attendue: Isocele en A
   solution: ''
 - code: G3
   partie: A
@@ -142,7 +142,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Longueur du diametre d'un cercle de rayon 4,5 cm
-  reponse_attendue: ''
+  reponse_attendue: 9 cm
   solution: ''
 - code: G4
   partie: A
@@ -153,7 +153,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Mesure du complementaire d'un angle de 37 degres
-  reponse_attendue: ''
+  reponse_attendue: 53 degres
   solution: ''
 - code: G5
   partie: A
@@ -164,7 +164,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Position de (d3) et (d2) sachant (d1)//(d2) et (d3) perpendiculaire a (d1)
-  reponse_attendue: ''
+  reponse_attendue: (d3) et (d2) sont perpendiculaires
   solution: ''
 - code: G6
   partie: A
@@ -175,7 +175,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Longueur de [CD] dans le parallelogramme ABCD avec AB = 6 cm
-  reponse_attendue: ''
+  reponse_attendue: 6 cm
   solution: ''
 - code: G7
   partie: A
@@ -216,7 +216,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Longueur MB si M appartient a la mediatrice de [AB]
-  reponse_attendue: ''
+  reponse_attendue: 6,2 cm
   solution: ''
 - code: G9
   partie: A
@@ -280,8 +280,9 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: 'Parallelogramme EFGH : donner HG et l''angle FGH avec justification'
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: HG = 7 cm ; angle FGH = 110 degres.
+  solution: HG=EF=7cm (cotes opposes d'un parallelogramme, meme longueur) ; angle FGH=angle HEF=110 degres
+    (angles opposes d'un parallelogramme, meme mesure).
 - code: M1
   partie: A
   format: court
@@ -291,7 +292,7 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Convertir 3,5 km en metres
-  reponse_attendue: ''
+  reponse_attendue: 3 500 m
   solution: ''
 - code: M2
   partie: A
@@ -302,7 +303,7 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Aire d'un triangle de base 9 cm et hauteur 6 cm
-  reponse_attendue: ''
+  reponse_attendue: 27 cm2
   solution: ''
 - code: M3
   partie: A
@@ -313,7 +314,7 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Perimetre d'un rectangle de 12 cm sur 7 cm
-  reponse_attendue: ''
+  reponse_attendue: 38 cm
   solution: ''
 - code: M4
   partie: A
@@ -384,7 +385,7 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Largeur d'un rectangle d'aire 54 cm2 et de longueur 9 cm
-  reponse_attendue: ''
+  reponse_attendue: 6 cm
   solution: ''
 - code: M7
   partie: B
@@ -395,8 +396,9 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Aire d'un jardin forme d'un rectangle et d'un triangle accoles
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 330 m2
+  solution: Aire du rectangle = AB x BC = 20 x 12 = 240 m2 ; DC=AB=20 m (cotes opposes du rectangle) ;
+    aire du triangle DCE = (DC x hauteur)/2 = (20x9)/2 = 90 m2 ; aire totale = 240+90 = 330 m2.
 - code: M8
   partie: B
   format: redige
@@ -406,8 +408,8 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Aire totale de papier recouvrant un pave droit 4x3x2 cm
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 52 cm2
+  solution: Aire totale = 2x(4x3 + 4x2 + 3x2) = 2x(12+8+6) = 2x26 = 52 cm2.
 - code: N1
   partie: A
   format: court
@@ -417,7 +419,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: 'Ecrire le decimal : 6 dizaines, 4 unites, 7 dixiemes, 5 centiemes'
-  reponse_attendue: ''
+  reponse_attendue: 64,75
   solution: ''
 - code: N2
   partie: A
@@ -428,7 +430,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer 25 - 4 x 3 + 6
-  reponse_attendue: ''
+  reponse_attendue: '19'
   solution: ''
 - code: N3
   partie: A
@@ -439,7 +441,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Simplifier la fraction 24/36
-  reponse_attendue: ''
+  reponse_attendue: 2/3
   solution: ''
 - code: N4
   partie: A
@@ -481,7 +483,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer astucieusement 25 x 17 x 4
-  reponse_attendue: ''
+  reponse_attendue: 1 700
   solution: ''
 - code: N6
   partie: A
@@ -492,7 +494,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Completer l'egalite 7 x ... = 91
-  reponse_attendue: ''
+  reponse_attendue: '13'
   solution: ''
 - code: N7
   partie: A
@@ -503,7 +505,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Designer la plus lourde des masses 12,08 ; 12,8 ; 12,079 kg
-  reponse_attendue: ''
+  reponse_attendue: 12,8 kg
   solution: ''
 - code: N8
   partie: A
@@ -544,7 +546,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer astucieusement 63 x 8 + 37 x 8
-  reponse_attendue: ''
+  reponse_attendue: '800'
   solution: ''
 - code: N10
   partie: A
@@ -586,7 +588,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Completer l'egalite ... - 3 750 = 1 250
-  reponse_attendue: ''
+  reponse_attendue: 5 000
   solution: ''
 - code: N12
   partie: A
@@ -628,8 +630,9 @@ questions:
   competence_secondaire: N.PRIO
   domaine: Activites numeriques
   objet: Monnaie rendue sur 200 000 F apres deux achats multiples
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 46 000 FCFA
+  solution: 6x21500=129000 ; 4x6250=25000 ; depense totale=129000+25000=154000 ; monnaie rendue=200000-154000=46000
+    FCFA.
 - code: N14
   partie: B
   format: redige
@@ -639,8 +642,9 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: 'Champ de 48 ares : aire semee en mil (3/8) et comparaison'
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: Aire semee en mil = 18 ares ; le mil occupe la plus grande partie du champ.
+  solution: 48x3/8=144/8=18 ares (mil) ; 48x1/4=12 ares (niebe) ; 18>12 donc le mil occupe la plus grande
+    partie.
 - code: N15
   partie: B
   format: redige
@@ -650,5 +654,6 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Ranger quatre abscisses en decroissant et situer un point
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 'Ordre decroissant : D ; B ; C ; A (soit +5 > +3 > -1 > -4). Le point situe entre
+    A et B est C, d''abscisse -1.'
+  solution: -4 < -1 < +3 donc C (-1) est entre A (-4) et B (+3) ; D (+5) n'est pas entre les deux.

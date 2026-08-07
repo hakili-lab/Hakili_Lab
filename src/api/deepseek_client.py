@@ -25,7 +25,6 @@ from src.models.domain import (
     ClaudeResponse,
     CopyGrade,
     DiagnosticResult,
-    RemediationSubject,
     Rubric,
     TranscriptionResult,
 )
@@ -189,7 +188,6 @@ class DeepSeekClient:
         )
         self._grading_prompt = _load_prompt("grading_prompt.md")
         self._diagnostic_prompt = _load_prompt("diagnostic_prompt.md")
-        self._remediation_prompt = _load_prompt("remediation_subject_prompt.md")
         logger.info(
             "DeepSeekClient initialisé (grading=%s, diagnostic=%s)",
             settings.deepseek_model_v3, settings.deepseek_model_r1,
@@ -320,42 +318,5 @@ class DeepSeekClient:
             return _parse_json_response(raw, DiagnosticResult)
         except Exception as e:
             logger.error("DeepSeek R1 diagnose erreur : %s", e)
-            return ClaudeResponse(success=False, data=None, confidence=0.0,
-                                  raw_response="", error=str(e))
-
-    # ── Remédiation (V3) ──────────────────────────────────────────────────────
-
-    @_retry
-    def generate_remediation_subject(self, diagnostic: DiagnosticResult) -> ClaudeResponse:
-        """Génère des exercices de remédiation via DeepSeek V3."""
-        logger.info("[%s] DeepSeek remédiation — modèle : %s",
-                    diagnostic.copy_id, settings.deepseek_model_v3)
-        if not diagnostic.weaknesses and not diagnostic.root_causes:
-            return ClaudeResponse(
-                success=False, data=None, confidence=0.0, raw_response="",
-                error="Aucune difficulté identifiée — pas de sujet de remédiation à générer.",
-            )
-        n_series = len(diagnostic.weaknesses) or len(diagnostic.root_causes)
-        user_content = (
-            f"{self._remediation_prompt}"
-            f"\n\n---\n\nDIAGNOSTIC ({n_series} difficulté(s) à couvrir):\n"
-            f"{diagnostic.model_dump_json(indent=2)}"
-        )
-        try:
-            response = self._client.chat.completions.create(
-                model=settings.deepseek_model_v3,
-                messages=[{"role": "user", "content": user_content}],
-                response_format={"type": "json_object"},
-                max_tokens=8192,
-                temperature=0.4,
-            )
-            raw = response.choices[0].message.content or ""
-            logger.info(
-                "DeepSeek V3 remédiation OK — tokens: %d in / %d out",
-                response.usage.prompt_tokens, response.usage.completion_tokens,
-            )
-            return _parse_json_response(raw, RemediationSubject)
-        except Exception as e:
-            logger.error("DeepSeek V3 generate_remediation_subject erreur : %s", e)
             return ClaudeResponse(success=False, data=None, confidence=0.0,
                                   raw_response="", error=str(e))

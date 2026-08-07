@@ -15,7 +15,7 @@ Deux règles tiennent ce fichier
 
 Pourquoi aucune `Transition` n'est écrite à la création
 -------------------------------------------------------
-`guide-urie.md` demande « une ligne dans `transition` » à la création du problème.
+`guide-v2.md` demande « une ligne dans `transition` » à la création du problème.
 Ce n'est pas possible tel quel, et ne pas le faire est le bon choix :
 `Transition` porte une contrainte `etat_avant != etat_apres`, et `changer_etat()`
 refuse une transition vers l'état courant. Une ligne de création exigerait un
@@ -37,9 +37,43 @@ from django.db import transaction
 
 from referentiel.couts import cout_precalcule
 from src.models.domain import DiagnosticContraint, ProblemeDetecte, SourceProbleme
-from suivi.models import EtatProbleme, Evaluation, Probleme
+from suivi.models import ETATS_SESSION_TERMINES, EtatProbleme, Evaluation, Probleme, Session
 
 logger = logging.getLogger(__name__)
+
+
+def resoudre_ou_creer_session(identifiant_hakili: str) -> Session:
+    """La session ouverte de cet élève, ou une nouvelle si aucune ne l'est.
+
+    « Ouverte » exclut les sessions du corpus de référence (pas le parcours
+    d'un élève, cf. `enregistrer()`) et les sessions dans un état terminal —
+    un élève dont le cycle précédent est clos, sans suite ou hors dispositif
+    en ouvre un nouveau plutôt que de rouvrir l'ancien.
+    """
+    session = (
+        Session.objects.filter(identifiant_hakili=identifiant_hakili, corpus_reference=False)
+        .exclude(etat__in=ETATS_SESSION_TERMINES)
+        .order_by("-date_debut")
+        .first()
+    )
+    if session is not None:
+        return session
+    return Session.objects.create(identifiant_hakili=identifiant_hakili)
+
+
+def preparer_evaluation(
+    *, identifiant_hakili: str, type_evaluation: str, copy_id: str
+) -> Evaluation:
+    """Rattache une copie déposée à son évaluation dans le cycle de suivi.
+
+    Provisionne la session au passage : c'est le pendant automatique de ce que
+    l'écran de parcours et `manage.py diagnostiquer` font manuellement
+    aujourd'hui. Le rang (`numero`) est attribué par `Evaluation.save()`.
+    """
+    session = resoudre_ou_creer_session(identifiant_hakili)
+    return Evaluation.objects.create(
+        session=session, type=type_evaluation, copy_id=copy_id
+    )
 
 
 @dataclass

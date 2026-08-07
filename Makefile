@@ -24,7 +24,7 @@ run:
 
 # Controle avant mise en service : configuration, base, Sheets, cles, referentiel.
 # Ajouter un essai de correction reel :
-#   make verifier ARGS="--copie copie.pdf --test urie_3eme --eleve HAK-..."
+#   make verifier ARGS="--copie copie.pdf --test socle_3eme --eleve HAK-..."
 verifier:
 	$(PYTHON) manage.py verifier_installation $(ARGS)
 

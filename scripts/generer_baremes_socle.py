@@ -1,5 +1,5 @@
 """
-Génère les 7 barèmes des tests diagnostiques Urie v2 depuis Referentiel_Urie_v0.xlsx.
+Génère les 7 barèmes des tests diagnostiques v2 depuis Referentiel_Socle_v0.xlsx.
 
 Pourquoi ce script existe
 -------------------------
@@ -16,7 +16,7 @@ Voir docs/harmonisation_donnees.md pour l'analyse complète.
 
 Ce que le script produit
 ------------------------
-data/knowledge/bareme_urie_<niveau>.yaml — un fichier par test, structure plate
+data/knowledge/bareme_socle_<niveau>.yaml — un fichier par test, structure plate
 (les 7 domaines N, L, G, D, F, M, S, T ne rentrent pas dans l'ancien découpage
 `questions_numeriques` / `questions_geometriques`).
 
@@ -31,7 +31,7 @@ l'arbitrage B de docs/harmonisation_donnees.md, non tranché. Les champs
 remplis sans changement de schéma. Les 71 QCM, eux, ont leur bonne réponse.
 
 Usage :
-    python scripts/generer_baremes_urie.py
+    python scripts/generer_baremes_socle.py
 """
 from __future__ import annotations
 
@@ -47,8 +47,8 @@ _KB_DIR = _ROOT / "data" / "knowledge"
 
 # Le classeur vit à la racine du dossier de travail, au-dessus du dépôt.
 _CLASSEUR_CANDIDATS = [
-    _ROOT.parent / "Referentiel_Urie_v0.xlsx",
-    _ROOT / "Referentiel_Urie_v0.xlsx",
+    _ROOT.parent / "Referentiel_Socle_v0.xlsx",
+    _ROOT / "Referentiel_Socle_v0.xlsx",
 ]
 
 # Barème : le classeur note sur 60 (30 questions de partie A à 1 pt,
@@ -76,7 +76,7 @@ def _trouver_classeur() -> Path:
         if p.exists():
             return p
     raise SystemExit(
-        "Referentiel_Urie_v0.xlsx introuvable. Cherché dans :\n  "
+        "Referentiel_Socle_v0.xlsx introuvable. Cherché dans :\n  "
         + "\n  ".join(str(p) for p in _CLASSEUR_CANDIDATS)
     )
 
@@ -124,10 +124,10 @@ def _charger_corriges_manuels() -> dict:
 
     Le classeur ne fournit de bonne réponse que pour les QCM. Les 209 autres sont
     produites par un relecteur pédagogique et vivent dans un fichier séparé
-    (`corriges_urie.yaml`), précisément pour que cette régénération ne les efface
+    (`corriges_socle.yaml`), précisément pour que cette régénération ne les efface
     pas. Voir scripts/integrer_corriges.py.
     """
-    chemin = _KB_DIR / "corriges_urie.yaml"
+    chemin = _KB_DIR / "corriges_socle.yaml"
     if not chemin.exists():
         return {}
     donnees = yaml.safe_load(chemin.read_text(encoding="utf-8")) or {}
@@ -197,7 +197,7 @@ def _construire_test(
         items.append(item)
 
     meta = {
-        "test_id": f"urie_{niveau}",
+        "test_id": f"socle_{niveau}",
         "titre": f"Test diagnostique d'entrée en {meta_niveau['libelle']}",
         "niveau_test": niveau,
         "classe": meta_niveau["classe"],
@@ -209,8 +209,8 @@ def _construire_test(
         "total_possible": 20,
         "somme_baremes_reelle": round(stats["bareme_20"], 6),
         "bareme_classeur_total": stats["bareme_classeur"],
-        "source": "Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences",
-        "genere_par": "scripts/generer_baremes_urie.py",
+        "source": "Referentiel_Socle_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences",
+        "genere_par": "scripts/generer_baremes_socle.py",
         "note_corriges": (
             f"{stats['qcm']} QCM avec bonne réponse ; {stats['sans_corrige']} questions "
             "sans corrigé (absent du classeur — arbitrage B de docs/harmonisation_donnees.md). "
@@ -244,10 +244,10 @@ def main() -> int:
         data, stats = _construire_test(
             niveau, questions, options, competences, corriges_manuels
         )
-        sortie = _KB_DIR / f"bareme_urie_{niveau}.yaml"
+        sortie = _KB_DIR / f"bareme_socle_{niveau}.yaml"
         sortie.write_text(
-            "# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.\n"
-            "# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute\n"
+            "# Généré par scripts/generer_baremes_socle.py — ne pas éditer à la main.\n"
+            "# Source : Referentiel_Socle_v0.xlsx. Relancer le script après toute\n"
             "# mise à jour du classeur. Exception : les champs reponse_attendue et\n"
             "# solution peuvent être complétés à la main (arbitrage B) — dans ce cas,\n"
             "# les sauvegarder avant de régénérer.\n\n"

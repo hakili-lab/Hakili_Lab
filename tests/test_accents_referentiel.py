@@ -53,7 +53,7 @@ def resultat():
     try:
         chemin = module._trouver_classeur()
     except SystemExit:
-        pytest.skip("Referentiel_Urie_v0.xlsx introuvable — audit impossible")
+        pytest.skip("Referentiel_Socle_v0.xlsx introuvable — audit impossible")
     return module.analyser(chemin)
 
 
@@ -93,9 +93,9 @@ def test_les_libelles_generes_restent_lisibles() -> None:
     import yaml
 
     kb = _ROOT / "data" / "knowledge"
-    fichiers = sorted(kb.glob("bareme_urie_*.yaml"))
+    fichiers = sorted(kb.glob("bareme_socle_*.yaml"))
     if not fichiers:
-        pytest.skip("barèmes Urie non générés")
+        pytest.skip("barèmes v2 non générés")
 
     for f in fichiers:
         data = yaml.safe_load(f.read_text(encoding="utf-8"))

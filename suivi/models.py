@@ -2,7 +2,7 @@
 Le suivi d'un élève — alimenté par l'usage, du premier test au dernier contrôle.
 
 L'unité de suivi n'est ni la note ni la classe : c'est le **problème**, couple
-d'une compétence et d'un type d'erreur (protocole-urie.md §2). Un élève n'a pas
+d'une compétence et d'un type d'erreur (protocole-v2.md §2). Un élève n'a pas
 « 11 sur 20 », il a « 14 problèmes ouverts, dont 3 prérequis de 5ème ».
 
 Deux points de conception à ne pas défaire
@@ -68,7 +68,12 @@ class Document(models.Model):
     URL portant `identifiant_hakili` (D-CEO-25).
     """
 
-    TYPES = (("scan", "scan"), ("rapport", "rapport"), ("remediation", "remédiation"))
+    TYPES = (
+        ("scan", "scan"),
+        ("rapport", "rapport"),
+        ("sujet_confirmation", "sujet de confirmation (T1)"),
+        ("remediation", "remédiation"),
+    )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     copie = models.ForeignKey(
@@ -95,7 +100,7 @@ class TypeEvaluation(models.TextChoices):
 
     Chaque évaluation porte un nom distinct : des évaluations toutes appelées
     « test diagnostique » deviendraient impossibles à distinguer en base et dans
-    les comptes rendus (protocole-urie.md §5).
+    les comptes rendus (protocole-v2.md §5).
 
     Deux écarts assumés par rapport au protocole d'origine :
 
@@ -186,7 +191,7 @@ class Session(models.Model):
     """Le parcours complet d'un élève, du premier test au dernier contrôle de
     rétention — environ sept mois.
 
-    Nommée `Session` côté Python mais stockée en `session_urie` : « session » seul
+    Nommée `Session` côté Python mais stockée en `session_suivi` : « session » seul
     prêterait à confusion avec les sessions d'authentification Django, dans la même
     base.
     """
@@ -225,7 +230,7 @@ class Session(models.Model):
     )
 
     class Meta:
-        db_table = "session_urie"
+        db_table = "session_suivi"
         verbose_name = "session"
         ordering = ["-date_debut"]
         constraints = [

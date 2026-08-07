@@ -4,8 +4,8 @@ Réintègre le lot complété par le relecteur pédagogique.
     python scripts/integrer_corriges.py --lot ../Lot_a_completer_2026-07-30.xlsx
     python scripts/integrer_corriges.py --lot ... --a-blanc    # rapport sans écriture
 
-Écrit les corrigés dans `data/knowledge/corriges_urie.yaml`, **un fichier à part
-des barèmes**. C'est délibéré : `generer_baremes_urie.py` régénère les barèmes
+Écrit les corrigés dans `data/knowledge/corriges_socle.yaml`, **un fichier à part
+des barèmes**. C'est délibéré : `generer_baremes_socle.py` régénère les barèmes
 depuis le classeur source et écraserait des corrigés qui y seraient stockés. En
 les gardant séparés, ce travail — plusieurs heures d'un enseignant — survit à
 n'importe quelle régénération.
@@ -15,7 +15,7 @@ Le générateur de barèmes fusionne ce fichier s'il existe.
 Les autres feuilles du lot (accents, volumes horaires, questions de construction)
 ne sont pas réinjectées automatiquement : elles corrigent le **classeur source**,
 qui appartient au docteur. Ce script les rapporte pour qu'on sache ce qui a été
-rempli, et la correction se fait dans `Referentiel_Urie_v0.xlsx`.
+rempli, et la correction se fait dans `Referentiel_Socle_v0.xlsx`.
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ import yaml
 
 _ROOT = Path(__file__).resolve().parent.parent
 _KB = _ROOT / "data" / "knowledge"
-_SORTIE = _KB / "corriges_urie.yaml"
+_SORTIE = _KB / "corriges_socle.yaml"
 
 _NIVEAUX = {
     "6ème": "6eme", "5ème": "5eme", "4ème": "4eme", "3ème": "3eme",
@@ -146,8 +146,8 @@ def main() -> int:
 
     _SORTIE.write_text(
         "# Corrigés saisis à la main, hors du classeur source.\n"
-        "# Fichier SÉPARÉ des barèmes, délibérément : generer_baremes_urie.py\n"
-        "# régénère les barèmes depuis Referentiel_Urie_v0.xlsx et écraserait des\n"
+        "# Fichier SÉPARÉ des barèmes, délibérément : generer_baremes_socle.py\n"
+        "# régénère les barèmes depuis Referentiel_Socle_v0.xlsx et écraserait des\n"
         "# corrigés qui y seraient stockés. Il fusionne ce fichier à la génération.\n"
         "# Produit par scripts/integrer_corriges.py — modifiable à la main si besoin.\n\n"
         + yaml.safe_dump(
@@ -158,7 +158,7 @@ def main() -> int:
 
     conserve = sum(len(v) for v in existant.values())
     print(f"\nÉcrit : {_SORTIE.relative_to(_ROOT)} — {conserve} corrigé(s) au total.")
-    print("Relancer ensuite : python scripts/generer_baremes_urie.py")
+    print("Relancer ensuite : python scripts/generer_baremes_socle.py")
     return 0
 
 

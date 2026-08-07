@@ -3,15 +3,6 @@
 
 {% block page_titre %}Accès à la plateforme{% endblock %}
 {% block contenu %}
-<p class="sous-titre">Qui peut se connecter, et qui ne le peut pas.</p>
-
-<div class="message info">
-  <strong>L'ajout et le retrait se font dans le Google Sheet du personnel</strong>,
-  pas ici. Ajoutez une ligne avec le nom, le rôle et un code d'accès : la personne
-  peut se connecter. Retirez la ligne : elle ne le peut plus, immédiatement.
-  Cet écran sert à vérifier — gérer les accès des deux côtés créerait deux listes
-  qui finiraient par diverger.
-</div>
 
 {% if probleme %}
   <div class="message warning">

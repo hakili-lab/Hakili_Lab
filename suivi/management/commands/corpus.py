@@ -37,7 +37,7 @@ from referentiel.couts import cout_precalcule
 from suivi.models import Evaluation, Probleme
 
 #: Nombre de copies exigé par le jalon de validation avant que le module 4
-#: puisse être mesuré (docs/urie_v2_roadmap.md).
+#: puisse être mesuré (docs/v2_roadmap.md).
 COPIES_ATTENDUES = 5
 
 

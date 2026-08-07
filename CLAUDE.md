@@ -4,7 +4,7 @@
 
 Tu es l'assistant d'ingénierie du projet Hakili Lab : outil de correction assistée par IA pour copies manuscrites de mathématiques, utilisé par les enseignants Hakili Lab au Burkina Faso.
 
-**Objectif central actuel : remplacer le diagnostic en texte libre par un système de suivi structuré et traçable.** Le diagnostic n'est plus une phrase générée par un LLM — c'est une liste d'objets comptables (`compétence × type d'erreur`), avec un cycle de vie d'états daté, qui permet de mesurer une progression, de comparer des élèves, et de calculer un coût de remédiation. C'est le chantier "Urie v2" (`guide-urie.md`, `protocole-urie.md`, 28 juillet 2026), décrit en détail plus bas.
+**Objectif central actuel : remplacer le diagnostic en texte libre par un système de suivi structuré et traçable.** Le diagnostic n'est plus une phrase générée par un LLM — c'est une liste d'objets comptables (`compétence × type d'erreur`), avec un cycle de vie d'états daté, qui permet de mesurer une progression, de comparer des élèves, et de calculer un coût de remédiation. C'est le chantier "v2" (`guide-v2.md`, `protocole-v2.md`, 28 juillet 2026), décrit en détail plus bas.
 
 Ce document a deux parties : l'état réel de l'infrastructure aujourd'hui, puis le chantier en cours.
 
@@ -59,23 +59,23 @@ Centres dérivés dynamiquement des Sheets (`src/core/centre_normalizer.py`, `de
 - **Parcours** (`/parcours/<jeton>/`) : plan de remédiation ordonné, volume, palier, inscription au programme.
 - **Admin** : statistiques + `/personnel/` en lecture seule (qui peut se connecter, qui ne le peut pas, comptes en défaut en premier).
 
-### Pipeline de correction (existant, réutilisable — chantier Urie v2 vient s'y ajouter, pas le remplacer entièrement)
+### Pipeline de correction (existant, réutilisable — chantier v2 vient s'y ajouter, pas le remplacer entièrement)
 - Ingestion PDF/images 150 DPI (`src/pipeline/ingestion.py`)
 - Transcription multimodale (Gemini 2.5 Flash / Claude Sonnet fallback)
 - Correction binaire 0/1 proposée par IA, validée par l'enseignant dans un tableau (`TeacherDecision`, `src/models/domain.py` — **déjà implémenté**, `compute_final_score()` priorise la décision enseignant)
 - Diagnostic + remédiation + export PDF/HTML (`src/pipeline/pdf_report_html.py`, `pdf_remediation_html.py`)
 - Routing multi-provider automatique par tâche, fallback Claude (table complète : voir `docs/decision_register.md` D-CEO-03)
 
-**Attention à un piège de doc :** `README.md` décrit encore `TeacherDecision` et le tableau de validation comme "à construire". **C'est fait.** Ne t'y fie pas pour l'état d'avancement — vérifie `docs/urie_v2_roadmap.md` et `docs/decision_register.md`. (`AGENTS.md` portait la même erreur : supprimé au nettoyage du 2026-07-30.)
+**Attention à un piège de doc :** `README.md` décrit encore `TeacherDecision` et le tableau de validation comme "à construire". **C'est fait.** Ne t'y fie pas pour l'état d'avancement — vérifie `docs/v2_roadmap.md` et `docs/decision_register.md`. (`AGENTS.md` portait la même erreur : supprimé au nettoyage du 2026-07-30.)
 
 ---
 
-## Partie 2 — Chantier en cours : Urie v2, le suivi structuré
+## Partie 2 — Chantier en cours : v2, le suivi structuré
 
 ### Documents de référence (à lire dans cet ordre, avant tout code de ce chantier)
-1. `protocole-urie.md` (racine du dépôt de travail, hors `Hakili_Lab/`) — le vocabulaire et les règles métier
-2. `guide-urie.md` — les 9 modules à construire, module par module
-3. `Referentiel_Urie_v0.xlsx` — le classeur : 101 compétences, 7 types d'erreur, 1031 signatures d'erreur, 284 distracteurs QCM tagués, 444 coûts de remédiation précalculés
+1. `protocole-v2.md` (racine du dépôt de travail, hors `Hakili_Lab/`) — le vocabulaire et les règles métier
+2. `guide-v2.md` — les 9 modules à construire, module par module
+3. `Referentiel_Socle_v0.xlsx` — le classeur : 101 compétences, 7 types d'erreur, 1031 signatures d'erreur, 284 distracteurs QCM tagués, 444 coûts de remédiation précalculés
 
 ### Le principe : un problème = une compétence × un type d'erreur
 L'unité de suivi n'est plus un score mais un **problème**, avec un cycle de vie d'états datés : `hypothese → confirme/ecarte → en_remediation → resolu/non_resolu → regresse → clos`. Sept types d'erreur, liste **fermée** : `PRQ` (prérequis manquant), `CPT` (conceptuelle), `MOD` (modélisation), `PRC` (procédurale), `CNS` (connaissance non disponible), `RED` (rédaction), `ATT` (inattention — ne donne jamais lieu à remédiation).
@@ -86,21 +86,21 @@ L'unité de suivi n'est plus un score mais un **problème**, avec un cycle de vi
 3. **Aucune tâche n'est automatisée avant d'avoir été faite à la main une fois** — sans point de comparaison (le corpus de référence, module 3), impossible de savoir si un module fonctionne.
 
 ### Décision d'architecture actée (ne pas suivre le guide littéralement ici)
-Le guide (`guide-urie.md`) prescrit une base **SQLite séparée** à 11 tables. **Décision actée avec l'utilisateur : ces tables vivent dans la base Neon/Postgres existante**, pas dans une SQLite isolée — une seule base pour toute la persistance applicative, cohérent avec la discipline "une seule source de vérité" déjà appliquée au projet (D-CEO-20/21/25). Détail complet du schéma retenu : `C:\Users\Urie\.claude\plans\dynamic-wandering-duckling.md`.
+Le guide (`guide-v2.md`) prescrit une base **SQLite séparée** à 11 tables. **Décision actée avec l'utilisateur : ces tables vivent dans la base Neon/Postgres existante**, pas dans une SQLite isolée — une seule base pour toute la persistance applicative, cohérent avec la discipline "une seule source de vérité" déjà appliquée au projet (D-CEO-20/21/25). Détail complet du schéma retenu : `C:\Users\Urie\.claude\plans\dynamic-wandering-duckling.md`.
 
 Points clés de cette adaptation :
 - `evaluation` référence `copie.copy_id` (nullable) au lieu de dupliquer le stockage des scans/documents — un `T0`/`T1`/etc. réutilise la `Copie` déjà persistée par le pipeline existant.
 - L'identité élève reste `identifiant_hakili` (texte), jamais une FK vers une table `eleve` — cohérent avec D-CEO-20.
-- Nommer la table de session `session_urie` (pas `session`, ambigu avec la session HTTP).
+- Nommer la table de session `session_suivi` (pas `session`, ambigu avec la session HTTP).
 - Import du classeur via un script idempotent (pattern `seed_users.py`), pas de saisie manuelle des tables référentiel/banque de questions.
 
 Le diagnostic structuré (module 4) **remplace directement** l'actuel `DiagnosticResult`/`CompetencyGap` en texte libre — niveau par niveau, au fur et à mesure que le référentiel et la grille de diagnostic couvrent ce niveau. Pas de coexistence longue entre les deux systèmes.
 
-### Les 9 modules — suivi détaillé dans `docs/urie_v2_roadmap.md`
+### Les 9 modules — suivi détaillé dans `docs/v2_roadmap.md`
 
 Ce chantier se déroule en 9 modules dépendants (0 → 9, chacun a besoin des précédents : appropriation du référentiel, socle de données, ~~lecture des copies par zones~~ (supprimé, D-CEO-38), corpus de référence, diagnostic contraint, composition du test de confirmation, palier et plan de remédiation, génération des fiches, interfaces de saisie, restitution et indicateurs).
 
-**`docs/urie_v2_roadmap.md` est la seule source de vérité sur l'avancement** — statut par module, sous-tâches, critères de fin, jalons de validation, et un journal de bord daté. **Lis-le en début de session, mets-le à jour en fin de session.** Ne pas recréer un deuxième tableau de suivi ici : ce serait reproduire l'erreur "deux sources de vérité" déjà corrigée deux fois sur ce projet (D-CEO-20, D-CEO-21).
+**`docs/v2_roadmap.md` est la seule source de vérité sur l'avancement** — statut par module, sous-tâches, critères de fin, jalons de validation, et un journal de bord daté. **Lis-le en début de session, mets-le à jour en fin de session.** Ne pas recréer un deuxième tableau de suivi ici : ce serait reproduire l'erreur "deux sources de vérité" déjà corrigée deux fois sur ce projet (D-CEO-20, D-CEO-21).
 
 **Jalon de validation obligatoire avant tout déploiement réel du module 4 :** cent sorties consécutives valides (aucun code hors référentiel), diagnostic comparé au tagage manuel du corpus de référence, écart mesuré et consigné.
 
@@ -113,10 +113,10 @@ Sept états de session (D-CEO-34), dont **trois sorties sans remédiation à ne 
 
 ---
 
-## Contraintes actives (fusion existant + chantier Urie v2)
+## Contraintes actives (fusion existant + chantier v2)
 
 - Python + **Django (rendu serveur, HTMX)**, seule interface depuis le retrait de Streamlit (D-CEO-39).
-- Barème binaire 0/1 par question et sous-question (hors nouveau format QCM/court/rédigé du chantier Urie).
+- Barème binaire 0/1 par question et sous-question (hors nouveau format QCM/court/rédigé du chantier v2).
 - L'enseignant a toujours le dernier mot sur le score (`TeacherDecision`, déjà implémenté).
 - **Aucun code de compétence ou de type d'erreur inventé — tout vient du référentiel.**
 - **Aucun appel LLM pour interpréter un QCM** — la table `option_qcm` donne la réponse directement.
@@ -129,7 +129,7 @@ Sept états de session (D-CEO-34), dont **trois sorties sans remédiation à ne 
 
 Avant de coder sur ce dépôt :
 1. Lire `docs/decision_register.md` — décisions actives et datées.
-2. Si la tâche touche le chantier Urie v2 : lire aussi `protocole-urie.md`, `guide-urie.md`, et parcourir `Referentiel_Urie_v0.xlsx`.
+2. Si la tâche touche le chantier v2 : lire aussi `protocole-v2.md`, `guide-v2.md`, et parcourir `Referentiel_Socle_v0.xlsx`.
 3. Lire `src/models/domain.py` (schémas du pipeline) et `suivi/models.py` + `referentiel/models.py` (schéma Postgres) avant d'ajouter un champ ou une table.
 4. Proposer un plan si la tâche touche plusieurs modules ou plusieurs fichiers.
 5. Ne pas recréer ce qui existe — vérifier `src/knowledge/`, `src/pipeline/`, `src/api/`, `src/services/`, `src/integrations/` avant d'écrire une nouvelle fonction.
@@ -139,7 +139,7 @@ Avant de coder sur ce dépôt :
 
 ## Ce qu'il ne faut pas faire
 
-- Ouvrir le chantier du site web en parallèle du chantier Urie v2. Un seul chantier prioritaire à la fois.
+- Ouvrir le chantier du site web en parallèle du chantier v2. Un seul chantier prioritaire à la fois.
 - Ajouter une colonne, un état ou un type d'erreur au référentiel sans en parler.
 - Laisser un LLM produire une phrase là où un code structuré est attendu (diagnostic module 4).
 - Appeler un modèle de langage pour interpréter un QCM.
@@ -198,14 +198,14 @@ python manage.py makemigrations
 | `docs/decision_register.md` | Toutes les décisions actives et datées — source de vérité |
 | `docs/cycle_de_suivi.md` | **Le cycle T0→T5 en détail** — états d'un problème, règles de décision, ce que le cycle produit. Fait foi sur le déroulé |
 | `docs/audit_donnees.md` | Audit de la base et de la connaissance — constats classés par gravité, plan en 9 étapes |
-| `docs/urie_v2_roadmap.md` | Chantier Urie v2 — avancement détaillé, jalons, journal de bord — source de vérité sur "où en est-on" |
-| `docs/harmonisation_donnees.md` | Écart ancien système ↔ référentiel Urie v2 — arbitrages en attente, défauts constatés. **À lire avant le module 1** |
+| `docs/v2_roadmap.md` | Chantier v2 — avancement détaillé, jalons, journal de bord — source de vérité sur "où en est-on" |
+| `docs/harmonisation_donnees.md` | Écart ancien système ↔ référentiel v2 — arbitrages en attente, défauts constatés. **À lire avant le module 1** |
 | `docs/deploiement.md` | Mise en service Railway/Render — variables, limites de stockage, données de mineurs |
 | `docs/architecture_cible.md` | Recommandation de sortie de Streamlit — **appliquée** (D-CEO-39), valeur historique |
 | `docs/accents_a_corriger.md` | Généré — liste des accents à corriger dans le classeur, à remettre au docteur |
-| `guide-urie.md` | Chantier Urie v2 — les 9 modules, détaillés |
-| `protocole-urie.md` | Chantier Urie v2 — vocabulaire, taxonomie, protocole T0-T5 |
-| `Referentiel_Urie_v0.xlsx` | Classeur référentiel — compétences, types d'erreur, grille de diagnostic, coûts |
+| `guide-v2.md` | Chantier v2 — les 9 modules, détaillés |
+| `protocole-v2.md` | Chantier v2 — vocabulaire, taxonomie, protocole T0-T5 |
+| `Referentiel_Socle_v0.xlsx` | Classeur référentiel — compétences, types d'erreur, grille de diagnostic, coûts |
 
 ---
 

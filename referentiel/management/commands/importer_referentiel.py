@@ -1,5 +1,5 @@
 """
-Importe `Referentiel_Urie_v0.xlsx` en base — commande idempotente.
+Importe `Referentiel_Socle_v0.xlsx` en base — commande idempotente.
 
     python manage.py importer_referentiel
     python manage.py importer_referentiel --classeur /chemin/Referentiel.xlsx
@@ -50,8 +50,8 @@ from referentiel.models import (
 
 # Le classeur vit au-dessus du dépôt, dans le dossier de travail.
 _CANDIDATS = [
-    Path(__file__).resolve().parents[4].parent / "Referentiel_Urie_v0.xlsx",
-    Path(__file__).resolve().parents[4] / "Referentiel_Urie_v0.xlsx",
+    Path(__file__).resolve().parents[4].parent / "Referentiel_Socle_v0.xlsx",
+    Path(__file__).resolve().parents[4] / "Referentiel_Socle_v0.xlsx",
 ]
 
 _DIVISEUR_BAREME = Decimal(3)
@@ -78,7 +78,7 @@ def _decimal(valeur) -> Decimal | None:
 
 
 class Command(BaseCommand):
-    help = "Importe le référentiel Urie (compétences, types d'erreur, questions, coûts)."
+    help = "Importe le référentiel (compétences, types d'erreur, questions, coûts)."
 
     def add_arguments(self, parser) -> None:
         parser.add_argument("--classeur", type=str, default="", help="Chemin du .xlsx")
@@ -167,7 +167,7 @@ class Command(BaseCommand):
             if candidat.exists():
                 return candidat
         raise CommandError(
-            "Referentiel_Urie_v0.xlsx introuvable. Cherché dans :\n  "
+            "Referentiel_Socle_v0.xlsx introuvable. Cherché dans :\n  "
             + "\n  ".join(str(c) for c in _CANDIDATS)
             + "\nPréciser le chemin avec --classeur."
         )

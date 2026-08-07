@@ -61,7 +61,7 @@ from suivi.models import Evaluation
 
 
 class Command(BaseCommand):
-    help = "Diagnostic contraint d'une copie — module 4 du chantier Urie v2."
+    help = "Diagnostic contraint d'une copie — module 4 du chantier v2."
 
     def add_arguments(self, parser) -> None:
         entree = parser.add_mutually_exclusive_group(required=True)
@@ -181,14 +181,14 @@ class Command(BaseCommand):
         except Correction.DoesNotExist:
             raise CommandError(f"Aucune correction n'a l'identifiant {identifiant}.")
 
-        if not correction.bareme_id.startswith("urie_"):
+        if not correction.bareme_id.startswith("socle_"):
             raise CommandError(
                 f"La correction {identifiant} porte sur "
                 f"{correction.bareme_id or 'le mode libre'}, dont les questions ne "
-                f"sont pas celles du référentiel Urie. Le diagnostic contraint ne "
+                f"sont pas celles du référentiel v2. Le diagnostic contraint ne "
                 f"peut rien y rattacher."
             )
-        niveau = correction.bareme_id.removeprefix("urie_")
+        niveau = correction.bareme_id.removeprefix("socle_")
         if niveau not in NiveauTest.values:
             raise CommandError(f"Niveau {niveau!r} inconnu (barème {correction.bareme_id}).")
 

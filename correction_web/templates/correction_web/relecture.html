@@ -15,17 +15,25 @@
 
 <form method="post" action="{% url 'correction_web:valider_transcription' jeton %}">
   {% csrf_token %}
-  {% for page in pages %}
+  {% for ligne in pages %}
     <div class="carte">
       <div class="entete-etape">
-        <strong>Page {{ page.page_number }}</strong>
-        <span class="aide">confiance {{ page.confidence|floatformat:2 }}</span>
+        <strong>Page {{ ligne.page.page_number }}</strong>
+        <span class="aide">confiance {{ ligne.page.confidence|floatformat:2 }}</span>
       </div>
-      <textarea class="transcription" name="page_{{ page.page_number }}" rows="14"
-                aria-label="Transcription de la page {{ page.page_number }}"
-                >{{ page.content }}</textarea>
-      {% if page.uncertainties %}
-        <p class="aide">Zones incertaines : {{ page.uncertainties|join:" · " }}</p>
+      <div class="relecture-grille{% if not ligne.a_image %} sans-image{% endif %}">
+        {% if ligne.a_image %}
+          <div class="relecture-image">
+            <img src="{% url 'correction_web:page_image' jeton=jeton page_number=ligne.page.page_number %}"
+                 alt="Copie scannée — page {{ ligne.page.page_number }}" loading="lazy">
+          </div>
+        {% endif %}
+        <textarea class="transcription" name="page_{{ ligne.page.page_number }}" rows="14"
+                  aria-label="Transcription de la page {{ ligne.page.page_number }}"
+                  >{{ ligne.page.content }}</textarea>
+      </div>
+      {% if ligne.page.uncertainties %}
+        <p class="aide">Zones incertaines : {{ ligne.page.uncertainties|join:" · " }}</p>
       {% endif %}
     </div>
   {% endfor %}

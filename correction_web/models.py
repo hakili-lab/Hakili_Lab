@@ -21,6 +21,8 @@ from __future__ import annotations
 from django.db import models
 from django.utils import timezone
 
+from suivi.models import TypeEvaluation
+
 
 class EtatCorrection(models.TextChoices):
     """Les états en `_EN_COURS` sont ceux où un thread travaille ; `RELECTURE` et
@@ -58,6 +60,14 @@ class Correction(models.Model):
 
     bareme_id = models.CharField(
         max_length=60, blank=True, help_text="Test du catalogue, vide en mode libre."
+    )
+    type_evaluation = models.CharField(
+        max_length=2,
+        choices=TypeEvaluation.choices,
+        default=TypeEvaluation.T0,
+        help_text="Étape du cycle de suivi que cette copie fait passer — "
+        "détermine si elle produit des hypothèses (T0) ou confirme/écarte "
+        "des hypothèses existantes (T1), etc.",
     )
     instructions_expert = models.TextField(blank=True)
 

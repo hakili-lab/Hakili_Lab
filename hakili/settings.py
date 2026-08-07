@@ -53,7 +53,7 @@ if not SECRET_KEY:
 
 # HTTPS obligatoire dès qu'un code d'accès transite — l'application porte des
 # données scolaires nominatives d'élèves mineurs (voir point ouvert #4 de
-# docs/urie_v2_roadmap.md : obligations à vérifier auprès de la CIL du Burkina Faso).
+# docs/v2_roadmap.md : obligations à vérifier auprès de la CIL du Burkina Faso).
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True

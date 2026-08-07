@@ -69,7 +69,7 @@ Deux mesures le montrent.
 
 **70 % du code migre sans être touché.** Les parties chères — clients IA, pipeline, RAG, génération PDF, intégration Sheets — sont indépendantes du framework. Une migration ne réécrit que la couche de présentation.
 
-**Et surtout : les 11 tables du chantier Urie v2 ne sont pas encore écrites.** Seules `copie` et `document` existent. Si l'ORM doit changer, **c'est maintenant le moment le moins coûteux** — écrire 11 modèles SQLAlchemy + une migration Alembic pour les réécrire ensuite serait du travail jeté.
+**Et surtout : les 11 tables du chantier v2 ne sont pas encore écrites.** Seules `copie` et `document` existent. Si l'ORM doit changer, **c'est maintenant le moment le moins coûteux** — écrire 11 modèles SQLAlchemy + une migration Alembic pour les réécrire ensuite serait du travail jeté.
 
 ## Ce que Streamlit ne peut pas porter, concrètement
 
@@ -117,7 +117,7 @@ Les besoins interactifs réels sont modestes : un tableau de validation, une fic
 
 ## Séquencement proposé
 
-Le guide est explicite : « un seul chantier peut être prioritaire pour une seule personne ». Il ne faut donc **pas** mener la migration et les modules Urie en parallèle.
+Le guide est explicite : « un seul chantier peut être prioritaire pour une seule personne ». Il ne faut donc **pas** mener la migration et les modules v2 en parallèle.
 
 | # | Étape | Pourquoi à ce moment |
 |---|---|---|

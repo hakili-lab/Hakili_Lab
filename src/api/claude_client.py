@@ -11,6 +11,8 @@ from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponen
 from src.core.config import settings
 from src.models.domain import (
     ClaudeResponse,
+    ConfirmationRequest,
+    ConfirmationSubject,
     CopyGrade,
     DiagnosticResult,
     PageTranscription,
@@ -19,6 +21,8 @@ from src.models.domain import (
     RemediationSubject,
     SortieDiagnosticContraint,
     TranscriptionResult,
+    VerificationRequest,
+    VerificationSubject,
 )
 
 logger = logging.getLogger(__name__)
@@ -345,8 +349,10 @@ class ClaudeClient:
         self._diagnostic_plancher_prompt = self._load_prompt(
             "diagnostic_plancher_prompt.md"
         )
-        self._remediation_subject_prompt = self._load_prompt("remediation_subject_prompt.md")
         self._enrichment_subject_prompt = self._load_prompt("enrichment_subject_prompt.md")
+        self._confirmation_subject_prompt = self._load_prompt("confirmation_subject_prompt.md")
+        self._verification_subject_prompt = self._load_prompt("verification_subject_prompt.md")
+        self._retention_subject_prompt = self._load_prompt("retention_subject_prompt.md")
 
     def _load_prompt(self, filename: str) -> str:
         prompt_path = Path(__file__).parent.parent.parent / "prompts" / filename
@@ -845,31 +851,29 @@ class ClaudeClient:
 
         return self._extract_tool_result(response, SortieDiagnosticContraint)
 
-    # ── Sujet de remédiation ──────────────────────────────────────────────────
+    # ── Sujet de confirmation (T1, module 5) ──────────────────────────────────
 
     @_retry
-    def generate_remediation_subject(self, diagnostic: DiagnosticResult) -> ClaudeResponse:
-        """Génère 5 exercices par difficulté identifiée (weaknesses, puis root_causes en fallback)."""
-        logger.info("[%s] Claude remédiation — modèle : %s | difficultés : %d",
-                    diagnostic.copy_id, settings.claude_model_heavy,
-                    len(diagnostic.weaknesses) or len(diagnostic.root_causes))
-        if not diagnostic.weaknesses and not diagnostic.root_causes:
+    def generate_confirmation_subject(self, request: ConfirmationRequest) -> ClaudeResponse:
+        """Génère 2 questions par hypothèse — départage, ne remédie pas."""
+        logger.info("[%s] Claude confirmation T1 — modèle : %s | hypothèses : %d",
+                    request.copy_id, settings.claude_model_heavy, len(request.hypotheses))
+        if not request.hypotheses:
             return ClaudeResponse(
                 success=False, data=None, confidence=0.0,
                 raw_response="",
-                error="Aucune difficulté identifiée — pas de sujet de remédiation à générer.",
+                error="Aucune hypothèse à confirmer — pas de sujet T1 à générer.",
             )
 
-        n_series = len(diagnostic.weaknesses) or len(diagnostic.root_causes)
         prompt = (
-            f"{self._remediation_subject_prompt}"
-            f"\n\n---\n\nDIAGNOSTIC ({n_series} difficulté(s) à couvrir):\n"
-            f"{diagnostic.model_dump_json(indent=2)}"
+            f"{self._confirmation_subject_prompt}"
+            f"\n\n---\n\nHYPOTHÈSES ({len(request.hypotheses)}):\n"
+            f"{request.model_dump_json(indent=2)}"
         )
 
         response = self._creer_message(
             model=settings.claude_model_heavy,
-            max_tokens=8192,   # 35 exercices (~150 tok/exo) = ~5 250 tok — 4096 coupait après la 1re série
+            max_tokens=8192,
             temperature=0,
             messages=[
                 {
@@ -888,7 +892,62 @@ class ClaudeClient:
         )
 
         raw = self._texte_reponse(response)
-        return self._parse_response(raw, RemediationSubject)
+        return self._parse_response(raw, ConfirmationSubject)
+
+    # ── Sujet de vérification / rétention (T3, T4, T5, module 5 étendu) ───────
+
+    def _verification_prompt_pour(self, type_evaluation: str) -> str:
+        """T3 vérifie une remédiation, T4/T5 vérifient une rétention — deux
+        intentions différentes, un seul prompt partagé entre T4 et T5 : le
+        délai (45 jours ou 3 mois) ne change pas le contenu du sujet."""
+        if type_evaluation == "T3":
+            return self._verification_subject_prompt
+        return self._retention_subject_prompt
+
+    @_retry
+    def generate_verification_subject(self, request: VerificationRequest) -> ClaudeResponse:
+        """Génère le sujet T3 (vérification) ou T4/T5 (rétention) : la cause du
+        problème est déjà connue, on vérifie seulement si la maîtrise est là."""
+        logger.info(
+            "[%s] Claude %s — modèle : %s | problèmes : %d",
+            request.copy_id, request.type_evaluation, settings.claude_model_heavy,
+            len(request.items),
+        )
+        if not request.items:
+            return ClaudeResponse(
+                success=False, data=None, confidence=0.0,
+                raw_response="",
+                error=f"Aucun problème à vérifier — pas de sujet {request.type_evaluation} à générer.",
+            )
+
+        prompt = (
+            f"{self._verification_prompt_pour(request.type_evaluation)}"
+            f"\n\n---\n\nPROBLÈMES ({len(request.items)}):\n"
+            f"{request.model_dump_json(indent=2)}"
+        )
+
+        response = self._creer_message(
+            model=settings.claude_model_heavy,
+            max_tokens=8192,
+            temperature=0,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prompt + "\n\nIMPORTANT: Réponds UNIQUEMENT avec un"
+                            " objet JSON valide commençant par { et finissant par }."
+                            " Aucun texte avant ou après.",
+                            "cache_control": {"type": "ephemeral"},
+                        }
+                    ],
+                },
+            ],
+        )
+
+        raw = self._texte_reponse(response)
+        return self._parse_response(raw, VerificationSubject)
 
     # ── Sujet d'enrichissement (score parfait) ────────────────────────────────
 

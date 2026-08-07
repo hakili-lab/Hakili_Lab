@@ -49,6 +49,8 @@ from dataclasses import dataclass, field
 from typing import Generic, Literal, TypeVar
 
 from src.models.domain import (
+    ConfirmationRequest,
+    ConfirmationSubject,
     CopyGrade,
     DiagnosticResult,
     Exercise,
@@ -57,6 +59,8 @@ from src.models.domain import (
     RootCauseError,
     Rubric,
     TranscriptionResult,
+    VerificationRequest,
+    VerificationSubject,
 )
 
 logger = logging.getLogger(__name__)
@@ -622,6 +626,169 @@ def validate_remediation(
         remediation = RemediationSubject(copy_id=remediation.copy_id, exercises=fixed_exercises)
 
     return _done("Remédiation", remediation, issues)
+
+
+def validate_confirmation(
+    confirmation: ConfirmationSubject,
+    request: ConfirmationRequest,
+) -> ValidationResult[ConfirmationSubject]:
+    """
+    Valide l'alignement du sujet T1 avec les hypothèses demandées.
+
+    Même forme que `validate_remediation`, avec un ratio de 2 questions par
+    hypothèse au lieu de 5 exercices par lacune.
+
+    Corrections automatiques :
+    - Renumérote les questions si la séquence n'est pas 1, 2, 3, …
+
+    Erreurs bloquantes :
+    - Aucune question générée.
+
+    Avertissements non bloquants :
+    - Nombre de sujets ≠ nombre d'hypothèses (2 questions par hypothèse attendues).
+    - Questions sans énoncé (champ question vide).
+    """
+    issues: list[ValidationIssue] = []
+    exercises = list(confirmation.exercises)
+
+    if not exercises:
+        issues.append(ValidationIssue(
+            code="NO_EXERCISES",
+            severity="error",
+            message=(
+                "Le sujet de confirmation T1 est vide — aucune question générée. "
+                "Vérifiez que des hypothèses ont été fournies."
+            ),
+        ))
+        return _done("Confirmation T1", confirmation, issues)
+
+    n_hypotheses = len(request.hypotheses)
+    n_series = len({ex.topic for ex in exercises})
+    if n_hypotheses > 0 and n_series != n_hypotheses:
+        issues.append(ValidationIssue(
+            code="SERIES_COUNT_MISMATCH",
+            severity="warning",
+            message=(
+                f"{n_series} hypothèse(s) couverte(s) pour {n_hypotheses} attendue(s). "
+                f"Attendu : {n_hypotheses} × 2 questions = {n_hypotheses * 2} questions."
+            ),
+        ))
+
+    empty_nums = [ex.number for ex in exercises if not ex.question.strip()]
+    if empty_nums:
+        issues.append(ValidationIssue(
+            code="EMPTY_EXERCISE_QUESTIONS",
+            severity="warning",
+            message=f"Question(s) sans énoncé : numéros {empty_nums}.",
+        ))
+
+    expected = list(range(1, len(exercises) + 1))
+    actual = [ex.number for ex in exercises]
+    if actual != expected:
+        preview = str(actual[:6]) + ("…" if len(actual) > 6 else "")
+        fixed_exercises = [
+            Exercise(number=i + 1, topic=ex.topic, question=ex.question, hint=ex.hint)
+            for i, ex in enumerate(exercises)
+        ]
+        issues.append(ValidationIssue(
+            code="EXERCISE_RENUMBERED",
+            severity="warning",
+            message=f"Numérotation corrigée : {preview} → 1, 2, 3, …",
+            auto_fixed=True,
+        ))
+        confirmation = ConfirmationSubject(copy_id=confirmation.copy_id, exercises=fixed_exercises)
+
+    return _done("Confirmation T1", confirmation, issues)
+
+
+def validate_verification(
+    verification: VerificationSubject,
+    request: VerificationRequest,
+) -> ValidationResult[VerificationSubject]:
+    """
+    Valide l'alignement du sujet T3/T4/T5 avec les problèmes demandés.
+
+    Même forme que `validate_confirmation`, avec un nombre de questions par
+    problème qui dépend du type (2 pour T3, 1 pour T4/T5) plutôt que fixé à 2 —
+    le ratio attendu se déduit du nombre d'exercices retourné, pas d'une
+    constante, pour ne pas dupliquer une règle déjà posée dans le prompt.
+
+    Corrections automatiques :
+    - Renumérote les questions si la séquence n'est pas 1, 2, 3, …
+
+    Erreurs bloquantes :
+    - Aucune question générée.
+
+    Avertissements non bloquants :
+    - Nombre de séries (topics) ≠ nombre de problèmes fournis.
+    - Questions sans énoncé (champ question vide).
+    - `type_evaluation` renvoyé différent de celui demandé.
+    """
+    issues: list[ValidationIssue] = []
+    exercises = list(verification.exercises)
+    etape = f"Vérification {request.type_evaluation}"
+
+    if not exercises:
+        issues.append(ValidationIssue(
+            code="NO_EXERCISES",
+            severity="error",
+            message=(
+                f"Le sujet {request.type_evaluation} est vide — aucune question générée. "
+                "Vérifiez que des problèmes ont été fournis."
+            ),
+        ))
+        return _done(etape, verification, issues)
+
+    n_problemes = len(request.items)
+    n_series = len({ex.topic for ex in exercises})
+    if n_problemes > 0 and n_series != n_problemes:
+        issues.append(ValidationIssue(
+            code="SERIES_COUNT_MISMATCH",
+            severity="warning",
+            message=(
+                f"{n_series} problème(s) couvert(s) pour {n_problemes} attendu(s)."
+            ),
+        ))
+
+    if verification.type_evaluation != request.type_evaluation:
+        issues.append(ValidationIssue(
+            code="TYPE_EVALUATION_MISMATCH",
+            severity="warning",
+            message=(
+                f"Le sujet porte le type « {verification.type_evaluation} » au lieu de "
+                f"« {request.type_evaluation} » demandé."
+            ),
+        ))
+
+    empty_nums = [ex.number for ex in exercises if not ex.question.strip()]
+    if empty_nums:
+        issues.append(ValidationIssue(
+            code="EMPTY_EXERCISE_QUESTIONS",
+            severity="warning",
+            message=f"Question(s) sans énoncé : numéros {empty_nums}.",
+        ))
+
+    expected = list(range(1, len(exercises) + 1))
+    actual = [ex.number for ex in exercises]
+    if actual != expected:
+        preview = str(actual[:6]) + ("…" if len(actual) > 6 else "")
+        fixed_exercises = [
+            Exercise(number=i + 1, topic=ex.topic, question=ex.question, hint=ex.hint)
+            for i, ex in enumerate(exercises)
+        ]
+        issues.append(ValidationIssue(
+            code="EXERCISE_RENUMBERED",
+            severity="warning",
+            message=f"Numérotation corrigée : {preview} → 1, 2, 3, …",
+            auto_fixed=True,
+        ))
+        verification = VerificationSubject(
+            copy_id=verification.copy_id,
+            type_evaluation=verification.type_evaluation,
+            exercises=fixed_exercises,
+        )
+
+    return _done(etape, verification, issues)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

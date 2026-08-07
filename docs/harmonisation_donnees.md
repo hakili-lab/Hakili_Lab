@@ -1,18 +1,18 @@
-# Harmonisation des données — ancien système ↔ référentiel Urie v2
+# Harmonisation des données — ancien système ↔ référentiel v2
 **Document d'analyse et de décision · 2026-07-30**
 **Statut : investigation terminée. Arbitrages A et D rendus le 2026-07-30 et appliqués ; B, C, E, F toujours en attente.**
 
 > **Décisions prises (2026-07-30)**
 > - **A → A1, archiver.** Les 6 anciens tests sont marqués `archive: True` dans `src/knowledge/test_registry.py`. Appliqué et vérifié.
 > - **D → barème sur 20 en base.** L'échelle du sujet fait foi ; le classeur (sur 60) est converti à la génération. Voir §4.
-> - **Source des données des 7 nouveaux tests → le classeur, pas les PDF** (les énoncés ne sont pas extractibles, voir §3bis). `scripts/generer_baremes_urie.py` produit les 7 `data/knowledge/bareme_urie_*.yaml`. **Les 7 tests sont opérationnels et sélectionnables.**
+> - **Source des données des 7 nouveaux tests → le classeur, pas les PDF** (les énoncés ne sont pas extractibles, voir §3bis). `scripts/generer_baremes_socle.py` produit les 7 `data/knowledge/bareme_socle_*.yaml`. **Les 7 tests sont opérationnels et sélectionnables.**
 > - **Corrigés manquants → champs vides pour l'instant.** `reponse_attendue` / `solution` émis vides sur les 209 questions non-QCM, prêts à être remplis sans changement de schéma. Les 71 QCM sont pleinement corrigeables.
 
 ---
 
 ## Pourquoi ce document
 
-Le chantier Urie v2 suppose que les données de test soient exprimées dans le vocabulaire du référentiel (compétences canoniques, types d'erreur, codes de question). Or le code existant dans `Hakili_Lab/` porte un **deuxième système de données complet**, construit avant le référentiel, avec sa propre numérotation, son propre vocabulaire de compétences et son propre mécanisme d'ancrage pédagogique.
+Le chantier v2 suppose que les données de test soient exprimées dans le vocabulaire du référentiel (compétences canoniques, types d'erreur, codes de question). Or le code existant dans `Hakili_Lab/` porte un **deuxième système de données complet**, construit avant le référentiel, avec sa propre numérotation, son propre vocabulaire de compétences et son propre mécanisme d'ancrage pédagogique.
 
 Les deux systèmes décrivent le même métier mais ne partagent **aucun identifiant**. Tant que ce point n'est pas tranché, le module 1 (socle de données) ne peut pas être écrit sans figer un choix implicite, et le module 4 (diagnostic contraint) ne peut pas remplacer l'ancien diagnostic.
 
@@ -22,7 +22,7 @@ C'est la phase critique du projet : **c'est ici que se décide ce qui survit de 
 
 ## 1. Résultat central de l'investigation
 
-> **Les 7 nouveaux sujets PDF et le classeur `Referentiel_Urie_v0.xlsx` sont parfaitement alignés. L'ancien système ne l'est avec rien.**
+> **Les 7 nouveaux sujets PDF et le classeur `Referentiel_Socle_v0.xlsx` sont parfaitement alignés. L'ancien système ne l'est avec rien.**
 
 Vérifié par script, extraction des codes de cadre des 7 PDF confrontée à l'onglet `04_Questions` :
 
@@ -38,7 +38,7 @@ Vérifié par script, extraction des codes de cadre des 7 PDF confrontée à l'o
 
 ## 2. Les deux systèmes face à face
 
-| Dimension | Ancien système (`Hakili_Lab/data/knowledge/`) | Référentiel Urie v2 |
+| Dimension | Ancien système (`Hakili_Lab/data/knowledge/`) | Référentiel v2 |
 |---|---|---|
 | **Sujets** | 6 tests, fichiers DOCX (2 sans DOCX du tout) | 7 tests, PDF à cadres ancrés |
 | **Niveaux** | 6e, 3e ×2, 4e, 2ndeC, Tle | 6e, 5e, 4e, 3e, 2ndeC, 1ereD, TleD |
@@ -75,7 +75,7 @@ Le classeur contient tout pour **diagnostiquer** une erreur, mais rien pour **sa
 
 `05_Grille_diagnostic` ne comble pas ce manque : elle décrit ce qu'on lit **quand l'élève se trompe** (« Écrit 4x² + 9 »), pas ce qu'il fallait écrire. On peut parfois déduire la bonne réponse par élimination des signatures, mais c'est une reconstruction fragile, pas une donnée.
 
-**Ce manque n'est signalé ni dans `guide-urie.md`, ni dans `protocole-urie.md`, ni dans `00_Notice`.** Le classeur se présente comme « complet » sur le tagage des 280 questions — ce qui est vrai pour le diagnostic, mais la correction n'est pas couverte.
+**Ce manque n'est signalé ni dans `guide-v2.md`, ni dans `protocole-v2.md`, ni dans `00_Notice`.** Le classeur se présente comme « complet » sur le tagage des 280 questions — ce qui est vrai pour le diagnostic, mais la correction n'est pas couverte.
 
 **Point positif :** l'ancien système possède des corrigés de bonne qualité (champ `reponse` = réponse attendue, champ `solution` = démarche détaillée), complets à 99 % (voir §5). Ils portent sur les anciens sujets, donc ne sont pas réutilisables tels quels — mais ils constituent un **modèle de format éprouvé** pour produire les corrigés manquants.
 
@@ -115,7 +115,7 @@ Le classeur et les PDF ne notent pas sur la même échelle.
 
 Le rapport est exactement 3, uniformément — la conversion est donc mécanique (`points_sur_20 = bareme_classeur / 3`), et les **poids relatifs sont identiques** : un exercice de partie B vaut 3 questions de partie A dans les deux échelles. Il n'y a pas de contradiction pédagogique, seulement deux unités.
 
-`guide-urie.md` §9 confirme l'intention : « Les sujets sont aussi notés sur 20 au lieu de 60 ». Le classeur a conservé l'ancienne échelle.
+`guide-v2.md` §9 confirme l'intention : « Les sujets sont aussi notés sur 20 au lieu de 60 ». Le classeur a conservé l'ancienne échelle.
 
 ### ✅ Décision (2026-07-30) : **le barème est stocké sur 20**
 
@@ -197,7 +197,7 @@ Ces décisions ne sont pas techniques : elles engagent le produit. Elles ne doiv
 
 ### Arbitrage A — Que deviennent les 6 anciens tests ?
 
-Les nouveaux sujets remplacent les anciens (« Les sept tests d'entrée ont été refaits », `guide-urie.md` §9). Trois voies :
+Les nouveaux sujets remplacent les anciens (« Les sept tests d'entrée ont été refaits », `guide-v2.md` §9). Trois voies :
 
 | Option | Conséquence |
 |---|---|
@@ -243,7 +243,7 @@ Sous réserve des arbitrages ci-dessus (hypothèse : A1 + C1).
 Le défaut de dénominateur (`total_possible` vs somme réelle) est dans `domain.py`, pas dans les données : il frappera de la même manière les nouveaux tests si le barème saisi diverge du total déclaré. À traiter comme un correctif de code, avec un test unitaire « une copie parfaite vaut exactement 20/20 » applicable à tout barème.
 
 ### Étape 3 — Importer le référentiel *(module 1)*
-Comme prévu dans `urie_v2_roadmap.md`. L'import peut être strict (échec sur code inconnu) : l'intégrité du classeur a été vérifiée au module 0, zéro violation.
+Comme prévu dans `v2_roadmap.md`. L'import peut être strict (échec sur code inconnu) : l'intégrité du classeur a été vérifiée au module 0, zéro violation.
 
 ### Étape 4 — Produire les corrigés manquants *(arbitrage B — chemin critique)*
 - Définir le schéma de stockage : soit une colonne supplémentaire dans la banque de questions (`question.reponse_attendue`, `question.solution`), soit une table dédiée. Recommandation : colonnes sur `question`, le lien est 1-à-1.
@@ -267,7 +267,7 @@ Une fois le module 4 en place pour un niveau, `CompetencyGap.chunk_id` n'est plu
 | A | Archiver / faire coexister / ré-aligner les 6 anciens tests | Utilisateur | Modules 1, 8 | ✅ **A1 — archivés** (2026-07-30, appliqué) |
 | D | Échelle de barème en base : 60 (classeur) ou 20 (sujets) | Utilisateur | Module 1 | ✅ **sur 20** (2026-07-30, §4) |
 | G | Source des données des 7 nouveaux tests | Utilisateur | Modules 1, 8 | ✅ **le classeur** (2026-07-30, §3bis — 7 tests générés et opérationnels) |
-| B | **Qui produit les 209 corrigés manquants, sous quel format, quand** | Utilisateur + enseignant de maths | **Modules 3 à 9 — chemin critique** | 🟨 **outillage prêt** — classeur de saisie généré, réintégration testée ; reste à faire remplir |
+| B | **Qui produit les 209 corrigés manquants, sous quel format, quand** | Utilisateur + enseignant de maths | **Modules 3 à 9 — chemin critique** | ✅ **202/209 produits (2026-08-06)** — brouillon calculé sujet par sujet, relu et validé par l'utilisateur ; **pas encore relu par un enseignant de mathématiques** (validation `00_Notice` toujours due). 7 restants = questions `construction` (arbitrage F). Détail : journal de `docs/v2_roadmap.md`. |
 | C | Sort du curriculum RAG (121 chunks) | Utilisateur | Modules 4, 7 | 🟨 **rapprochement préparé** — 31 propositions nettes, 85 à trancher, 5 sans candidat ; classeur à valider |
 | E | Volumes horaires du lycée absents → palier incalculable en 2ndeC/1ereD | Utilisateur (point ouvert #2) | Module 6 | ⬜ en attente |
 | F | Format `construction` : diagnostic automatique ou saisie humaine ? | Utilisateur | Modules 2, 4 | ⬜ en attente |
@@ -278,12 +278,12 @@ L'archivage a été fait de façon à **ne pas casser l'historique** : `get_test
 
 | Test | Statut | Questions | Corrigé |
 |---|---|---|---|
-| `urie_6eme` → `urie_tleD` (7) | ✅ actifs | 40 chacun, 280 au total | 71 QCM ✅ · 209 en attente (arbitrage B) |
+| `socle_6eme` → `socle_tleD` (7) | ✅ actifs | 40 chacun, 280 au total | 71 QCM ✅ · 209 en attente (arbitrage B) |
 | `hakili_*` (6) | 🗄 archivés | — | conservés, non corrigés (dette assumée) |
 
 Les 7 nouveaux tests sont **opérationnels et sélectionnables**. Chacun déclare `classe` = une classe canonique unique (`6e`, `5e`, `4e`, `3e`, `2nde`, `1ere`, `Tle`), ce qui améliore la détermination de la classe par rapport aux anciens tests : `resolve_classe` dispose d'un garde-fou exact et, en cas d'échec d'extraction de l'en-tête, d'un repli fiable (un seul niveau déclaré). Les anciens tests déclaraient les *niveaux évalués* (« 6e · 5e · 4e »), ce qui pouvait faire échouer le garde-fou quand la classe extraite était celle de l'élève.
 
-**Attention si le classeur est mis à jour :** les fichiers `bareme_urie_*.yaml` sont générés. Relancer `python scripts/generer_baremes_urie.py` — mais **sauvegarder d'abord tout corrigé saisi à la main**, la régénération écrase les champs `reponse_attendue` / `solution`.
+**Attention si le classeur est mis à jour :** les fichiers `bareme_socle_*.yaml` sont générés. Relancer `python scripts/generer_baremes_socle.py` — mais **sauvegarder d'abord tout corrigé saisi à la main**, la régénération écrase les champs `reponse_attendue` / `solution`.
 
 ---
 

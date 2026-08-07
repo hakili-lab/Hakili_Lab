@@ -25,7 +25,7 @@ from suivi.models import EtatProbleme, Evaluation, Probleme, Session
 def _tagage(**surcharges) -> dict:
     base = {
         "identifiant_hakili": "HK-0042",
-        "tague_par": "Urie",
+        "tague_par": "Prénom Nom",
         "date_tagage": date(2026, 7, 31),
         "evaluation": {
             "type": "T0",
@@ -110,7 +110,7 @@ class TaguerCorpusTests(_SocleCorpus, TestCase):
 
         evaluation = Evaluation.objects.get()
         self.assertTrue(evaluation.corpus_reference)
-        self.assertEqual(evaluation.tague_par, "Urie")
+        self.assertEqual(evaluation.tague_par, "Prénom Nom")
         self.assertEqual(evaluation.date_tagage, date(2026, 7, 31))
 
         probleme = Probleme.objects.get()

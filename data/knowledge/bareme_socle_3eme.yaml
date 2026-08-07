@@ -1,11 +1,11 @@
-# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
-# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# Généré par scripts/generer_baremes_socle.py — ne pas éditer à la main.
+# Source : Referentiel_Socle_v0.xlsx. Relancer le script après toute
 # mise à jour du classeur. Exception : les champs reponse_attendue et
 # solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
 # les sauvegarder avant de régénérer.
 
 meta:
-  test_id: urie_3eme
+  test_id: socle_3eme
   titre: Test diagnostique d'entrée en 3ème
   niveau_test: 3eme
   classe: 3e
@@ -13,9 +13,9 @@ meta:
   total_possible: 20
   somme_baremes_reelle: 19.99999
   bareme_classeur_total: 60.0
-  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
-  genere_par: scripts/generer_baremes_urie.py
-  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+  source: Referentiel_Socle_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_socle.py
+  note_corriges: 10 QCM avec bonne réponse ; 1 questions sans corrigé (absent du classeur — arbitrage
     B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
 questions:
 - code: D1
@@ -27,7 +27,7 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Frequence en pourcentage de 18 eleves sur 50
-  reponse_attendue: ''
+  reponse_attendue: 36 %
   solution: ''
 - code: D2
   partie: A
@@ -71,7 +71,7 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Moyenne ponderee de quatre notes avec coefficients
-  reponse_attendue: ''
+  reponse_attendue: '11'
   solution: ''
 - code: D4
   partie: B
@@ -82,8 +82,9 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Note moyenne et frequence en pourcentage de la note 12
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: Moyenne 10,95 ; frequence(12) = 40 %
+  solution: effectif total=3+5+8+4=20 ; somme=6x3+9x5+12x8+15x4=18+45+96+60=219 ; moyenne=219/20=10,95
+    ; frequence(12)=8/20x100=40%.
 - code: D5
   partie: B
   format: redige
@@ -93,8 +94,8 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Benefice de 12 % et prix de vente d'un sac de niebe
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: Benefice 2 100 F ; prix de vente 19 600 F
+  solution: benefice=17500x0,12=2100 F ; prix de vente=17500+2100=19600 F.
 - code: F1
   partie: A
   format: qcm
@@ -134,8 +135,8 @@ questions:
   competence_secondaire: null
   domaine: Fonctions et applications
   objet: Completer le tableau de g puis donner l'antecedent de 1
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 'g(-1)=9 ; g(0)=7 ; g(4)=-1 ; antecedent de 1 : x=3'
+  solution: g(x)=-2x+7 ; g(-1)=2+7=9 ; g(0)=7 ; g(4)=-8+7=-1 ; -2x+7=1 -> x=3.
 - code: G1
   partie: A
   format: court
@@ -145,7 +146,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Distance AB sur une droite graduee, abscisses -3 et 5
-  reponse_attendue: ''
+  reponse_attendue: '8'
   solution: ''
 - code: G2
   partie: A
@@ -156,7 +157,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Completer l'egalite vectorielle dans un parallelogramme
-  reponse_attendue: ''
+  reponse_attendue: vecteur DC
   solution: ''
 - code: G3
   partie: A
@@ -200,7 +201,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Image de M par la translation transformant N en P
-  reponse_attendue: ''
+  reponse_attendue: Q
   solution: ''
 - code: G5
   partie: A
@@ -242,7 +243,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Abscisse de Q sachant PQ = 6 et x < -1
-  reponse_attendue: ''
+  reponse_attendue: '-7'
   solution: ''
 - code: G7
   partie: A
@@ -253,7 +254,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Calculer MN, segment des milieux, avec ST = 9,4 cm
-  reponse_attendue: ''
+  reponse_attendue: 4,7 cm
   solution: ''
 - code: G8
   partie: A
@@ -295,7 +296,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Image de [RS] par la symetrie de centre O
-  reponse_attendue: ''
+  reponse_attendue: '[TU]'
   solution: ''
 - code: G10
   partie: A
@@ -306,7 +307,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Mesure d'un angle au centre d'un polygone regulier a 8 cotes
-  reponse_attendue: ''
+  reponse_attendue: 45 degres
   solution: ''
 - code: G11
   partie: B
@@ -317,8 +318,8 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Coordonnees de B puis du milieu J de [AI]
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: B(5 ; -4) ; J(-1 ; 0,5)
+  solution: B=2I-A=(2x1-(-3) ; 2x(-1)-2)=(5;-4) ; J=milieu[AI]=((-3+1)/2 ; (2-1)/2)=(-1;0,5).
 - code: G12
   partie: B
   format: construction
@@ -339,8 +340,9 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Montrer que F est le milieu de [MP] puis calculer MF
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: F est le milieu de [MP] ; MF = 4,5 cm
+  solution: 'E milieu de [MN], (EF)//(NP) -> reciproque du theoreme des milieux : F est le milieu de [MP].
+    MF=MP/2=9/2=4,5 cm.'
 - code: L1
   partie: A
   format: court
@@ -350,7 +352,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Developper et reduire 3(2x-5) - 4(x-1)
-  reponse_attendue: ''
+  reponse_attendue: 2x - 11
   solution: ''
 - code: L2
   partie: A
@@ -393,7 +395,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Factoriser 7x^2 + 21x
-  reponse_attendue: ''
+  reponse_attendue: 7x(x + 3)
   solution: ''
 - code: L4
   partie: A
@@ -404,7 +406,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Resoudre l'inequation 3x - 4 <= 11
-  reponse_attendue: ''
+  reponse_attendue: x <= 5
   solution: ''
 - code: L5
   partie: A
@@ -446,7 +448,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Factoriser 25x^2 - 16
-  reponse_attendue: ''
+  reponse_attendue: (5x - 4)(5x + 4)
   solution: ''
 - code: L7
   partie: A
@@ -457,7 +459,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Resoudre x/3 - 2 = x/6 + 1
-  reponse_attendue: ''
+  reponse_attendue: x = 18
   solution: ''
 - code: L8
   partie: A
@@ -468,7 +470,7 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Traduire une phrase par une inequation d'inconnue x
-  reponse_attendue: ''
+  reponse_attendue: 2x + 5 <= 17
   solution: ''
 - code: L9
   partie: B
@@ -479,8 +481,8 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Developper et reduire E puis calculer E pour x = 2
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: E = 8x au carre - 12x + 29 ; E(2) = 37
+  solution: (3x-2)^2=9x^2-12x+4 ; (x+5)(x-5)=x^2-25 ; E=9x^2-12x+4-x^2+25=8x^2-12x+29 ; E(2)=32-24+29=37.
 - code: L10
   partie: B
   format: redige
@@ -490,8 +492,8 @@ questions:
   competence_secondaire: null
   domaine: Calcul litteral et algebre
   objet: Factoriser G puis calculer G pour x = 1
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: G = (3x-2)(4x+9) ; G(1) = 13
+  solution: 9x^2-4=(3x-2)(3x+2) ; G=(3x-2)(3x+2)+(3x-2)(x+7)=(3x-2)[(3x+2)+(x+7)]=(3x-2)(4x+9) ; G(1)=(1)(13)=13.
 - code: L11
   partie: B
   format: redige
@@ -501,8 +503,8 @@ questions:
   competence_secondaire: L.EQ1
   domaine: Calcul litteral et algebre
   objet: Mettre en equation un achat et resoudre
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 5x + 9000 = 24000 ; x = 3 000 F
+  solution: 5x=24000-9000=15000 ; x=15000/5=3000. Le poulet coute 3000 FCFA.
 - code: N1
   partie: A
   format: court
@@ -512,7 +514,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Ecrire les nombres appartenant a Z
-  reponse_attendue: ''
+  reponse_attendue: -7 et 12/4 (=3)
   solution: ''
 - code: N2
   partie: A
@@ -556,7 +558,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Approximation decimale par defaut a 10^-2 de 7/3
-  reponse_attendue: ''
+  reponse_attendue: 2,33
   solution: ''
 - code: N4
   partie: A
@@ -567,7 +569,7 @@ questions:
   competence_secondaire: N.PGCD
   domaine: Activites numeriques
   objet: Calculer une fraction a etages et rendre irreductible
-  reponse_attendue: ''
+  reponse_attendue: 5/6
   solution: ''
 - code: N5
   partie: A
@@ -578,7 +580,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Completer avec le symbole d'appartenance ou de non-appartenance
-  reponse_attendue: ''
+  reponse_attendue: -14/7 appartient a Z ; 1/3 n'appartient pas a D
   solution: ''
 - code: N6
   partie: A
@@ -622,7 +624,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Ecrire un quotient de puissances de dix sous forme a x 10^n
-  reponse_attendue: ''
+  reponse_attendue: 2 x 10 puissance 4
   solution: ''
 - code: N8
   partie: A
@@ -665,5 +667,5 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Fraction creusee en deux semaines et fraction restante
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 7/18 creuse ; reste 11/18
+  solution: 2/9+1/6=4/18+3/18=7/18 creuse ; reste=1-7/18=11/18.

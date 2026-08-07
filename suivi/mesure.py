@@ -26,7 +26,7 @@ pas ; l'écart d'heures, si.
 Une limite à garder en tête
 ---------------------------
 Le corpus est constitué de copies de l'**ancien format**, qui ne portent aucune
-des 280 questions Urie. Il ne contient par ailleurs ni `PRQ` ni `RED` (voir la
+des 280 questions v2. Il ne contient par ailleurs ni `PRQ` ni `RED` (voir la
 fiche du module 3) : sur ces deux types, la mesure ne dit rien — ni en bien ni
 en mal.
 """

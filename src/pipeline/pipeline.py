@@ -4,7 +4,8 @@ Pipeline Hakili Lab — Correction assistée par IA.
 Flux en deux phases :
   Phase A : ingestion → transcription → (relecture enseignant) → correction IA
             → (arrêt : validation enseignant)
-  Phase B : RAG → diagnostic → remédiation → export PDF + JSON
+  Phase B : RAG → diagnostic → export PDF + JSON (pas de sujet de remédiation
+            généré ici — voir la note plus bas)
 
   Mode Copie Unique (interactif, avec relecture transcription) :
     run_transcription() → écran de relecture (l'enseignant corrige la
@@ -19,13 +20,20 @@ Routage multi-providers (contrôlé par .env) :
   Transcription  → VISION_PROVIDER      : "gemini" | "claude"
   Correction     → GRADING_PROVIDER     : "deepseek" | "claude"
   Diagnostic     → DIAGNOSTIC_PROVIDER  : "deepseek" | "mistral" | "claude"
-  Remédiation    → REMEDIATION_PROVIDER : "mistral" | "deepseek" | "claude"
 
   Fallback automatique sur GPT-5 (OpenAI) si le provider principal de l'étape
-  échoue — transcription, nom élève, correction, diagnostic, remédiation.
+  échoue — transcription, nom élève, correction, diagnostic.
   Claude n'est plus utilisé comme fallback : il reste seul utilisé là où il
   n'y a pas d'alternative (extraction sujet/barème uploadé, barème virtuel,
   enrichissement 20/20 — voir claude_client.py).
+
+  Aucun sujet de remédiation IA n'est plus généré par le pipeline (D-CEO-33) :
+  à T0, seules des hypothèses de lacunes sont produites (diagnostic
+  ci-dessous), et c'est le sujet de confirmation T1 (module 5,
+  `generate_confirmation_subject`) qui prend le relais — jamais un sujet
+  d'exercices de remédiation généré à l'aveugle avant confirmation. Le plan de
+  remédiation chiffré (module 6, `suivi/plan.py`) est généré à la demande,
+  après confirmation, hors de ce pipeline.
 """
 from __future__ import annotations
 
@@ -59,7 +67,6 @@ from src.pipeline.orchestrator import (
     ValidationIssue,
     validate_diagnostic,
     validate_grading,
-    validate_remediation,
     validate_transcription,
 )
 from src.pipeline.pdf_remediation_html import generate_remediation_pdf
@@ -111,20 +118,6 @@ def _make_diagnostic_client():
             return MistralRemediationClient()
         except (ImportError, Exception) as e:
             logger.warning("Mistral diagnostic indisponible (%s) — fallback Claude", e)
-    return ClaudeClient()
-
-
-def _make_remediation_client():
-    provider = settings.remediation_provider.lower()
-    if provider == "mistral" and settings.mistral_api_key:
-        try:
-            from src.api.mistral_client import MistralRemediationClient
-            return MistralRemediationClient()
-        except (ImportError, Exception) as e:
-            logger.warning("Mistral remédiation indisponible (%s) — fallback Claude", e)
-    if provider == "deepseek" and settings.deepseek_api_key:
-        from src.api.deepseek_client import DeepSeekClient
-        return DeepSeekClient()
     return ClaudeClient()
 
 
@@ -779,7 +772,7 @@ def run_phase_b(
     que sa source — le référentiel — vit dans une application Django, et que ce
     module doit rester indépendant de tout framework. Sans elle, on retombe sur
     l'ancrage historique par `chunk_ids`, qui ne couvre que les tests d'avant le
-    référentiel Urie.
+    référentiel v2.
     """
     if result.grade is None:
         result.errors.append("Phase B impossible : aucune correction disponible.")
@@ -825,11 +818,9 @@ def _run_phase_b(
 
     claude_client      = ClaudeClient()
     diagnostic_client  = _make_diagnostic_client()
-    remediation_client = _make_remediation_client()
 
     result.model_routing.update({
         "Diagnostic": _client_label(diagnostic_client, "diagnostic"),
-        "Remédiation": _client_label(remediation_client, "remediation"),
     })
 
     # Détection score parfait (20/20 après validation enseignant)
@@ -908,20 +899,10 @@ def _run_phase_b(
         else:
             logger.warning("[%s] Diagnostic échoué (non bloquant) : %s", copy_id, diag_resp.error)
 
-        # 6. Remédiation
-        _progress("remediation", 87)
-        if result.diagnostic is not None:
-            rem_resp = remediation_client.generate_remediation_subject(result.diagnostic)
-            if not rem_resp.success or rem_resp.data is None:
-                if type(remediation_client).__name__ != "OpenAIClient":
-                    fallback = _fallback_openai_client()
-                    if fallback is not None:
-                        logger.warning("[%s] Fallback remédiation → GPT-5", copy_id)
-                        rem_resp = fallback.generate_remediation_subject(result.diagnostic)
-            if rem_resp.success and rem_resp.data is not None:
-                vr = validate_remediation(rem_resp.data, result.diagnostic)
-                result.validation_issues.extend(vr.issues)
-                result.remediation_subject = vr.data
+        # Pas de sujet de remédiation généré ici : à T0, seules des hypothèses
+        # de lacunes sont produites (diagnostic ci-dessus). C'est le test de
+        # confirmation T1 (module 5) qui départage hypothèse confirmée / écartée
+        # avant qu'un plan de remédiation ait un sens — voir docs/cycle_de_suivi.md.
 
     # 7. Export JSON
     _progress("export", 94)

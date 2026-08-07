@@ -1,17 +1,15 @@
-# Feuille de route — Chantier Urie v2 (suivi structuré)
+# Feuille de route — Chantier v2 (suivi structuré)
 **Document de pilotage — fait foi pour l'avancement.** `CLAUDE.md` renvoie ici pour le détail ; ce fichier est la seule source de vérité sur "où en est-on" — ne pas dupliquer le suivi ailleurs.
 
-**Dernière mise à jour :** 2026-08-05 (simplification : module 2 supprimé et diagnostic branché sur la correction — D-CEO-38 ; Streamlit retiré — D-CEO-39 ; un seul ORM — D-CEO-40)
-**Où en est-on (résumé en une ligne) :** Modules 0, **1 et 3 ✅ faits** · **Module 2 ⛔ supprimé le 2026-08-05** — trois copies 5e réelles imprimées et scannées l'ont mis en défaut (les trois refusées, dérive jusqu'à 3 cm), et il reconstituait par la géométrie une correspondance que la correction produit déjà ; au passage le risque du tramage est levé, l'imprimante n'imprime pas les bandes de guidage du tout · **Module 4 🟨 le moteur tourne et il est branché** — `manage.py diagnostiquer --correction <id>` reprend une copie déjà corrigée, sans lecture ni appel de modèle supplémentaire, QCM court-circuités, décision enseignant prioritaire · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. Le chiffre du module 4 reste celui de la mesure plancher : **rappel 85 % sur la compétence, 65 % sur le couple `compétence × type`** (Opus 4.7), point dur = le type d'erreur, `ATT` en tête. **La mesure juste n'attend plus qu'une chose : corriger les 3 copies 5e** (`KOANDA-SAIBATA-5E`, `NABALOUM-MADJID-5E`, `OUATTARA-FADEL_5E`) puis comparer. Les seuils de palier A/B/C **n'ont toujours pas été rejugés** après la hausse de ~33 % des coûts.
+**Dernière mise à jour :** 2026-08-06 (arbitrage B : 202/209 corrigés produits ; les 3 copies réelles 5e corrigées et diagnostiquées)
+**Où en est-on (résumé en une ligne) :** Modules 0, **1 et 3 ✅ faits** · **Module 2 ⛔ supprimé le 2026-08-05** — trois copies 5e réelles imprimées et scannées l'ont mis en défaut (les trois refusées, dérive jusqu'à 3 cm), et il reconstituait par la géométrie une correspondance que la correction produit déjà ; au passage le risque du tramage est levé, l'imprimante n'imprime pas les bandes de guidage du tout · **Module 4 🟨 le moteur tourne et il est branché** — `manage.py diagnostiquer --correction <id>` reprend une copie déjà corrigée, sans lecture ni appel de modèle supplémentaire, QCM court-circuités, décision enseignant prioritaire · **Module 6 🟨 le plan et le palier tournent** · **interface migrée sur Django**. **Arbitrage B débloqué le 2026-08-06 : 202/209 corrigés produits** (brouillon calculé, relu et validé par l'utilisateur sujet par sujet — pas encore la relecture par un enseignant que `00_Notice` exige avant de figer le référentiel) ; les 7 restants sont les questions `construction`, laissées de côté tant que l'arbitrage F n'est pas tranché. **Les 3 copies réelles 5e ont été corrigées et diagnostiquées** (`manage.py verifier_installation --copie … --eleve …`, le contrôle qui n'avait jamais été passé) — mais la **mesure juste** du module 4 reste à faire : ces 3 copies n'ont pas de tagage manuel, il n'y a donc rien à comparer pour l'instant. Les seuils de palier A/B/C **n'ont toujours pas été rejugés** après la hausse de ~33 % des coûts.
 
 **État vérifié le 2026-08-05 : 275 tests Django + 239 pytest = 514 tests passent.** ⚠ Avant la prochaine mise en ligne : `migrate suivi 0007 --fake` une fois sur Neon (D-CEO-40, `docs/deploiement.md`).
 
-⚠ **Un point bloque l'usage de l'interface, et aucune ligne de code ne le lèvera :**
-le fichier de clé JSON du compte de service Google est introuvable sur la machine
-(`verifier_installation` le signale). Sans lui, les Sheets sont injoignables et
-personne ne peut se connecter. À retélécharger et à déposer dans
-`Hakili_Lab/credentials/`. En développement, `HAKILI_SHEETS_FACTICES=true`
-contourne le manque avec des élèves inventés (D-CEO-37) — sans le résoudre.
+✅ **Le fichier de clé JSON du compte de service Google a été déposé** dans
+`Hakili_Lab/credentials/` — `verifier_installation` confirme les Sheets
+joignables (85 élèves, 87 personnes) le 2026-08-06. Le point qui bloquait
+l'usage de l'interface est levé.
 
 **Pour reprendre le travail sur Django :**
 ```bash
@@ -22,9 +20,9 @@ DEBUG=true python manage.py verifier_installation                          # con
 ```
 Note : `DATABASE_URL` suit la convention SQLAlchemy — `sqlite:///:memory:`, **trois** barres.
 
-> ⚠️ **Le manque qui pèse encore — détail dans `docs/harmonisation_donnees.md`.** Le référentiel ne contient **aucune bonne réponse** pour les 209 questions non-QCM — manque non signalé par `guide-urie.md`, qui bloque les modules 3 à 9. Les champs sont en place et vides (Module 1 fait), donc aucune migration corrective ne sera nécessaire : il reste à faire **remplir** le lot par le relecteur pédagogique.
+> ✅ **Le manque qui pesait — détail dans `docs/harmonisation_donnees.md`.** Le référentiel ne contenait **aucune bonne réponse** pour 209 questions non-QCM, ce qui bloquait les modules 3 à 9. **202/209 sont désormais remplies** (2026-08-06) — brouillon calculé sujet par sujet depuis l'objet du barème et les 7 sujets PDF, relu et validé par l'utilisateur avant chaque intégration, dans `data/knowledge/corriges_socle.yaml`. Les 7 restantes sont les questions `construction` (arbitrage F non tranché). ⚠ **Ce n'est pas la validation pédagogique que `00_Notice` exige avant de figer le référentiel** — c'est un brouillon relu une fois, pas une relecture par un enseignant de mathématiques. À faire relire avant tout usage à grande échelle.
 >
-> Arbitrages rendus : **A** (archivage), **D** (barème /20), **G** (source = le classeur). En attente : **B** (corrigés), **C** (curriculum RAG), **E** (volumes lycée), **F** (format `construction`).
+> Arbitrages rendus : **A** (archivage), **D** (barème /20), **G** (source = le classeur), **B** (corrigés — 202/209, détail ci-dessus). En attente : **C** (curriculum RAG), **E** (volumes lycée), **F** (format `construction`).
 
 ---
 
@@ -33,7 +31,7 @@ Note : `DATABASE_URL` suit la convention SQLAlchemy — `sqlite:///:memory:`, **
 1. Lire la ligne "Où en est-on" ci-dessus.
 2. Lire les 3 dernières entrées du **Journal de bord** (fin de ce document) — elles disent ce qui a été fait, ce qui a été décidé, et ce qui bloquait à la fin de la dernière session.
 3. Ouvrir le module marqué 🟨 (en cours) dans le tableau ci-dessous, ou le premier ⬜ si aucun n'est en cours. Reprendre à la première sous-tâche non cochée.
-4. Avant de coder quoi que ce soit sur ce chantier : relire `protocole-urie.md`, `guide-urie.md`, et la section "Chantier en cours" de `CLAUDE.md`.
+4. Avant de coder quoi que ce soit sur ce chantier : relire `protocole-v2.md`, `guide-v2.md`, et la section "Chantier en cours" de `CLAUDE.md`.
 5. **À la fin de la session** (même partielle) : cocher les sous-tâches faites, mettre à jour le statut du module concerné, mettre à jour la ligne "Où en est-on", et ajouter une entrée au Journal de bord. Un module qui progresse sans que ce fichier soit mis à jour est une session perdue pour la suivante.
 
 ---
@@ -71,7 +69,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 ### Module 0 — Appropriation du référentiel ✅ **FAIT (2026-07-30)**
 **Objectif :** savoir lire le classeur avant d'écrire la moindre ligne de code qui s'en sert.
 
-- [x] Parcourir les 9 onglets de `Referentiel_Urie_v0.xlsx` dans l'ordre, en commençant par `00_Notice`.
+- [x] Parcourir les 9 onglets de `Referentiel_Socle_v0.xlsx` dans l'ordre, en commençant par `00_Notice`.
 - [x] Prendre le test d'entrée en 3ème, choisir 3 questions (dont ≥1 QCM) → **L5** (QCM), **L7** (court), **G13** (rédigé, partie B).
 - [x] Pour chacune, retrouver : compétence canonique, signatures d'erreur, types d'erreur des distracteurs, coût de remédiation.
 - [x] Répondre à la question de contrôle.
@@ -94,7 +92,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 
 **Trois points remontés (à trancher par l'utilisateur / le docteur, pas par l'implémentation) :**
 1. **`08_Cout_remediation` contient 444 = 74 × 6 lignes, pas 101 × 7.** Deux exclusions structurelles, toutes deux légitimes mais qui doivent être gérées explicitement dans le code : `ATT` n'a **aucune** ligne de coût (non remédiable, coefficient 0) — le module 6 doit traiter `ATT` comme coût 0, **pas** comme « ligne manquante = erreur » ; et les **27 compétences du lycée** (15 en 2ndeC, 12 en 1ereD) ont un volume horaire `"non disponible"` et donc aucun coût — un problème diagnostiqué sur une compétence de lycée **ne peut pas être chiffré aujourd'hui**, ce qui bloque le calcul de palier (module 6) pour ces niveaux. C'est le point ouvert #2 ci-dessous, mais son impact concret est plus large qu'annoncé : il ne dégrade pas seulement la précision, il empêche le palier A/B/C d'être calculé pour un élève de 2ndeC ou 1ereD.
-2. **Un 4ème format de question existe : `construction` (7 questions).** `guide-urie.md` (module 2) ne décrit que 3 formats de cadre (QCM 1 ligne, court 2 lignes, rédigé 8 lignes). Les 7 questions `construction` (toutes en partie B, barème 3, une par niveau de la 6ème à la 3ème) attendent un **tracé géométrique** (règle/compas), pas du texte. Le module 2 doit prévoir ce cas, et le module 4 ne pourra vraisemblablement pas le diagnostiquer automatiquement — à orienter vers la saisie humaine (module 8).
+2. **Un 4ème format de question existe : `construction` (7 questions).** `guide-v2.md` (module 2) ne décrit que 3 formats de cadre (QCM 1 ligne, court 2 lignes, rédigé 8 lignes). Les 7 questions `construction` (toutes en partie B, barème 3, une par niveau de la 6ème à la 3ème) attendent un **tracé géométrique** (règle/compas), pas du texte. Le module 2 doit prévoir ce cas, et le module 4 ne pourra vraisemblablement pas le diagnostiquer automatiquement — à orienter vers la saisie humaine (module 8).
 3. **`ATT` apparaît 2 fois en partie B** alors que le protocole présente l'inattention comme un phénomène de partie A (99 des 101 signatures ATT y sont). Anomalie mineure, sans doute volontaire — signalée pour mémoire, ne bloque rien.
 
 **Critère de fin :** ✅ atteint — la question de contrôle a une réponse immédiate et tracée jusqu'au classeur.
@@ -111,8 +109,8 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ fait · 🔴 bloqué (voir colon
 - [x] **Règle de calcul du score, à appliquer partout :** la note se calcule contre la **somme réelle des `max_score`**, jamais contre un total déclaré en métadonnée. C'est la condition pour qu'une copie parfaite vaille exactement 20/20 malgré les tiers de point — et c'est aussi le correctif du bug §5.1 de `harmonisation_donnees.md`.
 - [x] Les 4 tables référentiel : `Competence`, `Prerequis`, `TypeErreur`, `CoutRemediation` — dans `referentiel/models.py`.
 - [x] Les 3 tables banque de questions : `Question`, `SignatureErreur`, `OptionQcm`. Les colonnes `question.reponse_attendue` et `question.solution` ont été prévues **dès la première version, même vides** — l'arbitrage B est toujours en attente, mais aucune migration corrective ne sera nécessaire quand les 209 corrigés arriveront.
-- [x] Les tables suivi : `SessionUrie` (nom retenu pour éviter l'ambiguïté avec la session Streamlit), `Evaluation` (lien souple vers `Copie.copy_id`), `Reponse`, `Probleme`, `Transition`, `Seance` — soit 6 tables. `eleve` est *exclue*, l'identité restant dans les Sheets (D-CEO-20).
-- [x] Contraintes en base : `evaluation.type` ∈ {T0..T5}, `probleme.etat` ∈ {hypothese, confirme, ecarte, en_remediation, resolu, non_resolu, regresse, clos}, `session_urie.palier` ∈ {A, B, C} — par `TextChoices` + `CheckConstraint` Django, pas par `Enum` Postgres natif (ce qui évite du même coup le piège du `DROP TYPE` au `downgrade`, rencontré en D-CEO-20/21).
+- [x] Les tables suivi : `SessionSuivi` (nom retenu pour éviter l'ambiguïté avec la session Streamlit), `Evaluation` (lien souple vers `Copie.copy_id`), `Reponse`, `Probleme`, `Transition`, `Seance` — soit 6 tables. `eleve` est *exclue*, l'identité restant dans les Sheets (D-CEO-20).
+- [x] Contraintes en base : `evaluation.type` ∈ {T0..T5}, `probleme.etat` ∈ {hypothese, confirme, ecarte, en_remediation, resolu, non_resolu, regresse, clos}, `session_suivi.palier` ∈ {A, B, C} — par `TextChoices` + `CheckConstraint` Django, pas par `Enum` Postgres natif (ce qui évite du même coup le piège du `DROP TYPE` au `downgrade`, rencontré en D-CEO-20/21).
 - [x] Cycle descente/remontée des migrations testé, comme sur les migrations Alembic précédentes du projet.
 - [x] **`Transition` protégée par le code, pas par la discipline** : `Probleme.changer_etat()` refuse un enchaînement non prévu et écrit la transition dans la même opération atomique ; `Transition.save()` refuse toute modification après création ; l'admin met `etat` en lecture seule pour qu'on ne puisse pas contourner la méthode.
 - [x] Import idempotent : `manage.py importer_referentiel` (pattern de `seed_users.py`, option `--a-blanc`), lit les 9 onglets via `openpyxl`, upsert par code. Contrôle d'intégrité **avant** toute écriture — un code inconnu fait échouer l'import avec un message précis, plutôt que d'écrire à moitié.
@@ -213,7 +211,7 @@ dépendance du diagnostic.
 
 **⚠ Une règle à ne pas enfreindre plus tard :** le module 4 **ne doit jamais écrire** dans les problèmes d'une évaluation marquée `corpus_reference`. La mesure se fait en comparant sa sortie à ces problèmes, pas en les mettant à jour — un étalon qu'on corrige au fur et à mesure ne mesure plus rien.
 
-**⚠ Ce que le corpus ne peut pas porter pour une copie de l'ancien format.** `Reponse` exige une clé étrangère vers les 280 questions Urie : une copie de l'ancien format n'en a aucune, donc **aucune `Reponse` n'est enregistrable** pour elle. Seuls les `Probleme` le sont — et c'est suffisant, puisque le problème est précisément l'unité que le module 4 produit et contre laquelle il sera mesuré.
+**⚠ Ce que le corpus ne peut pas porter pour une copie de l'ancien format.** `Reponse` exige une clé étrangère vers les 280 questions v2 : une copie de l'ancien format n'en a aucune, donc **aucune `Reponse` n'est enregistrable** pour elle. Seuls les `Probleme` le sont — et c'est suffisant, puisque le problème est précisément l'unité que le module 4 produit et contre laquelle il sera mesuré.
 
 ---
 
@@ -252,7 +250,7 @@ Aucune ne suffit seule, et c'est pour ça qu'il y en a trois :
 #### 🔴 Le corpus ne peut pas mesurer ce module — cette feuille de route disait le contraire
 La fiche du module 2 promettait que le module 4 « se mesurera d'abord sur le corpus de référence, qui est constitué de copies de l'ancien format ». **Ça ne tient pas, et il vaut mieux le savoir maintenant.**
 
-Le diagnostic contraint travaille **par question** : il reçoit l'énoncé, la compétence évaluée, ses prérequis et ses signatures d'erreur, tous tirés des 280 questions Urie. Une copie de l'ancien format n'en porte **aucune** — il n'y a rien à quoi rattacher ses réponses. C'est déjà pour cette raison que le module 3 ne peut enregistrer aucune `Reponse` pour ces copies ; la conséquence sur la mesure n'avait simplement pas été tirée.
+Le diagnostic contraint travaille **par question** : il reçoit l'énoncé, la compétence évaluée, ses prérequis et ses signatures d'erreur, tous tirés des 280 questions v2. Une copie de l'ancien format n'en porte **aucune** — il n'y a rien à quoi rattacher ses réponses. C'est déjà pour cette raison que le module 3 ne peut enregistrer aucune `Reponse` pour ces copies ; la conséquence sur la mesure n'avait simplement pas été tirée.
 
 **Arbitrage rendu le 2026-08-01 : les deux, en parallèle.** La mesure plancher est écrite et donne un signal sans attendre ; la mesure juste attend le sujet imprimé, qui est de toute façon nécessaire au module 2. L'option écartée : rapprocher les questions des anciens tests des compétences du référentiel — un travail du même ordre que l'arbitrage C, qui aurait introduit sa propre marge d'erreur **dans l'instrument de mesure lui-même**.
 
@@ -380,7 +378,7 @@ enseignant avant l'écart mesuré.
 
 ---
 
-## Points ouverts (hérités de `protocole-urie.md` §12 — à ne pas perdre de vue)
+## Points ouverts (hérités de `protocole-v2.md` §12 — à ne pas perdre de vue)
 
 1. **Extension au-delà des maths** — quelles matières, dans quel ordre, taxonomie transposable ou non. Non tranché.
 2. **Volumes horaires du lycée manquants** — ✅ **traité par D-CEO-29 (repli de 4 h), reste à confirmer par le terrain.** 74/101 compétences ont un volume officiel ; les 27 compétences de lycée (15 en 2ndeC, 12 en 1ereD) reçoivent 4 h — la médiane des volumes réels du collège — ce qui rend le palier de nouveau calculable sur ces niveaux (`CoutRemediation` : 444 officiels + 162 estimés = 606). **C'est une estimation et elle est marquée comme telle** (`volume_estime`, `estime`, mention orange dans l'admin, signalement `repose_sur_estimation` dans le plan) ; le classeur source continue d'indiquer « non disponible ». Reste à obtenir les vrais volumes — le remplacement sera trivial, et la feuille `04_Volumes_lycee` du lot à compléter le demande (arbitrage E).
@@ -399,7 +397,7 @@ Quatre manques du référentiel demandent tous un enseignant de mathématiques �
 python scripts/generer_lot_a_completer.py       # produit Lot_a_completer_<date>.xlsx
 # … le relecteur remplit les colonnes sur fond crème …
 python scripts/integrer_corriges.py --lot ../Lot_a_completer_<date>.xlsx
-python scripts/generer_baremes_urie.py          # les corrigés sont repris
+python scripts/generer_baremes_socle.py          # les corrigés sont repris
 ```
 
 | Feuille | Contenu | Arbitrage |
@@ -410,7 +408,7 @@ python scripts/generer_baremes_urie.py          # les corrigés sont repris
 | `04_Volumes_lycee` | 27 compétences sans volume horaire | E |
 | `05_Questions_construction` | 7 questions attendant un tracé : que vérifier ? | F |
 
-**Le point de conception qui compte :** les corrigés saisis vont dans `data/knowledge/corriges_urie.yaml`, **séparé des barèmes**. `generer_baremes_urie.py` régénère les barèmes depuis le classeur source et les écraserait s'ils y étaient stockés — plusieurs heures de travail d'enseignant perdues au premier `git pull` suivi d'une régénération. Le générateur fusionne ce fichier séparé à chaque exécution.
+**Le point de conception qui compte :** les corrigés saisis vont dans `data/knowledge/corriges_socle.yaml`, **séparé des barèmes**. `generer_baremes_socle.py` régénère les barèmes depuis le classeur source et les écraserait s'ils y étaient stockés — plusieurs heures de travail d'enseignant perdues au premier `git pull` suivi d'une régénération. Le générateur fusionne ce fichier séparé à chaque exécution.
 
 **Vérifié** par un aller-retour complet avec un lot d'essai : saisie → réintégration → régénération, les corrigés survivent. L'anomalie « démarche saisie sans réponse attendue » est détectée et signalée (c'est la réponse qui sert à corriger, pas la démarche). Données d'essai supprimées après vérification.
 
@@ -453,6 +451,28 @@ Limite structurelle assumée : certaines compétences ont un libellé volontaire
 ---
 
 ## Journal de bord
+
+### 2026-08-06 — Arbitrage B débloqué (202/209 corrigés) et les 3 copies réelles 5e corrigées
+
+**Contexte :** le lot de saisie (`Lot_a_completer_2026-07-30.xlsx`) était généré depuis une semaine et resté à 0/209 rempli — personne n'avait encore répondu côté relecteur pédagogique. Décision prise avec l'utilisateur de ne plus attendre : un brouillon calculé (lecture de l'objet du barème + des 7 sujets PDF, résolution directe des 209 questions), relu et validé par l'utilisateur **sujet par sujet** avant chaque intégration (`integrer_corriges.py` → `generer_baremes_socle.py`), avec les tests `referentiel` + `suivi.tests_diagnostic/tests_corpus/tests_plan` (132/132) rejoués après chaque sujet.
+
+**Résultat :** 202/209 corrigés produits sur les 7 sujets — 6e : 28, 5e : 27, 4e : 29, 3e : 29, 2ndeC : 30, 1ereD : 30, tleD : 29. Les 7 restants sont exactement les 7 questions de format `construction` (2 en 6e, 3 en 5e, 1 en 4e, 1 en 3e) : non traitées comme réponse texte, car l'arbitrage F (diagnostic auto ou saisie humaine sur un tracé) reste ouvert. Leurs critères de vérification de tracé ont été renseignés dans la feuille `05_Questions_construction` du lot, à reporter par le docteur dans le classeur source.
+
+⚠ **Ce n'est pas la validation pédagogique attendue par `00_Notice`** (« À VALIDER » par un enseignant de mathématiques) — c'est un brouillon calculé et relu une fois par l'utilisateur, pas une relecture par un enseignant. Signalé pour mémoire ; ne bloque plus le développement, mais à faire relire avant tout usage à grande échelle avec de vrais élèves.
+
+**`manage.py verifier_installation --copie … --test socle_5eme --eleve …` — le contrôle qui n'avait jamais été passé (CLAUDE.md) a été fait, trois fois**, sur les 3 copies réelles de 5e en attente (`KOANDA-SAIBATA-5E`, `NABALOUM-MADJID-5E`, `OUATTARA-FADEL_5E`, identités retrouvées dans le Sheet élèves). Notes IA : 8,0 / 9,25 / 11,75 sur 20. Diagnostic contraint (module 4) exécuté sur les 3 en repartant du `result.json` produit par `verifier_installation` (pas de ligne `Correction` persistée par ce chemin, donc `manage.py diagnostiquer --correction <id>` ne s'y applique pas directement — contourné par un script qui recharge `CopyGrade` depuis le JSON et appelle `reponses_depuis_correction()` + `diagnostiquer()`) : 13, 15, 8 problèmes structurés respectivement, sortie valide sur les 3.
+
+⚠ **Ce n'est toujours pas la « mesure juste » du module 4.** Ces 3 copies n'ont pas de tagage manuel (elles ne sont pas dans le corpus de référence) : rien à comparer. La mesure juste demanderait de les tagger à la main comme le corpus — travail distinct, non fait ici, à décider avec l'utilisateur.
+
+**Le fichier de clé JSON du compte de service Google a été retrouvé et déposé** dans `credentials/` — les Sheets sont joignables (85 élèves, 87 personnes), le point qui bloquait l'usage de l'interface est levé.
+
+**Deux défauts pré-existants repérés en cours de route, non corrigés (hors scope de cette session) :**
+- Le correcteur DeepSeek transcrit parfois une réponse QCM en phrase (« Le b est la bonne réponse ») au lieu de la seule lettre — le comparateur QCM du diagnostic contraint ne la reconnaît pas et écarte la question. Sous-compte les problèmes QCM.
+- Les `Copie` déjà en base sous `verif-KOANDA-SAIBATA-5E` et `verif-OUATTARA-FADEL_5E` portaient un `identifiant_hakili` factice (`kabore_salif_…`) d'une tentative antérieure — `creer_copie()` fait un `get_or_create` par `copy_id` qui ne met pas à jour l'élève si la ligne existe déjà.
+
+**`tests/test_baremes_socle.py::test_corriges_manquants_uniquement_hors_qcm` mis à jour** — son propre commentaire prévoyait qu'il faudrait le faire dès le premier corrigé ajouté. Vérifie désormais 7 manquants, tous de format `construction`, au lieu de 209.
+
+**Outillage utilisé sans aucune modification :** `scripts/generer_lot_a_completer.py`, `scripts/integrer_corriges.py`, `scripts/generer_baremes_socle.py` — tous déjà prêts depuis le module 0/3, ce qui a rendu le travail purement pédagogique plutôt que technique.
 
 ### 2026-08-05 (suite 3) — Un seul ORM : SQLAlchemy et Alembic retirés
 
@@ -675,7 +695,7 @@ contient — c'est le rôle de ce fichier.
    tiré, et c'est autant de perdu.
 
 **🔴 La règle qui a sauté, et il faut la nommer.** `CLAUDE.md` dit : « Ne pas
-ouvrir le chantier du site web en parallèle du chantier Urie v2. Un seul
+ouvrir le chantier du site web en parallèle du chantier v2. Un seul
 chantier prioritaire à la fois. » C'est exactement ce qui s'est passé, quatre
 jours durant, pendant que le module 4 attendait sa mesure juste. Le travail
 livré est bon et il servira ; ce n'est pas lui qui est en cause, c'est le fait
@@ -715,7 +735,7 @@ retire.
 **Vérifié le 2026-08-05 : 253 tests Django + 282 pytest = 535 tests passent.**
 
 **Prochaine étape : inchangée depuis le 1er août, et c'est bien le problème.**
-Le levier reste le **sujet Urie imprimé et scanné** — une manipulation, qui
+Le levier reste le **sujet socle imprimé et scanné** — une manipulation, qui
 débloque le tramage (module 2) *et* la mesure juste du module 4.
 
 ### 2026-08-01 (suite 5) — État des lieux, et trois écarts de doc corrigés
@@ -750,7 +770,7 @@ remise d'aplomb sur trois points où elle ne disait plus la vérité.
 module 1 portent la mention du passage de 444 à 606 lignes (D-CEO-29), pour
 qu'on ne prenne pas le chiffre d'époque pour l'état courant.
 
-**Prochaine étape :** inchangée. Le levier hors code est le **sujet Urie imprimé
+**Prochaine étape :** inchangée. Le levier hors code est le **sujet socle imprimé
 et scanné** — une seule manipulation débloque le tramage (module 2) *et* la
 mesure juste du module 4. Côté code, le point dur reste le **type d'erreur**,
 `ATT` en tête. Et les **seuils A/B/C** n'ont toujours pas été rejugés après la
@@ -945,7 +965,7 @@ explicitement dans `prompts/diagnostic_plancher_prompt.md` et re-mesurer, ce qui
 coûte quelques centimes et dit tout de suite si le défaut est de prompt ou de
 fond ; (2) attendre le mode ancré, dont les signatures portent justement la
 distinction de type. La (1) ne dispense pas de la (2) mais l'éclaire. Reste
-inchangé : imprimer, faire passer et scanner un sujet Urie.
+inchangé : imprimer, faire passer et scanner un sujet socle.
 
 ### 2026-08-01 (suite 2) — Les 5 copies sont transcrites ; la mesure plancher n'attend plus que la clé
 
@@ -993,7 +1013,7 @@ lancées : les 5 franchissent validation et contrôle anti-circularité.
 **Prochaine étape :** installer les dépendances, renseigner la clé, lancer les 5
 mesures, consigner l'écart ici (exacts / type faux / manqués / en trop, et écart
 de coût en heures). En parallèle, toujours : imprimer, faire passer et scanner un
-sujet Urie — il débloque le tramage du module 2 et la mesure juste du module 4.
+sujet socle — il débloque le tramage du module 2 et la mesure juste du module 4.
 
 ### 2026-08-01 (suite) — 🟨 Module 4 : le moteur tourne, et il n'a rien contre quoi se mesurer
 
@@ -1037,20 +1057,20 @@ mal, c'est le code plausible.
 fiche du module 2 annonçait que le module 4 se mesurerait « d'abord sur le corpus
 de référence ». **Ce n'est pas possible.** Le diagnostic contraint travaille par
 question — énoncé, compétence, prérequis, signatures, tous tirés des 280 questions
-Urie. Les 5 copies du corpus sont de l'**ancien format** et n'en portent aucune.
+v2. Les 5 copies du corpus sont de l'**ancien format** et n'en portent aucune.
 Le module 3 avait déjà constaté qu'aucune `Reponse` n'y était enregistrable ; la
 conséquence sur la mesure n'avait pas été tirée. **Le module 4 est donc écrit,
 mais aveugle** — trois issues sont posées dans sa fiche, aucune n'est gratuite.
 
 **Le branchement au pipeline n'est pas fait, et c'est délibéré.** Il est
-mécaniquement trivial (pour les 7 tests Urie, l'identifiant d'item du barème *est*
+mécaniquement trivial (pour les 7 tests v2, l'identifiant d'item du barème *est*
 le code de question). Mais le brancher en parallèle double le coût par copie face
 à une cible de $0,02, et le brancher en remplacement retire à l'enseignant le
 rapport PDF et le sujet de remédiation, qui se nourrissent du texte libre et n'ont
 pas encore d'équivalent structuré — ce sont les modules 7 et 9. Trois options
 posées dans la fiche, à trancher.
 
-**Une décision de schéma prise en passant.** `guide-urie.md` demande « une ligne
+**Une décision de schéma prise en passant.** `guide-v2.md` demande « une ligne
 dans `transition` » à la création d'un problème. Ce n'est pas faisable —
 `Transition` interdit `etat_avant == etat_apres` — et surtout le corpus de
 référence n'en écrit pas : en écrire ici rendrait les deux jeux non comparables et
@@ -1089,12 +1109,12 @@ modèle, `mesurer_plancher` s'arrête proprement faute de clé d'API.
 **Prochaine étape, dans l'ordre :** transcrire les 5 copies du corpus en fichiers
 de productions (aucun jugement, seulement recopier ce qui est écrit), lancer la
 mesure plancher avec une clé, consigner l'écart ici. En parallèle : imprimer,
-faire passer et scanner un sujet Urie — il débloque à la fois le tramage du
+faire passer et scanner un sujet socle — il débloque à la fois le tramage du
 module 2 et la mesure juste du module 4.
 
 ### 2026-07-30 (suite) — Nettoyage, et un bug sérieux qu'il a révélé
 - **Nettoyage** : 22 fichiers supprimés (docs périmées, schémas JSON morts, orphelins), 3 bibliothèques retirées. Détail et faux positifs écartés : D-CEO-31.
-- **Bug découvert en inventoriant : le RAG était mort sur les 7 nouveaux tests.** `urie_3eme` recevait 0 caractère de contexte programme, contre 2 048 pour un ancien test. Cause : l'ancrage passait par `chunk_ids`, champ que les barèmes générés depuis le classeur n'ont pas. Le pipeline n'échouait pas — il produisait un diagnostic générique, exactement ce que D-CEO-12 qualifie d'inutilisable.
+- **Bug découvert en inventoriant : le RAG était mort sur les 7 nouveaux tests.** `socle_3eme` recevait 0 caractère de contexte programme, contre 2 048 pour un ancien test. Cause : l'ancrage passait par `chunk_ids`, champ que les barèmes générés depuis le classeur n'ont pas. Le pipeline n'échouait pas — il produisait un diagnostic générique, exactement ce que D-CEO-12 qualifie d'inutilisable.
 - **Réparé sans attendre l'arbitrage C** : le contexte est reconstruit depuis le référentiel (compétence, chaîne de prérequis sur deux niveaux, signatures propres à la question). Mesuré : 3 490 caractères et 3 lacunes pour trois questions de 3ème. Voir D-CEO-30.
 - **Un diagnostic sans ancrage est désormais journalisé en avertissement** — c'est ce silence qui avait laissé le défaut vivre.
 - **Vérifié :** 112 tests Django + 218 pytest = **330 tests passent**, et `src/` ne contient toujours aucun import Django.
@@ -1111,11 +1131,11 @@ Les 7 PDF ont été déposés dans `data/Documents/`, et les anciens DOCX retir�
 *Ajouter une entrée à chaque session de travail sur ce chantier — même courte, même si rien n'a été codé. Format : date, ce qui a été fait, décisions prises, ce qui bloque, prochaine étape.*
 
 ### 2026-07-30
-- Lu `guide-urie.md`, `protocole-urie.md`, exploré `Referentiel_Urie_v0.xlsx` (9 onglets confirmés : 101 compétences, 7 types d'erreur, 280 questions, 1031 signatures, 284 distracteurs, 444 coûts), vérifié le format des nouveaux sujets sur `Test_diagnostique_entree_6eme.pdf` (cadres ancrés confirmés).
+- Lu `guide-v2.md`, `protocole-v2.md`, exploré `Referentiel_Socle_v0.xlsx` (9 onglets confirmés : 101 compétences, 7 types d'erreur, 280 questions, 1031 signatures, 284 distracteurs, 444 coûts), vérifié le format des nouveaux sujets sur `Test_diagnostique_entree_6eme.pdf` (cadres ancrés confirmés).
 - Constaté que `docs/decision_register.md` est à jour et fiable, mais que `CLAUDE.md`/`AGENTS.md`/`README.md` sont périmés (décrivent le tableau de validation enseignant comme "à construire" alors qu'il est implémenté ; ignorent totalement Postgres/Neon, Google Sheets, l'auth par rôle).
 - **Décisions actées avec l'utilisateur :** (1) les 11 tables du guide vivent dans Postgres/Neon existant, pas une SQLite séparée ; (2) le diagnostic structuré remplace directement le diagnostic texte libre, niveau par niveau ; (3) `CLAUDE.md` réécrit en place plutôt qu'un nouveau document séparé.
-- `Hakili_Lab/CLAUDE.md` réécrit : état réel de l'infra + chantier Urie v2 comme priorité active.
-- Ce document (`docs/urie_v2_roadmap.md`) créé comme source de vérité unique pour l'avancement, avec détail des 9 modules, jalons de validation, et ce journal.
+- `Hakili_Lab/CLAUDE.md` réécrit : état réel de l'infra + chantier v2 comme priorité active.
+- Ce document (`docs/v2_roadmap.md`) créé comme source de vérité unique pour l'avancement, avec détail des 9 modules, jalons de validation, et ce journal.
 - **Bloqué par :** rien techniquement — le Module 0 (appropriation manuelle du référentiel) peut démarrer immédiatement.
 - **Prochaine étape :** Module 0, puis Module 1 (migration Alembic).
 
@@ -1124,15 +1144,15 @@ Les 7 PDF ont été déposés dans `data/Documents/`, et les anciens DOCX retir�
 - Question de contrôle répondue : **L5 option a) → problème `L.IDR × CPT` → 0,5 h** (détail et dérivation dans la fiche Module 0 ci-dessus).
 - **Intégrité du classeur vérifiée par script : 0 violation.** Aucune question sans compétence, aucune signature avec type/compétence inconnu, aucun distracteur avec type inconnu, `07_Couverture` à écart 0 sur ses 116 lignes, 280/280 questions couvertes par 3-4 signatures. Le module 1 peut écrire un import strict (échec sur code inconnu) sans craindre de faux positifs.
 - Piège des codes locaux confirmé empiriquement : `N-a` = 7 compétences canoniques différentes selon le test ; un code local peut aussi pointer vers plusieurs codes canoniques.
-- **3 anomalies remontées** (détail dans la fiche Module 0) : (1) `08_Cout_remediation` = 74 × 6, pas 101 × 7 — `ATT` sans ligne de coût par construction, et 27 compétences lycée sans coût, ce qui **rend le palier du module 6 incalculable en 2ndeC/1ereD** ; (2) un **4ème format de question, `construction` (7 questions)**, absent de `guide-urie.md` module 2 — attend un tracé, pas du texte ; (3) `ATT` apparaît 2 fois en partie B, mineur.
+- **3 anomalies remontées** (détail dans la fiche Module 0) : (1) `08_Cout_remediation` = 74 × 6, pas 101 × 7 — `ATT` sans ligne de coût par construction, et 27 compétences lycée sans coût, ce qui **rend le palier du module 6 incalculable en 2ndeC/1ereD** ; (2) un **4ème format de question, `construction` (7 questions)**, absent de `guide-v2.md` module 2 — attend un tracé, pas du texte ; (3) `ATT` apparaît 2 fois en partie B, mineur.
 - Fiches Module 2 et Module 6 et point ouvert #2 mis à jour en conséquence.
 - **Bloqué par :** rien. Les anomalies 1 et 2 demandent un arbitrage utilisateur/docteur mais ne bloquent pas le Module 1.
 - **Prochaine étape :** Module 1 — modèles SQLAlchemy, migration Alembic, script `import_referentiel.py`.
 
 ### 2026-07-30 (suite) — Investigation harmonisation des données
-- Investigation demandée sur l'écart entre les données de test existantes (`Hakili_Lab/data/knowledge/`) et le référentiel Urie v2. Résultat complet : **`docs/harmonisation_donnees.md`**.
+- Investigation demandée sur l'écart entre les données de test existantes (`Hakili_Lab/data/knowledge/`) et le référentiel v2. Résultat complet : **`docs/harmonisation_donnees.md`**.
 - **Résultat central :** les 7 nouveaux PDF et le classeur sont **parfaitement alignés** (280/280 codes de question identiques, intitulés correspondant mot à mot). L'ancien système n'est aligné avec rien : aucun identifiant commun, vocabulaire de compétences en texte libre, ancrage par `chunk_ids` disjoint des codes canoniques, nombre de questions variable (26 à 54 contre 40 systématiques).
-- **Manque bloquant découvert, non signalé par `guide-urie.md` :** le référentiel ne contient de bonne réponse que pour les 71 QCM. **209 questions sur 280 (75 %) n'ont aucun corrigé** — la Phase A est impossible dessus, ce qui bloque les modules 3 à 9. L'ancien système, lui, a des corrigés complets et de bonne qualité (format `reponse` + `solution`), transposable comme modèle.
+- **Manque bloquant découvert, non signalé par `guide-v2.md` :** le référentiel ne contient de bonne réponse que pour les 71 QCM. **209 questions sur 280 (75 %) n'ont aucun corrigé** — la Phase A est impossible dessus, ce qui bloque les modules 3 à 9. L'ancien système, lui, a des corrigés complets et de bonne qualité (format `reponse` + `solution`), transposable comme modèle.
 - **Divergence de barème :** classeur sur 60 pts (30 A + 30 B), PDF sur 20 pts. Rapport exactement 3, poids relatifs identiques — conversion mécanique, mais l'échelle de stockage doit être tranchée avant la migration.
 - **4 défauts actifs constatés dans l'ancien système** (documentés, non corrigés) : (1) **bug de notation en production** — une copie parfaite donne 20,5/20 au test 3e v1, 18,5/20 au 3e v2, 19,5/20 au tle, à cause du dénominateur `total_possible` divergent de la somme réelle des `max_score` ; (2) `meta.total_questions` faux dans 4 barèmes sur 6 ; (3) `bareme_test_3e.yaml` utilise `score_max` alors que le loader ne lit que `points_originaux` — champ silencieusement ignoré ; (4) **RAG dégradé en silence** : 16 `chunk_ids` cassés, 69/121 chunks jamais utilisés, 38 questions sans ancrage, le tout journalisé en `logger.debug` donc invisible en exploitation.
 - **6 arbitrages formulés** (§9 du document) : A archivage des anciens tests · **B production des 209 corrigés — chemin critique** · C sort du curriculum RAG · D échelle de barème · E volumes lycée · F traitement du format `construction`.
@@ -1153,11 +1173,11 @@ Les 7 PDF ont été déposés dans `data/Documents/`, et les anciens DOCX retir�
 - **Nuance importante : les codes de cadre s'extraient parfaitement** — c'est ce qui avait permis la vérification 280/280, et c'est tout ce dont le module 2 a besoin. Le problème ne touche que les énoncés littéraux.
 - **Point qui débloque tout :** dans ce format l'élève compose **sur le sujet**, donc la copie scannée porte l'énoncé imprimé que l'IA transcrit. `subject_text` devient non critique, alors qu'il aurait été bloquant dans l'ancien format à copie séparée.
 - **Décision G (nouvelle) : le classeur est la source des données de test**, pas les PDF. `04_Questions` donne code/partie/format/barème/compétence/intitulé, `06_Distracteurs` donne les options QCM avec la bonne réponse.
-- **Livré :** `scripts/generer_baremes_urie.py` (idempotent, vérifié par hachage) génère les 7 `data/knowledge/bareme_urie_*.yaml`. **280 questions, 71 QCM avec bonne réponse, 209 champs `reponse_attendue`/`solution` vides** prêts pour l'arbitrage B — aucune migration corrective ne sera nécessaire.
+- **Livré :** `scripts/generer_baremes_socle.py` (idempotent, vérifié par hachage) génère les 7 `data/knowledge/bareme_socle_*.yaml`. **280 questions, 71 QCM avec bonne réponse, 209 champs `reponse_attendue`/`solution` vides** prêts pour l'arbitrage B — aucune migration corrective ne sera nécessaire.
 - **Format YAML plat** (`questions`) et non l'ancien découpage `questions_numeriques`/`questions_geometriques` : les 7 domaines du référentiel (N, L, G, D, F, M, S, T) n'y rentrent pas. `_build_rubric_from_yaml` accepte désormais les deux formats — l'ancien reste lu pour les tests archivés.
 - **Les 7 tests déclarent une classe canonique unique** (`6e`…`Tle`) au lieu des niveaux évalués. Vérifié au passage que `normalize_classe` ne reconnaît **pas** `2ndeC`/`1ereD`/`TleD` (retourne `None`) — d'où l'emploi des formes canoniques. Bénéfice : `resolve_classe` a un garde-fou exact et un repli fiable si l'extraction d'en-tête échoue, ce que les anciens tests n'offraient pas.
 - **Propriété centrale vérifiée : une copie parfaite vaut exactement 20,0/20 sur les 7 tests**, malgré les tiers de point de la partie A (somme réelle 19,99999, absorbée par l'arrondi au quart). Verrouillé par test de régression.
-- **Vérifié :** `tests/test_baremes_urie.py` — 40 questions/test, structure 30 A + 10 B, barème /20 = classeur/3, classe reconnue par le normaliseur, codes uniques, QCM avec bonne réponse unique, distracteurs tagués par un type de la liste fermée, 209 sans corrigé = exactement les non-QCM, copie parfaite = 20/20, copie nulle = 0/20, archivés masqués mais résolus. **168 tests passent** (102 avant, 66 nouveaux).
+- **Vérifié :** `tests/test_baremes_socle.py` — 40 questions/test, structure 30 A + 10 B, barème /20 = classeur/3, classe reconnue par le normaliseur, codes uniques, QCM avec bonne réponse unique, distracteurs tagués par un type de la liste fermée, 209 sans corrigé = exactement les non-QCM, copie parfaite = 20/20, copie nulle = 0/20, archivés masqués mais résolus. **168 tests passent** (102 avant, 66 nouveaux).
 - **Limite cosmétique connue :** les intitulés du classeur sont en ASCII replié (254/280 sans accents) et apparaissent tels quels comme libellés dans l'interface. Sans effet sur la correction ni le diagnostic ; corrigeable plus tard sans changement de schéma.
 - **Bloqué par :** rien. **Prochaine étape : Module 1.**
 
@@ -1185,7 +1205,7 @@ Les 7 PDF ont été déposés dans `data/Documents/`, et les anciens DOCX retir�
 ### 2026-07-30 (suite) — ✅ Module 1 fait, en Django
 - **Décidé :** hébergement **Railway ou Render** ; feu vert pour Django. Django 5.2 installé, ajouté à `requirements.txt`.
 - **Livré :** projet `hakili/` (settings, urls, wsgi, asgi) + apps `referentiel` et `suivi` + `manage.py`. `src/` n'a pas été touché — pipeline, clients IA, RAG, PDF et Sheets restent intacts, et Streamlit continue de tourner.
-- **11 tables migrées** : `referentiel` (Competence, Prerequis, TypeErreur, CoutRemediation, Question, SignatureErreur, OptionQcm) et `suivi` (Session→`session_urie`, Evaluation, Reponse, Probleme, Transition, Seance). Cycle descente/remontée testé, comme sur les migrations Alembic précédentes.
+- **11 tables migrées** : `referentiel` (Competence, Prerequis, TypeErreur, CoutRemediation, Question, SignatureErreur, OptionQcm) et `suivi` (Session→`session_suivi`, Evaluation, Reponse, Probleme, Transition, Seance). Cycle descente/remontée testé, comme sur les migrations Alembic précédentes.
 - **Import du référentiel** (`manage.py importer_referentiel`, idempotent, vérifié sur deux passages) : **7 types · 101 compétences · 136 prérequis · 444 coûts · 280 questions · 1031 signatures · 284 options · 71 QCM corrigés · 209 sans corrigé**. Chiffres identiques au module 0. Contrôle d'intégrité **avant** toute écriture : un code inconnu fait échouer l'import avec un message précis, plutôt que d'écrire à moitié.
 - **Vérifié en base : L5 du test de 3ème redonne exactement la réponse du module 0** — `L.IDR × CPT`, coût 0,50 h, bonne réponse `d`, distracteurs tagués CPT/PRC/PRC.
 - **Admin configuré** sur les 11 tables : compétences filtrables par domaine et niveau (volume manquant signalé en rouge), questions par test/format avec leurs signatures et options en ligne, problèmes avec état coloré et historique des transitions. C'est ce qui remplace une bonne part des écrans du module 8.
@@ -1195,12 +1215,12 @@ Les 7 PDF ont été déposés dans `data/Documents/`, et les anciens DOCX retir�
   2. **`Evaluation.copy_id` est un champ texte, pas une clé étrangère.** Tentée d'abord en FK vers une `Copie` non gérée : les tests ont révélé que Django ne crée pas les tables non gérées en base de test, donc toute insertion échouait. Le contournement (lanceur de tests flexant `managed`) ne marche pas non plus, les migrations figeant `managed: False`. Le lien souple est de toute façon le bon choix — c'est exactement le précédent de `identifiant_hakili` (D-CEO-20) : quand la donnée référencée est hors du territoire de Django, on garde un identifiant et on documente. Deviendra une vraie FK quand `copie` passera sous Django.
 - **Réglages Neon repris de D-CEO-19 :** `CONN_HEALTH_CHECKS` (= `pool_pre_ping`) et `CONN_MAX_AGE=300` (= `pool_recycle`) — sans quoi les connexions mortes après la mise en veille de Neon provoqueraient des écritures perdues, comme constaté à l'époque.
 - **Sécurité posée d'emblée :** `DJANGO_SECRET_KEY` obligatoire hors DEBUG (échec au démarrage plutôt qu'une clé de repli), HTTPS forcé, cookies sécurisés, HSTS, en-tête proxy Railway/Render. Nécessaire dès que l'application quitte le poste local avec des données de mineurs.
-- **Vérifié :** 15 tests Django (`manage.py test suivi`) dont **le parcours complet T0→T5 d'un élève fictif avec toutes ses transitions** — le critère de fin du module 1 tel qu'écrit dans `guide-urie.md`. Plus : transitions interdites refusées, états terminaux bloqués, `ATT` ne pouvant jamais être confirmé, atomicité de `changer_etat`, unicité d'un problème par session, immuabilité des transitions, calcul du taux de confirmation. **Les 172 tests pytest existants passent toujours** — aucune régression sur Streamlit.
+- **Vérifié :** 15 tests Django (`manage.py test suivi`) dont **le parcours complet T0→T5 d'un élève fictif avec toutes ses transitions** — le critère de fin du module 1 tel qu'écrit dans `guide-v2.md`. Plus : transitions interdites refusées, états terminaux bloqués, `ATT` ne pouvant jamais être confirmé, atomicité de `changer_etat`, unicité d'un problème par session, immuabilité des transitions, calcul du taux de confirmation. **Les 172 tests pytest existants passent toujours** — aucune régression sur Streamlit.
 - **Support SQLite ajouté** à `DATABASE_URL` pour que tests et intégration continue tournent sans Neon ; la production reste sur Neon.
 - **Bloqué par :** rien. **Prochaine étape :** Module 2 (lecture des copies par zones) ou migration des écrans Streamlit vers Django — à arbitrer.
 
 ### 2026-07-30 (suite) — Migration Streamlit → Django : fondations posées
-Décision : migrer l'interface **avant** de continuer les modules Urie, pour ne pas maintenir deux interfaces longtemps.
+Décision : migrer l'interface **avant** de continuer les modules v2, pour ne pas maintenir deux interfaces longtemps.
 
 **Fait**
 - **Logique métier extraite de `app.py`** vers `src/services/identite_service.py` : rôles valides d'une personne, vue utilisateur par casquette, recherche insensible casse/accents/ordre, nommage des documents, appariement fichier ↔ élève en batch. C'était du métier enfermé dans un fichier Streamlit de 2 876 lignes, donc intestable et perdu avec lui. `app.py` passe à 2 778 lignes et pointe vers le service par alias — aucune duplication. **23 tests** écrits au passage, dont les pièges déjà rencontrés (recherche insensible à l'ordre des mots, casquette responsable couvrant tout le centre).
@@ -1413,7 +1433,7 @@ Le module 1 avait laissé le marqueur du corpus « à définir ». Il est défin
 
 **Deux limites à connaître, consignées dans la fiche du module :**
 1. Le module 4 **ne devra jamais écrire** dans les problèmes d'une évaluation du corpus. Un étalon qu'on corrige au fur et à mesure ne mesure plus rien.
-2. Pour une copie de l'**ancien format**, aucune `Reponse` n'est enregistrable — ce modèle exige une clé étrangère vers les 280 questions Urie, qu'une ancienne copie n'a pas. Seuls les `Probleme` le sont, et c'est suffisant : c'est l'unité que le module 4 produit.
+2. Pour une copie de l'**ancien format**, aucune `Reponse` n'est enregistrable — ce modèle exige une clé étrangère vers les 280 questions v2, qu'une ancienne copie n'a pas. Seuls les `Probleme` le sont, et c'est suffisant : c'est l'unité que le module 4 produit.
 
 **Vérifié :** 16 tests dédiés, cycle de migration testé dans les deux sens. **186 Django + 242 pytest = 428 tests passent.**
 
@@ -1431,7 +1451,7 @@ Le module 1 avait laissé le marqueur du corpus « à définir ». Il est défin
 ### 2026-07-31 (suite) — Un scan réel, et ce qu'il a corrigé dans la conception
 **Contrainte posée :** le scan se fait **hors plateforme**. Ce qui entre est un **PDF multipage ou des images** — jamais un flux scanner piloté par l'application. Pris en compte : `resolution_scan()` donne la définition native de la source, et `ingest_pdf` accepte désormais un `dpi` (150 reste le défaut, D-CEO-10) pour ne pas rendre un scan 200 DPI dans une image 150 DPI, puis recadrer au dixième de page ce qui a déjà été dégradé.
 
-**Le fichier reçu (`TEST 4 3e.pdf`) est un test de l'ancien format**, pas un sujet Urie : pas de cadres ancrés, pas de codes de question, dotté de pointillés et déjà corrigé au stylo rouge. Il ne peut pas servir de pièce d'essai au module 2 — il n'y a aucun gabarit sur lequel le recaler. Il reste précieux pour deux autres choses : il **calibre le côté scan** (tableau dans la fiche du module 2), et c'est exactement le matériau que demande le **module 3** (« rassembler ≥5 anciennes copies »).
+**Le fichier reçu (`TEST 4 3e.pdf`) est un test de l'ancien format**, pas un sujet socle : pas de cadres ancrés, pas de codes de question, dotté de pointillés et déjà corrigé au stylo rouge. Il ne peut pas servir de pièce d'essai au module 2 — il n'y a aucun gabarit sur lequel le recaler. Il reste précieux pour deux autres choses : il **calibre le côté scan** (tableau dans la fiche du module 2), et c'est exactement le matériau que demande le **module 3** (« rassembler ≥5 anciennes copies »).
 
 **Ce que les mesures ont changé :**
 - **Le recalage ne peut pas s'appuyer sur le rectangle de la page.** La hauteur varie de **835 à 851 pt d'une feuille à l'autre du même fichier**, et la largeur est de 612 pt là où le sujet en fait 595,3. Une mise à l'échelle sur les bords de page serait fausse de 2 à 3 %. L'ancrage doit se faire sur le **contenu** — les cadres eux-mêmes.
@@ -1449,14 +1469,14 @@ Le module 1 avait laissé le marqueur du corpus « à définir ». Il est défin
 3. `decouper_zones` contre le gabarit du sujet 3ème → **refusé**, avec le motif exact : « 2,3 % d'écart entre les échelles horizontale et verticale ». Le garde-fou fonctionne sur du matériel réel, c'était son objet. ✅
 4. Nettoyage appliqué à de vrais pixels scannés → **l'écriture de l'élève ressort intacte**, mais **les lignes pointillées imprimées survivent** (8,8 % de pixels conservés). ⚠️
 
-**Le point 4 est le résultat qui compte, et c'est une mauvaise nouvelle utile.** Ces pointillés sont imprimés en noir : le seuillage ne pouvait pas les enlever, et il ne le prétendait pas. Mais il ouvre une question que le rendu numérique du PDF ne pouvait pas poser — **une imprimante laser rend un aplat gris 0,749 par un tramage de points noirs**, pas par un gris uniforme. Si c'est le cas, les lignes de guidage des sujets Urie se comporteront une fois imprimées comme ces pointillés, et `decouper_zones` les laissera passer alors que tous ses tests passent sur le PDF d'origine. **Le seuillage seul ne suffira peut-être pas** ; le repli est l'effacement par **position connue**, puisque le gabarit porte déjà la position exacte de chaque ligne.
+**Le point 4 est le résultat qui compte, et c'est une mauvaise nouvelle utile.** Ces pointillés sont imprimés en noir : le seuillage ne pouvait pas les enlever, et il ne le prétendait pas. Mais il ouvre une question que le rendu numérique du PDF ne pouvait pas poser — **une imprimante laser rend un aplat gris 0,749 par un tramage de points noirs**, pas par un gris uniforme. Si c'est le cas, les lignes de guidage des sujets socle se comporteront une fois imprimées comme ces pointillés, et `decouper_zones` les laissera passer alors que tous ses tests passent sur le PDF d'origine. **Le seuillage seul ne suffira peut-être pas** ; le repli est l'effacement par **position connue**, puisque le gabarit porte déjà la position exacte de chaque ligne.
 
 **Vérifié :** 22 tests sur les zones, **170 Django + 240 pytest = 410 tests passent**.
 
-**Prochaine étape :** le recalage, dès qu'un sujet Urie imprimé aura été scanné. **Le même scan tranche le risque du point 4** — même vierge, il suffit à mesurer le gris des lignes imprimées. En attendant, le **Module 3** est le seul chantier qui n'attend rien, et le fichier reçu en est la première pièce.
+**Prochaine étape :** le recalage, dès qu'un sujet socle imprimé aura été scanné. **Le même scan tranche le risque du point 4** — même vierge, il suffit à mesurer le gris des lignes imprimées. En attendant, le **Module 3** est le seul chantier qui n'attend rien, et le fichier reçu en est la première pièce.
 
 ### 2026-07-31 (suite) — Module 2 : le gabarit ne se devine pas, il se lit
-**La question qui a décidé du module :** faut-il détecter les cadres sur le scan, comme le prescrit `guide-urie.md` ? **Non.** Les 7 sujets sont produits par WeasyPrint et leur PDF porte la position exacte de chaque cadre et son code. Vérifié avant d'écrire la moindre ligne : **280/280 cadres retrouvés sur les 7 sujets**, 0 manquant, 0 en trop, 0 doublon, et le nombre de lignes de guidage concorde avec le format annoncé par le barème sur les 280 (qcm 71 × 1 ligne, court 139 × 2, redige 63 × 8, construction 7 × 0).
+**La question qui a décidé du module :** faut-il détecter les cadres sur le scan, comme le prescrit `guide-v2.md` ? **Non.** Les 7 sujets sont produits par WeasyPrint et leur PDF porte la position exacte de chaque cadre et son code. Vérifié avant d'écrire la moindre ligne : **280/280 cadres retrouvés sur les 7 sujets**, 0 manquant, 0 en trop, 0 doublon, et le nombre de lignes de guidage concorde avec le format annoncé par le barème sur les 280 (qcm 71 × 1 ligne, court 139 × 2, redige 63 × 8, construction 7 × 0).
 
 Conséquence : **l'OCR disparaît de la chaîne.** C'était le premier point de panne — trois caractères à 150 DPI, à côté de l'écriture d'un élève —, et une confusion `G1`/`G7` aurait attribué une réponse à la mauvaise question sans que rien ne le signale. Le seul problème qui reste sur le scan est le recalage.
 
@@ -1477,7 +1497,7 @@ Conséquence : **l'OCR disparaît de la chaîne.** C'était le premier point de 
 **Prochaine étape :** avec un scan, le recalage puis la calibration du seuil. Sans scan, le **Module 3** (corpus de référence) peut avancer en parallèle — il ne dépend que du module 1 et se fait à la main.
 
 ### 2026-07-31 — Le travail est versionné
-Le socle Django n'était pas suivi par git : rien n'avait été commité depuis le **2026-07-23**, une semaine de travail ne tenait que sur un disque. Corrigé — **10 commits découpés par domaine** sur la branche `chantier/urie-v2-django`, poussée sur `origin`.
+Le socle Django n'était pas suivi par git : rien n'avait été commité depuis le **2026-07-23**, une semaine de travail ne tenait que sur un disque. Corrigé — **10 commits découpés par domaine** sur la branche `chantier/urie-v2-django` (nom hérité, à renommer séparément), poussée sur `origin`.
 
 Découpage : nettoyage des documents périmés · socle Django + authentification · `referentiel/` (module 1) · `suivi/` (modules 1 et 6) · `suivi_web/` · `correction_web/` · extraction de la logique métier hors de l'interface · scripts et barèmes · mise en service · documentation.
 

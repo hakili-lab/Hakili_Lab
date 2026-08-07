@@ -30,7 +30,6 @@ from src.models.domain import (
     ClaudeResponse,
     CopyGrade,
     DiagnosticResult,
-    RemediationSubject,
     Rubric,
     TranscriptionResult,
 )
@@ -183,7 +182,7 @@ _retry = retry(
 # ── Client principal ──────────────────────────────────────────────────────────
 
 class OpenAIClient:
-    """Filet de secours GPT-5 — transcription, nom élève, correction, diagnostic, remédiation."""
+    """Filet de secours GPT-5 — transcription, nom élève, correction, diagnostic."""
 
     def __init__(self) -> None:
         if not settings.openai_api_key:
@@ -194,7 +193,6 @@ class OpenAIClient:
         self._transcription_prompt = _load_prompt("transcription_prompt.md")
         self._grading_prompt = _load_prompt("grading_prompt.md")
         self._diagnostic_prompt = _load_prompt("diagnostic_prompt.md")
-        self._remediation_prompt = _load_prompt("remediation_subject_prompt.md")
         logger.info("OpenAIClient initialisé (modèle=%s)", settings.openai_model)
 
     def _media_type(self, path: Path) -> str:
@@ -373,36 +371,4 @@ class OpenAIClient:
             return _parse_json_response(raw, DiagnosticResult)
         except Exception as e:
             logger.error("GPT-5 diagnose erreur : %s", e)
-            return ClaudeResponse(success=False, data=None, confidence=0.0, raw_response="", error=str(e))
-
-    # ── Remédiation (fallback) ──────────────────────────────────────────────
-
-    @_retry
-    def generate_remediation_subject(self, diagnostic: DiagnosticResult) -> ClaudeResponse:
-        logger.info("[%s] GPT-5 remédiation (fallback) — modèle : %s",
-                    diagnostic.copy_id, settings.openai_model)
-        if not diagnostic.weaknesses and not diagnostic.root_causes:
-            return ClaudeResponse(
-                success=False, data=None, confidence=0.0, raw_response="",
-                error="Aucune difficulté identifiée — pas de sujet de remédiation à générer.",
-            )
-        n_series = len(diagnostic.weaknesses) or len(diagnostic.root_causes)
-        user_content = (
-            f"{self._remediation_prompt}"
-            f"\n\n---\n\nDIAGNOSTIC ({n_series} difficulté(s) à couvrir):\n"
-            f"{diagnostic.model_dump_json(indent=2)}"
-        )
-        try:
-            response = self._client.chat.completions.create(
-                model=settings.openai_model,
-                messages=[{"role": "user", "content": user_content}],
-                response_format={"type": "json_object"},
-                max_completion_tokens=8192,
-            )
-            raw = response.choices[0].message.content or ""
-            logger.info("GPT-5 remédiation OK — tokens: %d in / %d out",
-                        response.usage.prompt_tokens, response.usage.completion_tokens)
-            return _parse_json_response(raw, RemediationSubject)
-        except Exception as e:
-            logger.error("GPT-5 generate_remediation_subject erreur : %s", e)
             return ClaudeResponse(success=False, data=None, confidence=0.0, raw_response="", error=str(e))

@@ -59,8 +59,8 @@ def _notice(wb, comptes: dict) -> None:
     feuille = wb.create_sheet("00_Notice")
     feuille.column_dimensions["A"].width = 110
     lignes = [
-        ("LOT À COMPLÉTER — Référentiel Urie", True),
-        (f"Généré le {date.today().isoformat()} depuis Referentiel_Urie_v0.xlsx", False),
+        ("LOT À COMPLÉTER — Référentiel", True),
+        (f"Généré le {date.today().isoformat()} depuis Referentiel_Socle_v0.xlsx", False),
         ("", False),
         ("Ce fichier rassemble ce qui manque au référentiel et qui demande un regard", False),
         ("d'enseignant. Les colonnes sur fond crème sont à remplir ; les autres sont là", False),
@@ -126,7 +126,7 @@ def _corriges(wb) -> int:
 
     ligne = 2
     for niveau in _LIBELLES_NIVEAU:
-        chemin = _KB / f"bareme_urie_{niveau}.yaml"
+        chemin = _KB / f"bareme_socle_{niveau}.yaml"
         if not chemin.exists():
             continue
         donnees = yaml.safe_load(chemin.read_text(encoding="utf-8"))

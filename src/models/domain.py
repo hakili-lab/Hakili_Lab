@@ -165,7 +165,7 @@ class DiagnosticResult(BaseModel):
     competency_gaps: list[CompetencyGap] = Field(default_factory=list)
 
 
-# ── Diagnostic contraint (module 4, chantier Urie v2) ─────────────────────────
+# ── Diagnostic contraint (module 4, chantier v2) ──────────────────────────────
 #
 # Ces schémas remplacent `DiagnosticResult` pour les niveaux couverts par le
 # référentiel. La différence n'est pas de format mais de nature : `DiagnosticResult`
@@ -254,6 +254,67 @@ class RemediationSubject(BaseModel):
     copy_id: str
     exercises: list[Exercise]
     is_enrichment: bool = False  # True quand score parfait → exercices d'approfondissement
+
+
+# ── Sujet de confirmation (T1, module 5) ────────────────────────────────────────
+# À ne pas confondre avec `RemediationSubject` : T1 ne cherche pas à faire
+# progresser l'élève, il départage une hypothèse de lacune (`suivi.Probleme`,
+# état `hypothese`) entre confirmée et écartée. Voir docs/cycle_de_suivi.md §3.
+
+class ConfirmationHypothesis(BaseModel):
+    """Une hypothèse de lacune (compétence × type d'erreur) telle qu'écrite en
+    base par le module 4 — l'entrée du module 5, pas sa propre détection."""
+
+    competence_label: str
+    type_erreur_label: str
+    justification: str
+    is_att: bool = False  # ATT ne peut être que confirmé « écarté » — jamais remédié
+
+
+class ConfirmationRequest(BaseModel):
+    copy_id: str
+    hypotheses: list[ConfirmationHypothesis]
+
+
+class ConfirmationSubject(BaseModel):
+    """Sujet T1 : deux questions par hypothèse (`exercises`, réutilisant la
+    forme d'`Exercise` pour le rendu PDF), construites pour départager une cause
+    conceptuelle d'une cause procédurale — jamais pour enseigner."""
+
+    copy_id: str
+    exercises: list[Exercise]
+
+
+# ── Sujet de vérification / rétention (T3, T4, T5) ──────────────────────────
+# À ne pas confondre avec la confirmation (T1) : la cause du problème est déjà
+# établie (`suivi.Probleme` en `en_remediation` pour T3, en `resolu` pour T4/T5).
+# Il ne s'agit plus de départager deux hypothèses mais de vérifier si la
+# maîtrise est là (T3) ou si elle tient dans le temps (T4/T5). Voir
+# docs/cycle_de_suivi.md §3 et `suivi/generation.py`.
+
+class VerificationItem(BaseModel):
+    """Un problème à vérifier — confirmé et en remédiation (T3), ou déjà
+    résolu et à recontrôler (T4/T5)."""
+
+    competence_label: str
+    type_erreur_label: str
+    contexte: str  # ce qui avait été relevé (justification du problème)
+
+
+class VerificationRequest(BaseModel):
+    copy_id: str
+    type_evaluation: str  # "T3", "T4" ou "T5" — choisit le prompt et le titre du PDF
+    items: list[VerificationItem]
+
+
+class VerificationSubject(BaseModel):
+    """Sujet T3 (vérification après remédiation) ou T4/T5 (contrôle de
+    rétention) : une à deux questions par problème visé, réutilisant `Exercise`
+    pour le rendu PDF — même moteur que la confirmation et la remédiation."""
+
+    copy_id: str
+    type_evaluation: str
+    exercises: list[Exercise]
 
 
 # ── Ingestion ────────────────────────────────────────────────────────────────

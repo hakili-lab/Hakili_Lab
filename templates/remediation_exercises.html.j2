@@ -191,10 +191,20 @@
 
 <!-- ── INFO ─────────────────────────────────────────────────────── -->
 <div class="info-box">
-{% if is_enrichment %}
+{% if doc_kind == "enrichment" %}
   <strong>{{ total }} exercice{% if total > 1 %}s{% endif %} d'approfondissement</strong>
   — niveau 2nde / 1ère scientifique. {{ DOC_SUBTITLE }}
   Résous chaque exercice sans aide extérieure.
+{% elif doc_kind == "confirmation" %}
+  <strong>{{ total }} question{% if total > 1 %}s{% endif %} de confirmation</strong>
+  répartie{% if total > 1 %}s{% endif %} en {{ series|length }} hypothèse{% if series|length > 1 %}s{% endif %}
+  à vérifier. Ce test ne prépare pas de remédiation : il vérifie si les
+  difficultés repérées à la première évaluation sont réelles. Réponds sans
+  aide extérieure, comme au premier test.
+{% elif doc_kind == "verification" %}
+  <strong>{{ total }} question{% if total > 1 %}s{% endif %}</strong>
+  répartie{% if total > 1 %}s{% endif %} en {{ series|length }} problème{% if series|length > 1 %}s{% endif %}
+  à recontrôler. {{ DOC_SUBTITLE }}. Réponds sans aide extérieure.
 {% else %}
   <strong>{{ total }} exercice{% if total > 1 %}s{% endif %} de remédiation</strong>
   répartis en {{ series|length }} série{% if series|length > 1 %}s{% endif %}.

@@ -1,11 +1,11 @@
-# Généré par scripts/generer_baremes_urie.py — ne pas éditer à la main.
-# Source : Referentiel_Urie_v0.xlsx. Relancer le script après toute
+# Généré par scripts/generer_baremes_socle.py — ne pas éditer à la main.
+# Source : Referentiel_Socle_v0.xlsx. Relancer le script après toute
 # mise à jour du classeur. Exception : les champs reponse_attendue et
 # solution peuvent être complétés à la main (arbitrage B) — dans ce cas,
 # les sauvegarder avant de régénérer.
 
 meta:
-  test_id: urie_6eme
+  test_id: socle_6eme
   titre: Test diagnostique d'entrée en 6ème
   niveau_test: 6eme
   classe: 6e
@@ -13,9 +13,9 @@ meta:
   total_possible: 20
   somme_baremes_reelle: 19.99999
   bareme_classeur_total: 60.0
-  source: Referentiel_Urie_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
-  genere_par: scripts/generer_baremes_urie.py
-  note_corriges: 10 QCM avec bonne réponse ; 30 questions sans corrigé (absent du classeur — arbitrage
+  source: Referentiel_Socle_v0.xlsx — onglets 04_Questions, 06_Distracteurs, 02_Competences
+  genere_par: scripts/generer_baremes_socle.py
+  note_corriges: 10 QCM avec bonne réponse ; 2 questions sans corrigé (absent du classeur — arbitrage
     B de docs/harmonisation_donnees.md). Les champs reponse_attendue et solution sont prêts à être remplis.
 questions:
 - code: D1
@@ -57,7 +57,7 @@ questions:
   competence_secondaire: D.POUR
   domaine: Donnees, proportionnalite, statistique
   objet: Calculer le pourcentage de savons vendus le mardi
-  reponse_attendue: ''
+  reponse_attendue: 31 %
   solution: ''
 - code: D3
   partie: A
@@ -68,7 +68,7 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Calculer le prix de 8 m de tissu proportionnellement
-  reponse_attendue: ''
+  reponse_attendue: 12 000 F
   solution: ''
 - code: D4
   partie: B
@@ -79,8 +79,8 @@ questions:
   competence_secondaire: null
   domaine: Donnees, proportionnalite, statistique
   objet: Completer un tableau de proportionnalite prix-sacs de riz
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: '5 sacs : 85 000 F ; 9 sacs : 153 000 F'
+  solution: prix unitaire=51000/3=17000 FCFA ; 5x17000=85000 ; 9x17000=153000.
 - code: D5
   partie: B
   format: redige
@@ -90,8 +90,8 @@ questions:
   competence_secondaire: D.TAB
   domaine: Donnees, proportionnalite, statistique
   objet: Comparer les pourcentages de reussite de deux classes
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 'CM2 A : 80 % ; CM2 B : 70 % ; CM2 A a le meilleur pourcentage'
+  solution: 'CM2 A : 40/50x100=80% ; CM2 B : 21/30x100=70% ; 80%>70%.'
 - code: G1
   partie: A
   format: court
@@ -101,7 +101,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Donner AM, M milieu de [AB] avec AB = 9 cm
-  reponse_attendue: ''
+  reponse_attendue: 4,5 cm
   solution: ''
 - code: G2
   partie: A
@@ -112,7 +112,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Donner la nature d'un angle de 47 degres
-  reponse_attendue: ''
+  reponse_attendue: Angle aigu
   solution: ''
 - code: G3
   partie: A
@@ -123,7 +123,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Donner la nature d'un triangle de cotes 6, 6 et 4 cm
-  reponse_attendue: ''
+  reponse_attendue: Isocele
   solution: ''
 - code: G4
   partie: A
@@ -134,7 +134,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Calculer AC, points alignes, AB = 4,5 cm, BC = 6 cm
-  reponse_attendue: ''
+  reponse_attendue: 10,5 cm
   solution: ''
 - code: G5
   partie: A
@@ -145,7 +145,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Designer le cote du rectangle ABCD parallele a [AB]
-  reponse_attendue: ''
+  reponse_attendue: '[CD]'
   solution: ''
 - code: G6
   partie: A
@@ -186,7 +186,7 @@ questions:
   competence_secondaire: null
   domaine: Activites geometriques
   objet: Situer P (OP = 4 cm) par rapport au cercle
-  reponse_attendue: ''
+  reponse_attendue: P est a l'interieur du cercle
   solution: ''
 - code: G8
   partie: B
@@ -249,7 +249,7 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Calculer l'aire d'un rectangle de 12 cm sur 7 cm
-  reponse_attendue: ''
+  reponse_attendue: 84 cm2
   solution: ''
 - code: M3
   partie: A
@@ -260,7 +260,7 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Convertir 4 500 g en kilogrammes
-  reponse_attendue: ''
+  reponse_attendue: 4,5 kg
   solution: ''
 - code: M4
   partie: A
@@ -361,8 +361,8 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Calculer trois tours de fil autour d'un jardin rectangulaire
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 258 m
+  solution: perimetre=2x(25+18)=86 m ; 3 tours=3x86=258 m de fil.
 - code: M8
   partie: B
   format: redige
@@ -372,8 +372,8 @@ questions:
   competence_secondaire: null
   domaine: Mesures et grandeurs
   objet: Calculer l'aire d'un mur diminuee d'une porte carree
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 14 m2
+  solution: aire mur=6x3=18 m2 ; aire porte=2x2=4 m2 ; aire a peindre=18-4=14 m2.
 - code: N1
   partie: A
   format: court
@@ -383,7 +383,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Ecrire en chiffres soixante mille quatre-vingt-douze
-  reponse_attendue: ''
+  reponse_attendue: 60 092
   solution: ''
 - code: N2
   partie: A
@@ -424,7 +424,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Effectuer l'addition 3 608 + 947
-  reponse_attendue: ''
+  reponse_attendue: 4 555
   solution: ''
 - code: N4
   partie: A
@@ -465,7 +465,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Effectuer la multiplication 326 x 48
-  reponse_attendue: ''
+  reponse_attendue: 15 648
   solution: ''
 - code: N6
   partie: A
@@ -476,7 +476,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Ranger 5,7 ; 5,09 ; 5,71 ; 5,2 dans l'ordre croissant
-  reponse_attendue: ''
+  reponse_attendue: 5,09 ; 5,2 ; 5,7 ; 5,71
   solution: ''
 - code: N7
   partie: A
@@ -487,7 +487,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Donner le reste de la division euclidienne de 758 par 6
-  reponse_attendue: ''
+  reponse_attendue: '2'
   solution: ''
 - code: N8
   partie: A
@@ -498,7 +498,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Completer l'egalite 12,4 + ... = 20
-  reponse_attendue: ''
+  reponse_attendue: 7,6
   solution: ''
 - code: N9
   partie: A
@@ -509,7 +509,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer le quart de 60 mangues
-  reponse_attendue: ''
+  reponse_attendue: '15'
   solution: ''
 - code: N10
   partie: A
@@ -550,7 +550,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Encadrer 8,36 par deux entiers qui se suivent
-  reponse_attendue: ''
+  reponse_attendue: 8 < 8,36 < 9
   solution: ''
 - code: N12
   partie: A
@@ -591,7 +591,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Completer l'egalite ... x 6 = 174
-  reponse_attendue: ''
+  reponse_attendue: '29'
   solution: ''
 - code: N14
   partie: A
@@ -602,7 +602,7 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer le reste sur 5 000 FCFA apres trois cahiers
-  reponse_attendue: ''
+  reponse_attendue: 3 650 F
   solution: ''
 - code: N15
   partie: B
@@ -613,8 +613,8 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Additionner trois livraisons de mil puis retrancher la vente
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 1 155 kg
+  solution: 1250+875+1430=3555 kg recus ; 3555-2400=1155 kg restants.
 - code: N16
   partie: B
   format: redige
@@ -624,8 +624,8 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: 'Repartir 253 savons en cartons de 12 : cartons pleins et reste'
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 21 cartons pleins, 1 savon restant
+  solution: 253 = 12x21 + 1.
 - code: N17
   partie: B
   format: redige
@@ -635,8 +635,8 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer le tiers et le quart de 240 livres
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 'CM1 : 80 livres ; CM2 : 60 livres'
+  solution: 240/3=80 (CM1) ; 240/4=60 (CM2).
 - code: N18
   partie: B
   format: redige
@@ -646,5 +646,5 @@ questions:
   competence_secondaire: null
   domaine: Activites numeriques
   objet: Calculer la monnaie rendue sur 50 000 FCFA apres deux achats
-  reponse_attendue: ''
-  solution: ''
+  reponse_attendue: 22 500 F
+  solution: 3x6500=19500 ; 2x4000=8000 ; depense totale=19500+8000=27500 ; monnaie=50000-27500=22500 FCFA.

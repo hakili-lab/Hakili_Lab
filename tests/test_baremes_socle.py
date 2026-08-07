@@ -1,8 +1,8 @@
 """
-Tests des barèmes Urie v2 (data/knowledge/bareme_urie_*.yaml).
+Tests des barèmes v2 (data/knowledge/bareme_socle_*.yaml).
 
-Ces fichiers sont générés par scripts/generer_baremes_urie.py depuis
-Referentiel_Urie_v0.xlsx. Les tests ci-dessous verrouillent les propriétés qui
+Ces fichiers sont générés par scripts/generer_baremes_socle.py depuis
+Referentiel_Socle_v0.xlsx. Les tests ci-dessous verrouillent les propriétés qui
 doivent tenir après toute régénération.
 
 Le test le plus important est `test_copie_parfaite_vaut_exactement_20` : une
@@ -35,8 +35,8 @@ _FORMATS = {"qcm", "court", "redige", "construction"}
 
 
 def _charger(niveau: str) -> dict:
-    path = _KB_DIR / f"bareme_urie_{niveau}.yaml"
-    assert path.exists(), f"{path.name} absent — lancer scripts/generer_baremes_urie.py"
+    path = _KB_DIR / f"bareme_socle_{niveau}.yaml"
+    assert path.exists(), f"{path.name} absent — lancer scripts/generer_baremes_socle.py"
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
@@ -115,22 +115,20 @@ def test_distracteurs_tagues_par_un_type_ferme(niveau: str) -> None:
 
 
 def test_corriges_manquants_uniquement_hors_qcm() -> None:
-    """Arbitrage B non tranché : 209 questions sans corrigé, et ce sont exactement
-    les non-QCM. Ce test échouera dès qu'un corrigé sera ajouté — c'est voulu :
-    il faudra alors mettre à jour le compte, ce qui documente la progression."""
-    sans_corrige = sum(
-        1
+    """Arbitrage B : 203/209 corrigés produits (2026-08-07, sujets 6e à tleD).
+    Les 6 restants sont exactement les questions de format `construction` —
+    laissées de côté tant que l'arbitrage F (diagnostic automatique ou saisie
+    humaine sur un tracé) n'est pas tranché. Ce test échouera dès qu'un corrigé
+    sera ajouté ou retiré — c'est voulu : il faudra alors mettre à jour le
+    compte, ce qui documente la progression."""
+    manquants = [
+        q
         for niveau in _NIVEAUX
         for q in _charger(niveau)["questions"]
         if not q["reponse_attendue"]
-    )
-    non_qcm = sum(
-        1
-        for niveau in _NIVEAUX
-        for q in _charger(niveau)["questions"]
-        if q["format"] != "qcm"
-    )
-    assert sans_corrige == non_qcm == 209
+    ]
+    assert len(manquants) == 6
+    assert all(q["format"] == "construction" for q in manquants)
 
 
 # ── Le test central : la note d'une copie parfaite ────────────────────────────
@@ -140,7 +138,7 @@ def test_copie_parfaite_vaut_exactement_20(niveau: str) -> None:
     from src.knowledge.test_registry import get_registry
     from src.models.domain import CopyGrade, QuestionGrade, TeacherDecision
 
-    test = get_registry().get_test(f"urie_{niveau}")
+    test = get_registry().get_test(f"socle_{niveau}")
     assert test is not None
 
     questions = [
@@ -170,7 +168,7 @@ def test_copie_nulle_vaut_zero(niveau: str) -> None:
     from src.knowledge.test_registry import get_registry
     from src.models.domain import CopyGrade, QuestionGrade, TeacherDecision
 
-    test = get_registry().get_test(f"urie_{niveau}")
+    test = get_registry().get_test(f"socle_{niveau}")
     questions = [
         QuestionGrade(
             rubric_item_id=item.id,
@@ -195,12 +193,12 @@ def test_copie_nulle_vaut_zero(niveau: str) -> None:
 
 # ── Registre : actifs vs archivés ─────────────────────────────────────────────
 
-def test_les_7_tests_urie_sont_proposes() -> None:
+def test_les_7_tests_socle_sont_proposes() -> None:
     from src.knowledge.test_registry import get_registry
 
     disponibles = get_registry().available_tests()
     for niveau in _NIVEAUX:
-        assert f"urie_{niveau}" in disponibles
+        assert f"socle_{niveau}" in disponibles
 
 
 def test_anciens_tests_archives_mais_toujours_resolus() -> None:

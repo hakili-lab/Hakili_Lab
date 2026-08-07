@@ -1,0 +1,646 @@
+# Corrigés saisis à la main, hors du classeur source.
+# Fichier SÉPARÉ des barèmes, délibérément : generer_baremes_socle.py
+# régénère les barèmes depuis Referentiel_Socle_v0.xlsx et écraserait des
+# corrigés qui y seraient stockés. Il fusionne ce fichier à la génération.
+# Produit par scripts/integrer_corriges.py — modifiable à la main si besoin.
+
+corriges:
+  1ereD:
+    D2:
+      reponse_attendue: moyenne = 6 ; etendue = 5
+      solution: somme=4+7+5+4+9+6+4+8+5+8=60 ; moyenne=60/10=6 ; etendue=max-min=9-4=5.
+    F10:
+      reponse_attendue: Strictement decroissante sur [0;+infini[
+      solution: ''
+    F11:
+      reponse_attendue: Dg = ]-infini ; 5[
+      solution: il faut 5-x > 0 (racine carree strictement positive au denominateur) -> x<5.
+    F12:
+      reponse_attendue: h croit de -2 (x=-5) a 3 (x=-1) ; decroit de 3 (x=-1) a -4 (x=2) ; croit de -4
+        (x=2) a 2 (x=4)
+      solution: tableau de variations construit directement a partir des 4 points donnes par l'enonce.
+    F13:
+      reponse_attendue: sin x = 4/5
+      solution: 'sin^2(x)=1-cos^2(x)=1-9/25=16/25 ; x dans [0;pi/2] donc sin x positif : sin x=4/5.'
+    F2:
+      reponse_attendue: R prive de 3
+      solution: ''
+    F3:
+      reponse_attendue: '4'
+      solution: ''
+    F4:
+      reponse_attendue: Paire
+      solution: ''
+    F5:
+      reponse_attendue: 3 pi / 4
+      solution: ''
+    F7:
+      reponse_attendue: '-5'
+      solution: ''
+    F8:
+      reponse_attendue: x appartient a ]-1 ; 4[
+      solution: ''
+    G1:
+      reponse_attendue: '2'
+      solution: ''
+    G10:
+      reponse_attendue: vecteur IJ = (1/3)vecteur AC - (1/2)vecteur AB
+      solution: I milieu [AB] -> vecteur AI=(1/2)vecteur AB ; J tel que vecteur AJ=(1/3)vecteur AC ; vecteur
+        IJ=vecteur AJ-vecteur AI=(1/3)AC-(1/2)AB.
+    G11:
+      reponse_attendue: AB.AC = 0 ; triangle ABC rectangle en A
+      solution: vecteur AB=(4;2), vecteur AC=(-1;2) ; AB.AC=4x(-1)+2x2=-4+4=0 -> vecteurs orthogonaux
+        -> rectangle en A.
+    G2:
+      reponse_attendue: y = 3x - 7
+      solution: ''
+    G3:
+      reponse_attendue: k = -3
+      solution: ''
+    G5:
+      reponse_attendue: m = 6
+      solution: ''
+    G7:
+      reponse_attendue: '5'
+      solution: ''
+    G8:
+      reponse_attendue: M'(10 ; -4)
+      solution: ''
+    G9:
+      reponse_attendue: Non coplanaires (droites gauches)
+      solution: ''
+    L1:
+      reponse_attendue: x = 2 ou x = 3
+      solution: ''
+    L10:
+      reponse_attendue: S = ]-infini;-1[ union [3;+infini[
+      solution: numerateur 2x-6 nul en x=3 ; denominateur x+1 nul en x=-1 (exclu) ; tableau de signes
+        du quotient.
+    L2:
+      reponse_attendue: (x - 3)(x - 4)
+      solution: ''
+    L3:
+      reponse_attendue: x = 3 ; y = 1
+      solution: ''
+    L6:
+      reponse_attendue: 2(x + 2)(x - 5)
+      solution: ''
+    L7:
+      reponse_attendue: x appartient a [2 ; 5[
+      solution: ''
+    L8:
+      reponse_attendue: x=11 (retenu, positif) ; x=-14 rejete ; largeur = 11 m
+      solution: delta=3^2+4x154=9+616=625=25^2 ; x=(-3+25)/2=11 ou x=(-3-25)/2=-14 (rejete).
+    L9:
+      reponse_attendue: f(x) < 0 sur ]-infini;-1[ et ]5;+infini[ ; f(x) > 0 sur ]-1;5[ ; nul en -1 et
+        5
+      solution: 'racines de -x^2+4x+5=0 (soit x^2-4x-5=0) : x=-1 et x=5 ; coefficient de x^2 negatif (a=-1)
+        donc f positif entre les racines, negatif a l''exterieur.'
+    N2:
+      reponse_attendue: a = 2
+      solution: ''
+    N4:
+      reponse_attendue: A = 1
+      solution: 3-racine(10)<0 donc |3-racine(10)|=racine(10)-3 ; racine(10)-4<0 donc |racine(10)-4|=4-racine(10)
+        ; A=(racine(10)-3)+(4-racine(10))=1.
+  2ndeC:
+    D1:
+      reponse_attendue: 30 %
+      solution: ''
+    D2:
+      reponse_attendue: effectif total = 25 ; moyenne = 9,92 ; frequence(10) = 32 %
+      solution: somme=5x3+8x6+10x8+12x5+15x3=15+48+80+60+45=248 ; 248/25=9,92 ; 8/25x100=32%.
+    F2:
+      reponse_attendue: y = -2x + 3
+      solution: ''
+    F3:
+      reponse_attendue: f(x) = 500 + 150x ; f(12) = 2 300 F ; masse = 20 kg
+      solution: f(12)=500+150x12=2300 ; 500+150x=3500 -> 150x=3000 -> x=20.
+    G10:
+      reponse_attendue: F(7 ; -7)
+      solution: ''
+    G11:
+      reponse_attendue: vecteur AB(4;2) ; vecteur AC(6;3) ; A, B, C sont alignes
+      solution: 'AC=1,5 x AB (6/4=3/2=1,5 et 3/2=1,5) donc les vecteurs sont colineaires : A, B, C alignes.'
+    G12:
+      reponse_attendue: diagonale AC = 50 m ; trajet par B = 70 m ; difference = 20 m
+      solution: AC=racine(40^2+30^2)=racine(2500)=50 ; AB+BC=40+30=70 ; 70-50=20.
+    G13:
+      reponse_attendue: BC = 12,5 cm ; AN = 6 cm
+      solution: 'AB=AM+MB=4+6=10 ; Thales : 4/10=AN/15=5/BC -> AN=6 ; BC=12,5.'
+    G2:
+      reponse_attendue: I(1 ; 1)
+      solution: ''
+    G3:
+      reponse_attendue: vecteur AD
+      solution: ''
+    G6:
+      reponse_attendue: 12 cm
+      solution: ''
+    G7:
+      reponse_attendue: k = -3
+      solution: ''
+    G8:
+      reponse_attendue: Angle droit en S
+      solution: ''
+    G9:
+      reponse_attendue: 2 m
+      solution: ''
+    L10:
+      reponse_attendue: R = (2x-3)(x+2) ; R(-2) = 0
+      solution: 4x^2-9=(2x-3)(2x+3) ; R=(2x-3)(2x+3)-(2x-3)(x+1)=(2x-3)[(2x+3)-(x+1)]=(2x-3)(x+2) ; R(-2)=(-7)(0)=0.
+    L11:
+      reponse_attendue: 2x + 5000 = 41000 ; mil = 18 000 F, riz = 23 000 F
+      solution: x+(x+5000)=41000 -> 2x=36000 -> x=18000 ; riz=18000+5000=23000.
+    L12:
+      reponse_attendue: niebe = 800 F/kg ; sorgho = 600 F/kg
+      solution: '3n+2s=3600 ; 5n+2s=5200 ; soustraction : 2n=1600 -> n=800 ; 3x800+2s=3600 -> s=600.'
+    L2:
+      reponse_attendue: (x - 7)(x + 7)
+      solution: ''
+    L4:
+      reponse_attendue: x <= 4
+      solution: ''
+    L6:
+      reponse_attendue: (3x - 1)(4x + 3)
+      solution: ''
+    L7:
+      reponse_attendue: x = 4 ; y = 3
+      solution: ''
+    L8:
+      reponse_attendue: x = 3 ou x = -5
+      solution: ''
+    N1:
+      reponse_attendue: -11/12
+      solution: ''
+    N10:
+      reponse_attendue: -1 <= 5-2x <= 1 ; intervalle [-1;1]
+      solution: x=2 -> 5-2x=1 ; x=3 -> 5-2x=-1 (fonction decroissante en x).
+    N2:
+      reponse_attendue: 4,5 x 10 puissance -3
+      solution: ''
+    N3:
+      reponse_attendue: a = 5
+      solution: ''
+    N5:
+      reponse_attendue: '15'
+      solution: ''
+    N7:
+      reponse_attendue: a = 2
+      solution: ''
+    N8:
+      reponse_attendue: 0,6 kg
+      solution: ''
+    N9:
+      reponse_attendue: P = 4 racine(3) ; Q = 19
+      solution: sqrt(75)=5sqrt(3), 2sqrt(12)=4sqrt(3), sqrt(27)=3sqrt(3) -> P=5sqrt(3)-4sqrt(3)+3sqrt(3)=4sqrt(3)
+        ; Q=(2sqrt(5))^2-1=20-1=19.
+  3eme:
+    D1:
+      reponse_attendue: 36 %
+      solution: ''
+    D3:
+      reponse_attendue: '11'
+      solution: ''
+    D4:
+      reponse_attendue: Moyenne 10,95 ; frequence(12) = 40 %
+      solution: effectif total=3+5+8+4=20 ; somme=6x3+9x5+12x8+15x4=18+45+96+60=219 ; moyenne=219/20=10,95
+        ; frequence(12)=8/20x100=40%.
+    D5:
+      reponse_attendue: Benefice 2 100 F ; prix de vente 19 600 F
+      solution: benefice=17500x0,12=2100 F ; prix de vente=17500+2100=19600 F.
+    F2:
+      reponse_attendue: 'g(-1)=9 ; g(0)=7 ; g(4)=-1 ; antecedent de 1 : x=3'
+      solution: g(x)=-2x+7 ; g(-1)=2+7=9 ; g(0)=7 ; g(4)=-8+7=-1 ; -2x+7=1 -> x=3.
+    G1:
+      reponse_attendue: '8'
+      solution: ''
+    G10:
+      reponse_attendue: 45 degres
+      solution: ''
+    G11:
+      reponse_attendue: B(5 ; -4) ; J(-1 ; 0,5)
+      solution: B=2I-A=(2x1-(-3) ; 2x(-1)-2)=(5;-4) ; J=milieu[AI]=((-3+1)/2 ; (2-1)/2)=(-1;0,5).
+    G13:
+      reponse_attendue: F est le milieu de [MP] ; MF = 4,5 cm
+      solution: 'E milieu de [MN], (EF)//(NP) -> reciproque du theoreme des milieux : F est le milieu
+        de [MP]. MF=MP/2=9/2=4,5 cm.'
+    G2:
+      reponse_attendue: vecteur DC
+      solution: ''
+    G4:
+      reponse_attendue: Q
+      solution: ''
+    G6:
+      reponse_attendue: '-7'
+      solution: ''
+    G7:
+      reponse_attendue: 4,7 cm
+      solution: ''
+    G9:
+      reponse_attendue: '[TU]'
+      solution: ''
+    L1:
+      reponse_attendue: 2x - 11
+      solution: ''
+    L10:
+      reponse_attendue: G = (3x-2)(4x+9) ; G(1) = 13
+      solution: 9x^2-4=(3x-2)(3x+2) ; G=(3x-2)(3x+2)+(3x-2)(x+7)=(3x-2)[(3x+2)+(x+7)]=(3x-2)(4x+9) ; G(1)=(1)(13)=13.
+    L11:
+      reponse_attendue: 5x + 9000 = 24000 ; x = 3 000 F
+      solution: 5x=24000-9000=15000 ; x=15000/5=3000. Le poulet coute 3000 FCFA.
+    L3:
+      reponse_attendue: 7x(x + 3)
+      solution: ''
+    L4:
+      reponse_attendue: x <= 5
+      solution: ''
+    L6:
+      reponse_attendue: (5x - 4)(5x + 4)
+      solution: ''
+    L7:
+      reponse_attendue: x = 18
+      solution: ''
+    L8:
+      reponse_attendue: 2x + 5 <= 17
+      solution: ''
+    L9:
+      reponse_attendue: E = 8x au carre - 12x + 29 ; E(2) = 37
+      solution: (3x-2)^2=9x^2-12x+4 ; (x+5)(x-5)=x^2-25 ; E=9x^2-12x+4-x^2+25=8x^2-12x+29 ; E(2)=32-24+29=37.
+    N1:
+      reponse_attendue: -7 et 12/4 (=3)
+      solution: ''
+    N3:
+      reponse_attendue: 2,33
+      solution: ''
+    N4:
+      reponse_attendue: 5/6
+      solution: ''
+    N5:
+      reponse_attendue: -14/7 appartient a Z ; 1/3 n'appartient pas a D
+      solution: ''
+    N7:
+      reponse_attendue: 2 x 10 puissance 4
+      solution: ''
+    N9:
+      reponse_attendue: 7/18 creuse ; reste 11/18
+      solution: 2/9+1/6=4/18+3/18=7/18 creuse ; reste=1-7/18=11/18.
+  4eme:
+    D2:
+      reponse_attendue: 15 %
+      solution: augmentation=20700-18000=2700 ; pourcentage=2700/18000x100=15%.
+    G1:
+      reponse_attendue: 67 degres
+      solution: ''
+    G3:
+      reponse_attendue: 3,5 cm
+      solution: ''
+    G4:
+      reponse_attendue: 73 degres
+      solution: ''
+    G6:
+      reponse_attendue: 4 cm
+      solution: ''
+    G8:
+      reponse_attendue: 54 m3
+      solution: aire base=6x6=36 m2 ; volume=(36x4,5)/3=162/3=54 m3.
+    G9:
+      reponse_attendue: 58 degres -- angles alternes-internes
+      solution: 'M et N de part et d''autre de (Delta) sur les deux paralleles : les angles alternes-internes
+        formes sont egaux.'
+    L1:
+      reponse_attendue: x = 13
+      solution: ''
+    L2:
+      reponse_attendue: x = 7
+      solution: ''
+    L4:
+      reponse_attendue: 2x - 9 = 17
+      solution: ''
+    L5:
+      reponse_attendue: 4x + 1250 = 19250 ; x = 4 500 F
+      solution: 4x=19250-1250=18000 ; x=18000/4=4500. Le poulet coute 4500 FCFA.
+    M2:
+      reponse_attendue: 40 km/h
+      solution: ''
+    M3:
+      reponse_attendue: 9 cm
+      solution: ''
+    M5:
+      reponse_attendue: 1/200
+      solution: ''
+    M6:
+      reponse_attendue: debit 80 L/min ; 6 000 L en 1h15min
+      solution: debit=3600/45=80 L/min ; 1h15min=75min ; volume=80x75=6000 L.
+    N1:
+      reponse_attendue: 2 745 et 4 050
+      solution: ''
+    N11:
+      reponse_attendue: 2/3
+      solution: ''
+    N12:
+      reponse_attendue: 2 au carre x 3 au carre x 5
+      solution: ''
+    N14:
+      reponse_attendue: 3(3x + 5)
+      solution: ''
+    N15:
+      reponse_attendue: 4/15 de la recolte
+      solution: 2/5+1/3=6/15+5/15=11/15 vendue ; reste=1-11/15=4/15.
+    N16:
+      reponse_attendue: A = 4 au carre (=16) ; B = -32
+      solution: 4^6x4^3/4^7=4^(9-7)=4^2 ; (-2)^5=-32.
+    N17:
+      reponse_attendue: 66 kg par sac ; 5 sacs au total
+      solution: PGCD(132,198)=66 ; 132/66=2 sacs de mil ; 198/66=3 sacs de sorgho ; total=5 sacs.
+    N18:
+      reponse_attendue: 5x + 35
+      solution: 5x(x+7)=5x+35.
+    N3:
+      reponse_attendue: 19/12
+      solution: ''
+    N4:
+      reponse_attendue: '11'
+      solution: ''
+    N5:
+      reponse_attendue: 1, 3, 5, 9, 15, 45
+      solution: ''
+    N7:
+      reponse_attendue: '42'
+      solution: ''
+    N8:
+      reponse_attendue: 6 600 F
+      solution: ''
+    N9:
+      reponse_attendue: '30'
+      solution: ''
+  5eme:
+    D1:
+      reponse_attendue: 4 800 F
+      solution: ''
+    D2:
+      reponse_attendue: S(4 ; 3)
+      solution: ''
+    D4:
+      reponse_attendue: '7 savons : 1 750 FCFA ; 12 savons : 3 000 FCFA'
+      solution: Prix unitaire = 1000/4 = 250 FCFA par savon ; 7x250=1750 ; 12x250=3000.
+    D5:
+      reponse_attendue: 'A(2 ; 3) ; B(5 ; 3) ; C(5 ; 7)'
+      solution: ''
+    G12:
+      reponse_attendue: HG = 7 cm ; angle FGH = 110 degres.
+      solution: HG=EF=7cm (cotes opposes d'un parallelogramme, meme longueur) ; angle FGH=angle HEF=110
+        degres (angles opposes d'un parallelogramme, meme mesure).
+    G2:
+      reponse_attendue: Isocele en A
+      solution: ''
+    G3:
+      reponse_attendue: 9 cm
+      solution: ''
+    G4:
+      reponse_attendue: 53 degres
+      solution: ''
+    G5:
+      reponse_attendue: (d3) et (d2) sont perpendiculaires
+      solution: ''
+    G6:
+      reponse_attendue: 6 cm
+      solution: ''
+    G8:
+      reponse_attendue: 6,2 cm
+      solution: ''
+    M1:
+      reponse_attendue: 3 500 m
+      solution: ''
+    M2:
+      reponse_attendue: 27 cm2
+      solution: ''
+    M3:
+      reponse_attendue: 38 cm
+      solution: ''
+    M6:
+      reponse_attendue: 6 cm
+      solution: ''
+    M7:
+      reponse_attendue: 330 m2
+      solution: Aire du rectangle = AB x BC = 20 x 12 = 240 m2 ; DC=AB=20 m (cotes opposes du rectangle)
+        ; aire du triangle DCE = (DC x hauteur)/2 = (20x9)/2 = 90 m2 ; aire totale = 240+90 = 330 m2.
+    M8:
+      reponse_attendue: 52 cm2
+      solution: Aire totale = 2x(4x3 + 4x2 + 3x2) = 2x(12+8+6) = 2x26 = 52 cm2.
+    N1:
+      reponse_attendue: 64,75
+      solution: ''
+    N11:
+      reponse_attendue: 5 000
+      solution: ''
+    N13:
+      reponse_attendue: 46 000 FCFA
+      solution: 6x21500=129000 ; 4x6250=25000 ; depense totale=129000+25000=154000 ; monnaie rendue=200000-154000=46000
+        FCFA.
+    N14:
+      reponse_attendue: Aire semee en mil = 18 ares ; le mil occupe la plus grande partie du champ.
+      solution: 48x3/8=144/8=18 ares (mil) ; 48x1/4=12 ares (niebe) ; 18>12 donc le mil occupe la plus
+        grande partie.
+    N15:
+      reponse_attendue: 'Ordre decroissant : D ; B ; C ; A (soit +5 > +3 > -1 > -4). Le point situe entre
+        A et B est C, d''abscisse -1.'
+      solution: -4 < -1 < +3 donc C (-1) est entre A (-4) et B (+3) ; D (+5) n'est pas entre les deux.
+    N2:
+      reponse_attendue: '19'
+      solution: ''
+    N3:
+      reponse_attendue: 2/3
+      solution: ''
+    N5:
+      reponse_attendue: 1 700
+      solution: ''
+    N6:
+      reponse_attendue: '13'
+      solution: ''
+    N7:
+      reponse_attendue: 12,8 kg
+      solution: ''
+    N9:
+      reponse_attendue: '800'
+      solution: ''
+  6eme:
+    D2:
+      reponse_attendue: 31 %
+      solution: ''
+    D3:
+      reponse_attendue: 12 000 F
+      solution: ''
+    D4:
+      reponse_attendue: '5 sacs : 85 000 F ; 9 sacs : 153 000 F'
+      solution: prix unitaire=51000/3=17000 FCFA ; 5x17000=85000 ; 9x17000=153000.
+    D5:
+      reponse_attendue: 'CM2 A : 80 % ; CM2 B : 70 % ; CM2 A a le meilleur pourcentage'
+      solution: 'CM2 A : 40/50x100=80% ; CM2 B : 21/30x100=70% ; 80%>70%.'
+    G1:
+      reponse_attendue: 4,5 cm
+      solution: ''
+    G2:
+      reponse_attendue: Angle aigu
+      solution: ''
+    G3:
+      reponse_attendue: Isocele
+      solution: ''
+    G4:
+      reponse_attendue: 10,5 cm
+      solution: ''
+    G5:
+      reponse_attendue: '[CD]'
+      solution: ''
+    G7:
+      reponse_attendue: P est a l'interieur du cercle
+      solution: ''
+    M2:
+      reponse_attendue: 84 cm2
+      solution: ''
+    M3:
+      reponse_attendue: 4,5 kg
+      solution: ''
+    M7:
+      reponse_attendue: 258 m
+      solution: perimetre=2x(25+18)=86 m ; 3 tours=3x86=258 m de fil.
+    M8:
+      reponse_attendue: 14 m2
+      solution: aire mur=6x3=18 m2 ; aire porte=2x2=4 m2 ; aire a peindre=18-4=14 m2.
+    N1:
+      reponse_attendue: 60 092
+      solution: ''
+    N11:
+      reponse_attendue: 8 < 8,36 < 9
+      solution: ''
+    N13:
+      reponse_attendue: '29'
+      solution: ''
+    N14:
+      reponse_attendue: 3 650 F
+      solution: ''
+    N15:
+      reponse_attendue: 1 155 kg
+      solution: 1250+875+1430=3555 kg recus ; 3555-2400=1155 kg restants.
+    N16:
+      reponse_attendue: 21 cartons pleins, 1 savon restant
+      solution: 253 = 12x21 + 1.
+    N17:
+      reponse_attendue: 'CM1 : 80 livres ; CM2 : 60 livres'
+      solution: 240/3=80 (CM1) ; 240/4=60 (CM2).
+    N18:
+      reponse_attendue: 22 500 F
+      solution: 3x6500=19500 ; 2x4000=8000 ; depense totale=19500+8000=27500 ; monnaie=50000-27500=22500
+        FCFA.
+    N3:
+      reponse_attendue: 4 555
+      solution: ''
+    N5:
+      reponse_attendue: 15 648
+      solution: ''
+    N6:
+      reponse_attendue: 5,09 ; 5,2 ; 5,7 ; 5,71
+      solution: ''
+    N7:
+      reponse_attendue: '2'
+      solution: ''
+    N8:
+      reponse_attendue: 7,6
+      solution: ''
+    N9:
+      reponse_attendue: '15'
+      solution: ''
+  tleD:
+    D2:
+      reponse_attendue: 210 delegations
+      solution: C(7,2) x C(5,2) = 21 x 10 = 210.
+    F1:
+      reponse_attendue: R prive de -2 et 2
+      solution: ''
+    F10:
+      reponse_attendue: y = x - 4
+      solution: ''
+    F11:
+      reponse_attendue: ']-infini;-2] et [2;+infini['
+      solution: ''
+    F12:
+      reponse_attendue: f'(1) = 2
+      solution: ''
+    F13:
+      reponse_attendue: limite en 1 = -1 ; limite en +infini = +infini
+      solution: x^2-3x+2=(x-1)(x-2) donc h(x)=x-2 pour x different de 1 ; lim(x->1) x-2 = -1 ; lim(x->+infini)
+        x-2 = +infini.
+    F14:
+      reponse_attendue: f'(x) = (-2x^2+2x+2)/(x^2+1)^2
+      solution: f'(x)=[2(x^2+1)-(2x-1)(2x)]/(x^2+1)^2 = [2x^2+2-4x^2+2x]/(x^2+1)^2.
+    F15:
+      reponse_attendue: 'x = 2 : tangente y = 9x - 15 ; x = -2 : tangente y = 9x + 17'
+      solution: 'f''(x)=3x^2-3=9 -> x^2=4 -> x=2 ou x=-2 ; f(2)=8-6+1=3 ; f(-2)=-8+6+1=-1 ; tangente en
+        x0 : y=9(x-x0)+f(x0).'
+    F16:
+      reponse_attendue: f croit sur [-2;0] de -16 a 4, decroit sur [0;2] de 4 a 0, croit sur [2;4] de
+        0 a 20
+      solution: f'(x)=3x^2-6x=3x(x-2), nul en 0 et 2, signe positif-negatif-positif ; f(-2)=-16, f(0)=4,
+        f(2)=0, f(4)=20.
+    F2:
+      reponse_attendue: 12x^3 - 4x + 5
+      solution: ''
+    F4:
+      reponse_attendue: g(-x) = -g(x) ; g est impaire
+      solution: ''
+    F7:
+      reponse_attendue: h(x) > 0 sur ]-4 ; -2]
+      solution: ''
+    F8:
+      reponse_attendue: y = 2x - 1
+      solution: ''
+    G2:
+      reponse_attendue: 6 racine(3) cm
+      solution: ''
+    G3:
+      reponse_attendue: '0'
+      solution: ''
+    G4:
+      reponse_attendue: AC = 10 cm ; AG = 5 racine(5) cm
+      solution: AC=racine(8^2+6^2)=racine(100)=10 ; AG=racine(AC^2+AE^2)=racine(100+25)=racine(125)=5racine(5).
+    L1:
+      reponse_attendue: (x - 3)(2x + 1)
+      solution: ''
+    L3:
+      reponse_attendue: (x + 3)/(x + 1)
+      solution: ''
+    L4:
+      reponse_attendue: a = -2
+      solution: ''
+    L6:
+      reponse_attendue: P(x) = (x-1)(x-3)(x+2) ; solutions x=1, x=3, x=-2
+      solution: 1 racine de P -> P(x)=(x-1)(x^2-x-6) par division euclidienne ; x^2-x-6=(x-3)(x+2).
+    L7:
+      reponse_attendue: S = ]-3 ; 4]
+      solution: '(2x-1)/(x+3)-1 = (2x-1-(x+3))/(x+3) = (x-4)/(x+3) <= 0 ; tableau de signe : numerateur
+        nul en 4, denominateur nul en -3 (exclu).'
+    N1:
+      reponse_attendue: '36'
+      solution: ''
+    S2:
+      reponse_attendue: 1+2+...+n+(n+1) = (n+1)(n+2)/2
+      solution: ''
+    S3:
+      reponse_attendue: v0 = 3
+      solution: ''
+    S4:
+      reponse_attendue: w(n+1) <= 2
+      solution: ''
+    S5:
+      reponse_attendue: douzieme mois = 26 500 F ; total sur douze mois = 219 000 F
+      solution: suite arithmetique u(n)=10000+(n-1)x1500 ; u(12)=10000+11x1500=26500 ; somme=12x(10000+26500)/2=219000.
+    T1:
+      reponse_attendue: x = pi/3 ou x = 5pi/3
+      solution: ''
+    T3:
+      reponse_attendue: x appartient a [pi/4 ; 3pi/4]
+      solution: ''
+    T4:
+      reponse_attendue: cos(pi/12) = (racine(6)+racine(2))/4
+      solution: cos(pi/3-pi/4)=cos(pi/3)cos(pi/4)+sin(pi/3)sin(pi/4) = (1/2)(racine(2)/2)+(racine(3)/2)(racine(2)/2)
+        = racine(2)/4+racine(6)/4.

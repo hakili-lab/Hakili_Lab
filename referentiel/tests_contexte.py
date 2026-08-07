@@ -150,8 +150,8 @@ class TestAncragePipeline(BaseContexte):
     def test_niveau_extrait_du_bareme_id(self) -> None:
         from correction_web.taches import _niveau_test
 
-        self.assertEqual(_niveau_test("urie_3eme"), "3eme")
-        self.assertEqual(_niveau_test("urie_2ndeC"), "2ndeC")
+        self.assertEqual(_niveau_test("socle_3eme"), "3eme")
+        self.assertEqual(_niveau_test("socle_2ndeC"), "2ndeC")
         self.assertEqual(_niveau_test("hakili_3e_v1"), "")  # ancien test
         self.assertEqual(_niveau_test(""), "")              # mode libre
 
