@@ -982,6 +982,20 @@ class ClaudeClient:
                     if not isinstance(val, list):
                         val = [val] if val else []
                     page[field] = [cls._item_to_str(x) for x in val if x is not None]
+                if "confidence" not in page or page["confidence"] is None:
+                    # Défaut de tool-calling observé en prod : Claude omet parfois
+                    # "confidence" malgré le champ "required" du schéma d'outil
+                    # (_TRANSCRIPTION_TOOL), ce qui faisait échouer la validation
+                    # Pydantic (pages.N.confidence Field required). 0.3 est
+                    # volontairement sous le seuil min_confidence=0.40 de
+                    # validate_transcription() (orchestrator.py) : ce repli doit
+                    # déclencher la relecture enseignant, pas la masquer.
+                    logger.warning(
+                        "[%s] confidence manquant pour la page %s — repli à 0.3 "
+                        "(défaut de tool-calling Claude, schéma pourtant required)",
+                        data.get("copy_id", "?"), page.get("page_number", i + 1),
+                    )
+                    page["confidence"] = 0.3
                 normalized.append(page)
 
         data["pages"] = normalized
