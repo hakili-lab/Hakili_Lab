@@ -46,6 +46,22 @@ _MEDIA_TYPES: dict[str, str] = {
     ".webp": "image/webp",
 }
 
+# Timeout du fallback transcription — proportionnel au nombre de pages.
+# Ce client n'est PAS batché (contrairement à Gemini/Claude, voir
+# _MAX_PAGES_PER_BATCH) : transcribe() envoie toutes les images en un seul
+# appel chat.completions.create(). Un timeout fixe de 90s (suffisant pour
+# 1-3 pages) expirait systématiquement sur les copies à 10+ pages.
+_TRANSCRIBE_TIMEOUT_BASE_S = 90.0
+_TRANSCRIBE_TIMEOUT_PER_PAGE_S = 12.0
+_TRANSCRIBE_TIMEOUT_MAX_S = 300.0
+
+
+def _transcribe_timeout(n_pages: int) -> float:
+    return min(
+        _TRANSCRIBE_TIMEOUT_MAX_S,
+        _TRANSCRIBE_TIMEOUT_BASE_S + _TRANSCRIBE_TIMEOUT_PER_PAGE_S * n_pages,
+    )
+
 _JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]*?)```", re.IGNORECASE)
 _TRAILING_COMMA = re.compile(r",\s*([}\]])")
 
@@ -214,8 +230,11 @@ class OpenAIClient:
 
     @_retry
     def transcribe(self, copy_id: str, image_paths: list[Path]) -> ClaudeResponse:
-        logger.info("[%s] GPT-5 transcription (fallback) — modèle : %s | pages : %d",
-                    copy_id, settings.openai_model, len(image_paths))
+        request_timeout = _transcribe_timeout(len(image_paths))
+        logger.info(
+            "[%s] GPT-5 transcription (fallback) — modèle : %s | pages : %d | timeout : %.0fs",
+            copy_id, settings.openai_model, len(image_paths), request_timeout,
+        )
         schema_example = (
             '{\n'
             f'  "copy_id": "{copy_id}",\n'
@@ -239,6 +258,7 @@ class OpenAIClient:
                 messages=cast(list[ChatCompletionMessageParam], [{"role": "user", "content": content}]),
                 response_format={"type": "json_object"},
                 max_completion_tokens=16384,
+                timeout=request_timeout,
             )
             raw = response.choices[0].message.content or ""
             if response.usage:
