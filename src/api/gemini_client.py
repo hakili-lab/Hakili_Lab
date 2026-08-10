@@ -293,6 +293,14 @@ class GeminiTranscriptionClient:
             all_pages.extend(data.pages)
             qualities.append(data.global_quality)
 
+        # Renumérotation déterministe : ne jamais faire confiance au page_number
+        # renvoyé par le modèle pour l'unicité (un lot peut ignorer la consigne
+        # "Utilise page_number à partir de N" et repartir de 1) — seul l'ordre
+        # de fusion (trié par offset ci-dessus) fait foi. Évite les collisions
+        # de clé Streamlit (st.text_area key=f"...trans_edit_{page_number}").
+        for i, page in enumerate(all_pages):
+            page.page_number = i + 1
+
         global_quality: str = (
             "poor" if "poor" in qualities
             else "medium" if "medium" in qualities
