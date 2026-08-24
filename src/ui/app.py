@@ -105,7 +105,8 @@ from src.services.user_service import (  # noqa: E402
 )
 
 st.set_page_config(
-    page_title="Hakili Lab — Correction IA",
+    page_title="Docteur Maya — Correction IA",
+    page_icon="🩺",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -120,6 +121,18 @@ def _logo_html(size: int = 40) -> str:
             f'style="width:{size}px;height:{size}px;object-fit:contain;display:block;" />'
         )
     return f'<span style="font-size:{size // 2}px;line-height:1;">🎓</span>'
+
+
+def _stethoscope_svg(size: int = 24, color: str = "#7FD4E8") -> str:
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{size}" height="{size}" '
+        f'fill="none" stroke="{color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'
+        f'<path d="M7 2v5a2 2 0 0 0 4 0V2"/>'
+        f'<path d="M9 9v2c0 2.5 2 4 4.5 4.5"/>'
+        f'<circle cx="17.5" cy="17.5" r="3.3"/>'
+        f'<circle cx="17.5" cy="17.5" r="1.1" fill="{color}" stroke="none"/>'
+        f'</svg>'
+    )
 
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
@@ -482,14 +495,22 @@ input[type="password"]::-ms-clear { display: none !important; }
 with st.sidebar:
     st.markdown(f"""
     <div style="padding:18px 14px 14px 14px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:14px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:40px;height:40px;flex-shrink:0;background:rgba(255,255,255,0.08);
-                        border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-                {_logo_html(34)}
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:44px;height:44px;flex-shrink:0;background:#06264f;border-radius:50%;
+                        border:1px solid rgba(127,212,232,0.35);
+                        display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                {_stethoscope_svg(22)}
             </div>
             <div>
-                <div style="font-size:14px;font-weight:700;color:#ffffff;letter-spacing:0.4px;">HAKILI LAB</div>
-                <div style="font-size:10px;color:#7a9fc8;margin-top:2px;font-weight:400;">Évaluation IA · Maths 6e à la Tle</div>
+                <div style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.6);letter-spacing:0.2px;">Docteur</div>
+                <div style="font-size:32px;font-weight:800;color:#ffffff;line-height:1.05;">Maya</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:7px;">
+                    <div style="width:16px;height:16px;flex-shrink:0;border-radius:4px;overflow:hidden;">
+                        {_logo_html(16)}
+                    </div>
+                    <span style="font-size:11px;color:rgba(255,255,255,0.4);">by Hakili Lab</span>
+                </div>
+                <div style="font-size:10px;color:#7a9fc8;margin-top:5px;font-weight:400;">Évaluation IA · Maths 6e à la Tle</div>
             </div>
         </div>
     </div>
@@ -514,9 +535,10 @@ def _page_header(title: str, subtitle: str = "") -> None:
     sub = f'<div class="pheader-sub">{subtitle}</div>' if subtitle else ""
     st.markdown(f"""
     <div class="pheader">
-        <div style="width:38px;height:38px;flex-shrink:0;background:#f0f5fc;border-radius:6px;
+        <div style="width:38px;height:38px;flex-shrink:0;background:#06264f;border-radius:50%;
+                    border:1px solid rgba(127,212,232,0.35);
                     display:flex;align-items:center;justify-content:center;overflow:hidden;">
-            {_logo_html(30)}
+            {_stethoscope_svg(20)}
         </div>
         <div>
             <div class="pheader-title">{title}</div>
@@ -1862,7 +1884,7 @@ def _lire_sheets_avec_secours(action, *, cache_key: str, bouton_key: str, label:
 # ── PAGE : À PROPOS ───────────────────────────────────────────────────────────
 
 if page == "À PROPOS":
-    _page_header("Hakili Lab — Diagnostic mathématiques", "Connaître le niveau réel de votre enfant en quelques minutes")
+    _page_header("Docteur Maya — Diagnostic mathématiques", "Connaître le niveau réel de votre enfant en quelques minutes")
 
     col_left, col_right = st.columns([3, 2], gap="large")
 
