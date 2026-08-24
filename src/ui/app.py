@@ -1736,15 +1736,18 @@ def _selectbox_recherchable(
     recherche séparée n'est ajoutée ici (elle ferait doublon).
 
     Placeholder sobre, sans tirets cadratin autour (ex. "Sélectionner un
-    élève", pas "— Sélectionner un élève —"). Retourne l'item sélectionné —
-    le libellé affiché (format_func) peut changer sans jamais affecter la
-    valeur technique retournée (ex. l'identifiant_hakili reste utilisé en
-    coulisse par l'appelant) — ou None si le placeholder est resté choisi."""
-    options = [placeholder] + [format_func(item) for item in items]
-    selection = st.selectbox(label, options=options, key=key)
-    if selection == placeholder:
+    élève", pas "— Sélectionner un élève —"). Placeholder natif Streamlit
+    (index=None + placeholder=) plutôt qu'une option factice en première
+    position de la liste — celle-ci s'affichait en texte plein comme une
+    vraie sélection au lieu d'apparaître grisée. Retourne l'item
+    sélectionné — le libellé affiché (format_func) peut changer sans jamais
+    affecter la valeur technique retournée (ex. l'identifiant_hakili reste
+    utilisé en coulisse par l'appelant) — ou None si aucune sélection."""
+    options = [format_func(item) for item in items]
+    selection = st.selectbox(label, options=options, index=None, placeholder=placeholder, key=key)
+    if selection is None:
         return None
-    return items[options.index(selection) - 1]
+    return items[options.index(selection)]
 
 
 def _match_eleve_par_nom_fichier(filename_stem: str, eleves: list[dict]) -> dict | None:
