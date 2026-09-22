@@ -350,7 +350,6 @@ class ClaudeClient:
         response = self.client.messages.create(
             model=settings.claude_model_heavy,
             max_tokens=_TOKENS_PER_BATCH,
-            temperature=0,
             tools=cast(list[ToolUnionParam], [_TRANSCRIPTION_TOOL]),
             tool_choice=cast(ToolChoiceParam, {"type": "tool", "name": "save_transcription"}),
             messages=cast(list[MessageParam], [{"role": "user", "content": content}]),
@@ -368,7 +367,7 @@ class ClaudeClient:
         subject_text: str,
         expert_instructions: str = "",
         official_answers: str = "",
-        temperature: float = 0,
+        temperature: float = 0,   # accepté pour l'interface commune (DeepSeek/GPT-5) — ignoré côté Claude
     ) -> ClaudeResponse:
         logger.info("[%s] Claude correction — modèle : %s",
                     transcription.copy_id, settings.claude_model_heavy)
@@ -409,7 +408,6 @@ class ClaudeClient:
         response = self.client.messages.create(
             model=settings.claude_model_heavy,
             max_tokens=8192,
-            temperature=temperature,
             tools=cast(list[ToolUnionParam], [_GRADING_TOOL]),
             tool_choice=cast(ToolChoiceParam, {"type": "tool", "name": "save_grading"}),
             messages=cast(list[MessageParam], [
@@ -482,7 +480,6 @@ class ClaudeClient:
             return self.client.messages.create(
                 model=model,
                 max_tokens=16384,
-                temperature=0,
                 messages=[
                     {
                         "role": "user",
@@ -560,7 +557,6 @@ class ClaudeClient:
             response = self.client.messages.create(
                 model=settings.claude_model_heavy,
                 max_tokens=8192,   # 35 exercices (~150 tok/exo) = ~5 250 tok — 4096 coupait après la 1re série
-                temperature=0,
                 messages=[
                     {
                         "role": "user",
@@ -615,7 +611,6 @@ class ClaudeClient:
             response = self.client.messages.create(
                 model=settings.claude_model_heavy,
                 max_tokens=8192,
-                temperature=0,
                 messages=[
                     {
                         "role": "user",
@@ -681,7 +676,6 @@ class ClaudeClient:
             response = self.client.messages.create(
                 model=settings.claude_model_light,
                 max_tokens=64,
-                temperature=0,
                 messages=cast(list[MessageParam], [{"role": "user", "content": content}]),
             )
             block = response.content[0]
@@ -707,8 +701,8 @@ class ClaudeClient:
         un barème virtuel utilisé quand aucun barème n'est fourni.
 
         Sépare l'identification des questions du jugement de correction :
-        cette passe produit une liste déterministe (tool_use, temperature implicitement
-        faible) qui sera passée comme rubric fixe à l'étape de grading.
+        cette passe produit une liste stable (tool_use avec tool_choice forcé)
+        qui sera passée comme rubric fixe à l'étape de grading.
 
         Retourne un Rubric vide si aucune question n'est identifiable.
         """
@@ -740,7 +734,6 @@ class ClaudeClient:
         response = self.client.messages.create(
             model=settings.claude_model_heavy,
             max_tokens=1024,
-            temperature=0,
             tools=cast(list[ToolUnionParam], [_QUESTIONS_EXTRACTION_TOOL]),
             tool_choice=cast(ToolChoiceParam, {"type": "tool", "name": "save_questions"}),
             messages=cast(list[MessageParam], [{"role": "user", "content": prompt}]),
@@ -807,7 +800,6 @@ class ClaudeClient:
         response = self.client.messages.create(
             model=settings.claude_model_light,
             max_tokens=2048,
-            temperature=0,
             messages=cast(list[MessageParam], [{"role": "user", "content": content}]),
         )
         block = response.content[0]
@@ -852,7 +844,6 @@ class ClaudeClient:
         response = self.client.messages.create(
             model=settings.claude_model_heavy,
             max_tokens=2048,
-            temperature=0,
             tools=cast(list[ToolUnionParam], [_RUBRIC_EXTRACTION_TOOL]),
             tool_choice=cast(ToolChoiceParam, {"type": "tool", "name": "save_rubric"}),
             messages=cast(list[MessageParam], [{"role": "user", "content": content}]),
