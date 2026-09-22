@@ -497,6 +497,11 @@ input[type="password"]::-ms-clear { display: none !important; }
 with st.sidebar:
     st.markdown(f"""
     <div style="padding:18px 14px 14px 14px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:14px;">
+        <div style="display:flex;justify-content:center;margin-bottom:12px;">
+            <div style="width:72px;height:72px;border-radius:12px;overflow:hidden;">
+                {_logo_html(72)}
+            </div>
+        </div>
         <div style="display:flex;align-items:flex-start;gap:12px;">
             <div style="width:44px;height:44px;flex-shrink:0;background:#06264f;border-radius:50%;
                         border:1px solid rgba(127,212,232,0.35);
@@ -504,11 +509,11 @@ with st.sidebar:
                 {_stethoscope_svg(26)}
             </div>
             <div>
-                <div style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.6);letter-spacing:0.2px;">Docteur</div>
-                <div style="font-size:32px;font-weight:800;color:#ffffff;line-height:1.05;">Maya</div>
-                <div style="font-size:10px;color:#7a9fc8;margin-top:5px;font-weight:400;">Évaluation IA · Maths 6e à la Tle</div>
+                <div style="font-size:18px;font-weight:400;color:rgba(255,255,255,0.6);letter-spacing:0.2px;">Docteur</div>
+                <div style="font-size:18px;font-weight:800;color:#ffffff;line-height:1.2;">Maya</div>
             </div>
         </div>
+        <div style="font-size:10px;color:#7a9fc8;margin-top:8px;font-weight:400;white-space:nowrap;">Évaluation IA · Maths 6e à la Tle</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -522,15 +527,6 @@ with st.sidebar:
             "GESTION": "Gestion",
         }.get(x, x),
     )
-
-    st.markdown(f"""
-    <div style="display:flex;align-items:center;gap:10px;padding:16px 6px 4px 14px;">
-        <span style="font-size:12px;color:rgba(255,255,255,0.45);">by</span>
-        <div style="width:76px;height:76px;flex-shrink:0;border-radius:8px;overflow:hidden;">
-            {_logo_html(76)}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
